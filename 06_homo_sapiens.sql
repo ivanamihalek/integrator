@@ -1,3 +1,5 @@
+-- to create the table:
+-- bash> mysql -u root blimps_environment < 06_homo_sapiens.sql 
 -- to load dat, start mysql in local infile mode:
 -- mysql --local-infile -uroot
 -- then load a cleaned biogrid table from mysql shell
