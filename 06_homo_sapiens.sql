@@ -1,4 +1,4 @@
-CREATE TABLE `homo_sapiens` (
+CREATE TABLE `biogrid_human_interactions` (
 `biogrid_id` int(10) unsigned DEFAULT NULL,
 `entrez_gene_A` int(10) unsigned DEFAULT NULL,
 `entrez_gene_B` int(10) unsigned DEFAULT NULL,
