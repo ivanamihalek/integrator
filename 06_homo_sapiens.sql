@@ -6,7 +6,7 @@
 -- mysql>  load data local infile '/home/ivana/databases/biogrid/BIOGRID-ORGANISM-Homo_sapiens-3.4.140.tab2.clean.txt' into table biogrid_homo_sapiens ignore 1 lines;
 
 CREATE TABLE `biogrid_human_interactions` (
-`biogrid_id` int(10) unsigned DEFAULT NULL,
+`biogrid_id` int(10) unsigned NOT NULL,
 `entrez_gene_A` int(10) unsigned DEFAULT NULL,
 `entrez_gene_B` int(10) unsigned DEFAULT NULL,
 `biogrid_id_A` int(10) unsigned DEFAULT NULL,
