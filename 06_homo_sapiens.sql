@@ -3,7 +3,7 @@
 -- to load dat, start mysql in local infile mode:
 -- mysql --local-infile -uroot
 -- then load a cleaned biogrid table from mysql shell
--- mysql>  load data local infile '/home/ivana/databases/biogrid/BIOGRID-ORGANISM-Homo_sapiens-3.4.140.tab2.clean.txt' into table biogrid_homo_sapiens ignore 1 lines;
+-- mysql>  load data local infile '/home/ivana/databases/biogrid/BIOGRID-ORGANISM-Homo_sapiens-3.4.140.tab2.clean.txt' into table biogrid_human_interactions ignore 1 lines;
 
 CREATE TABLE `biogrid_human_interactions` (
 `biogrid_id` int(10) unsigned NOT NULL,
