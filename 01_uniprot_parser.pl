@@ -41,13 +41,16 @@ sub parse() {
 	    $full_name  =~ s/Full=//g;
 	} elsif (/^GN   Name=/) {
 	    $_ =~ s/^GN   Name=//;
-	    ($gene_name) = split ";";
+	    ($gene_name) = split /[;\s]/; # it ocurred to some idiot to put cross0references here
 	} elsif (/^RC   TISSUE/) {
 	    $_ =~ s/^RC   TISSUE=//;
 	    $tiss = $_;
+	     # their attempt to xlnk are just making things messy; sometimes we can forget to close the bracket too
+	    $tiss =~ s/\{.*?\}//g;
+	    $tiss =~ s/\{.*?$//g;
 	    (substr $tiss, -1) eq ',' && chop $tiss;
-	    (substr $tiss, -1) eq ';' && ($tiss.";");
-	    ($tissue =~ $tiss) ||  ($tissue .= $tiss);	     
+	    (substr $tiss, -1) eq ';' || ($tiss.=";");
+	    ($tissue =~ $tiss) ||  ($tissue .= $tiss);	  
 	} elsif (/^CC/) {
 	    if (/\-!\-/) {
 		$reading_function  && last;
