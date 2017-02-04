@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/perl5local.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/integrator.iml" afterPath="$PROJECT_DIR$/.idea/integrator.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/05_cleanup_biogrid_table.pl" afterPath="$PROJECT_DIR$/05_cleanup_biogrid_table.pl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/06_homo_sapiens.sql" afterPath="$PROJECT_DIR$/06_homo_sapiens.sql" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/08_biogrid_graph_low_throughput.bash" afterPath="$PROJECT_DIR$/08_biogrid_graph_low_throughput.bash" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/16_pathways_from_reactome.py" afterPath="$PROJECT_DIR$/16_pathways_from_reactome.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/integrator_utils/mysql.py" afterPath="$PROJECT_DIR$/integrator_utils/mysql.py" />
-    </list>
+    <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="" />
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
