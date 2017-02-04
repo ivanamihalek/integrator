@@ -86,6 +86,7 @@ def store_without_checking(cursor, table, fields, verbose=False):
 ########
 def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False):
 
+    id = -1
     conditions = ""
     first = True
     for [field, value] in fixed_fields.iteritems():
@@ -100,18 +101,20 @@ def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False):
         first = False
 
     # check if the row exists
-    qry = "select exists (select 1 from %s  where %s) "  % (table, conditions)
-    rows   = search_db (cursor, qry)
-    exists = rows and (type(rows[0][0]) is long) and (rows[0][0]==1)
+    qry = "select id from %s  where %s "  % (table, conditions)
+    rows   = search_db (cursor, qry, verbose)
+    exists = rows and (type(rows[0][0]) is long)
+
+    if exists: id = rows[0][0]
 
     if verbose:
         print
         print qry
         print rows
-        print "exists ?", exists
+        print "exists?", exists
 
 
-    if exists and not update_fields: return True
+    if exists and not update_fields: return id
 
 
     if exists: # if it exists, update
@@ -164,19 +167,24 @@ def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False):
             first = False
         qry += ")"
         
-    rows   = search_db (cursor, qry)
+    rows   = search_db (cursor, qry, verbose)
 
     if verbose:
         print
         print " ** ", qry
         print " ** ", rows
 
+    # if there is a return, it is an error msg
     if (rows):
         rows   = search_db (cursor, qry, verbose=True)
-        return False
+        print rows[0]
+        return id
        
-    
-    return True
+    qry = "select last_insert_id()"
+    rows   = search_db (cursor, qry)
+    if rows and (type(rows[0][0]) is long):
+        return rows[0][0]
+    return  -1
 
 #########################################
 def create_index (cursor, db_name, index_name, table, columns):

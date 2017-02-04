@@ -1,5 +1,8 @@
 #! /usr/bin/perl
 
+use strict;
+use warnings;
+my (@aux, @new, $blah);
 while ( <>) {
     chomp;
     @aux = split "\t";

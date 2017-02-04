@@ -54,6 +54,37 @@ def reconstruct_pathway_tree(cursor):
 
     return root
 
+#########################################
+def store_blimps_pathways(cursor, node, parent_blimps_table_id):
+
+    # store and get the assigned id
+    if node.id<0:
+        parent_blimps_table_id = None
+    else:
+        switch_to_db(cursor, 'reactome')
+        qry = "select displayName, stableId from Pathway where id = %s" % node.id
+        rows = search_db(cursor,qry)
+        for row in rows:
+           [name, stable_id] = row
+
+        switch_to_db(cursor, 'blimps_development')
+        fixed_fields = {}
+        update_fields = {}
+        fixed_fields['source']    = 'reactome'
+        fixed_fields['source_id'] = stable_id
+        update_fields['name']     = name
+
+        parent_blimps_table_id = store_or_update (cursor, "pathways", fixed_fields, update_fields)
+
+    for child in node.children:
+        store_blimps_pathways(cursor, child, parent_blimps_table_id)
+    # name, stableId
+    if node.id>=0:
+        print name, stable_id, parent_blimps_table_id
+        #exit(1)
+    return
+
+
 
 #########################################
 def main():
@@ -63,10 +94,15 @@ def main():
     db     = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
     if not db: exit(1)
     cursor = db.cursor()
+    qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
+    search_db(cursor,qry,True)
+
     switch_to_db(cursor, 'reactome')
 
-    pathway_tree = reconstruct_pathway_tree(cursor)
-    pathway_tree.output(cursor)
+    pathway_tree_root = reconstruct_pathway_tree(cursor)
+    #pathway_tree_root.output(cursor)
+    store_blimps_pathways(cursor, pathway_tree_root, -1)
+
 
     if False:
         qry  = "select id, stableId, displayName from Pathway where species='Homo sapiens'"

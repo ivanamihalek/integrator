@@ -5,6 +5,10 @@
 -- then load a cleaned biogrid table from mysql shell
 -- mysql>  load data local infile '/home/ivana/databases/biogrid/BIOGRID-ORGANISM-Homo_sapiens-3.4.140.tab2.clean.txt' into table biogrid_human_interactions ignore 1 lines;
 
+-- if done as a preparation for daddy, follow with
+-- rake db:populate:mark_problematic_biogrid
+-- rake db:output:biogrid_edges
+
 CREATE TABLE `biogrid_human_interactions` (
 `biogrid_id` int(10) unsigned NOT NULL,
 `entrez_gene_A` int(10) unsigned DEFAULT NULL,
@@ -30,6 +34,7 @@ CREATE TABLE `biogrid_human_interactions` (
 `qualifications` blob   DEFAULT NULL,
 `tags`  varchar(10)   DEFAULT NULL,
 `source_database` varchar(40)   DEFAULT NULL,
+`problematic` tinyint(1)  DEFAULT 1,
   PRIMARY KEY (`biogrid_id`),
   KEY `gene_a_idx` (`entrez_gene_A`),
   KEY `gene_b_idx` (`entrez_gene_B`)
