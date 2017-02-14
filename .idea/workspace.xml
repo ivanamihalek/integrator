@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/20_tentative_metacyc_parser.pl" afterPath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" afterPath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,12 +26,22 @@
       <file leaf-file-name="20_metacyc_dat_parser.pl" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="986">
-              <caret line="50" column="21" lean-forward="false" selection-start-line="50" selection-start-column="21" selection-end-line="50" selection-end-column="21" />
+            <state relative-caret-position="548">
+              <caret line="112" column="46" lean-forward="true" selection-start-line="112" selection-start-column="46" selection-end-line="112" selection-end-column="46" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="e#448#511#0#Perl5" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="02_uniprot_table.sql" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/02_uniprot_table.sql">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="252">
+              <caret line="7" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -44,6 +54,14 @@
         <option value="Perl5 package" />
       </list>
     </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>--</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>#</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -65,8 +83,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="842" />
-    <option name="y" value="331" />
+    <option name="x" value="549" />
+    <option name="y" value="231" />
     <option name="width" value="2687" />
     <option name="height" value="1737" />
   </component>
@@ -307,10 +325,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="842" y="331" width="2687" height="1737" extended-state="0" />
+    <frame x="549" y="231" width="2687" height="1737" extended-state="0" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2337179" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2337179" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296796" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -334,10 +352,42 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <option name="time" value="1" />
+    </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/02_uniprot_table.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="7" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#448#511#0#Perl5" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#448#511#0#Perl5" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -632,13 +682,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/06_homo_sapiens.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="324">
-          <caret line="9" column="31" lean-forward="false" selection-start-line="9" selection-start-column="3" selection-end-line="9" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/20_tentative_metacyc_parser.pl.pm" />
     <entry file="file://$PROJECT_DIR$/08_biogrid_graph_low_throughput.bash">
       <provider selected="true" editor-type-id="text-editor">
@@ -654,18 +697,33 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/22_metacyc_pathway_parser.pl">
+    <entry file="file://$PROJECT_DIR$/22_metacyc_pathway_parser.pl" />
+    <entry file="file://$PROJECT_DIR$/06_homo_sapiens.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="106">
+          <caret line="9" column="31" lean-forward="false" selection-start-line="9" selection-start-column="3" selection-end-line="9" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/10_hgnc_id_translation.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/02_uniprot_table.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="7" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="986">
-          <caret line="50" column="21" lean-forward="false" selection-start-line="50" selection-start-column="21" selection-end-line="50" selection-end-column="21" />
+        <state relative-caret-position="548">
+          <caret line="112" column="46" lean-forward="true" selection-start-line="112" selection-start-column="46" selection-end-line="112" selection-end-column="46" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="e#448#511#0#Perl5" expanded="true" />
