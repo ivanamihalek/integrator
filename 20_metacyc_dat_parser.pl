@@ -87,7 +87,6 @@ while (<INFILE>) {
 close OUTF;
 
 
-
 open (OUTF, ">$tablename.sql") || die "Cno $tablename.sql: $!\n";
 print OUTF "CREATE TABLE `$tablename` (\n";
 print OUTF "     id INT(11) NOT NULL,\n"; # int(11) is the type that rails uses for id

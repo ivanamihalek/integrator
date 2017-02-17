@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" afterPath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
     </list>
@@ -23,11 +24,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
-      <file leaf-file-name="20_metacyc_dat_parser.pl" pinned="false" current-in-tab="true">
+      <file leaf-file-name="20_metacyc_dat_parser.pl" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="548">
-              <caret line="112" column="46" lean-forward="true" selection-start-line="112" selection-start-column="46" selection-end-line="112" selection-end-column="46" />
+            <state relative-caret-position="584">
+              <caret line="97" column="60" lean-forward="false" selection-start-line="97" selection-start-column="60" selection-end-line="97" selection-end-column="60" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="e#448#511#0#Perl5" expanded="true" />
@@ -36,12 +37,26 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="02_uniprot_table.sql" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/02_uniprot_table.sql">
+      <file leaf-file-name="16_pathways_from_reactome.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="252">
-              <caret line="7" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="216">
+              <caret line="54" column="15" lean-forward="false" selection-start-line="54" selection-start-column="15" selection-end-line="54" selection-end-column="15" />
+              <folding>
+                <element signature="e#19#57#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="22_metacyc_protein_id_mapper.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/22_metacyc_protein_id_mapper.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1764">
+              <caret line="121" column="78" lean-forward="true" selection-start-line="121" selection-start-column="78" selection-end-line="121" selection-end-column="78" />
+              <folding>
+                <element signature="e#19#57#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -52,15 +67,20 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Perl5 package" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
       <find>--</find>
+      <find>MONO</find>
+      <find>metacyc_protein2uniprot</find>
     </findStrings>
     <replaceStrings>
       <replace>#</replace>
+      <replace>#  MONO</replace>
+      <replace>metacyc_uniprot2protein</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -79,14 +99,15 @@
         <option value="$PROJECT_DIR$/20_tentative_metacyc_parser.pl" />
         <option value="$PROJECT_DIR$/20_metacyc_protein_parser.pl" />
         <option value="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
+        <option value="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="549" />
-    <option name="y" value="231" />
-    <option name="width" value="2687" />
-    <option name="height" value="1737" />
+    <option name="x" value="247" />
+    <option name="y" value="356" />
+    <option name="width" value="2883" />
+    <option name="height" value="1744" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -325,10 +346,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="549" y="231" width="2687" height="1737" extended-state="0" />
-    <editor active="false" />
+    <frame x="247" y="356" width="2883" height="1744" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2337179" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16788068" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296796" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -358,14 +379,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/02_uniprot_table.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="7" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -647,20 +660,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../data_management/30_blimps_dropbox_bkp_chronjob.py" />
-    <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1116">
-          <caret line="85" column="0" lean-forward="false" selection-start-line="60" selection-start-column="0" selection-end-line="85" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1444">
-          <caret line="335" column="0" lean-forward="false" selection-start-line="335" selection-start-column="0" selection-end-line="335" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/12_get_gene_regions_from_ucsc.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="108">
@@ -712,6 +711,25 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1444">
+          <caret line="335" column="0" lean-forward="false" selection-start-line="335" selection-start-column="0" selection-end-line="335" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="584">
+          <caret line="97" column="60" lean-forward="false" selection-start-line="97" selection-start-column="60" selection-end-line="97" selection-end-column="60" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#448#511#0#Perl5" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/02_uniprot_table.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="252">
@@ -720,13 +738,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
+    <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="548">
-          <caret line="112" column="46" lean-forward="true" selection-start-line="112" selection-start-column="46" selection-end-line="112" selection-end-column="46" />
+        <state relative-caret-position="216">
+          <caret line="54" column="15" lean-forward="false" selection-start-line="54" selection-start-column="15" selection-end-line="54" selection-end-column="15" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="e#448#511#0#Perl5" expanded="true" />
+            <element signature="e#19#57#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/22_metacyc_protein_id_mapper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1764">
+          <caret line="121" column="78" lean-forward="true" selection-start-line="121" selection-start-column="78" selection-end-line="121" selection-end-column="78" />
+          <folding>
+            <element signature="e#19#57#0" expanded="true" />
           </folding>
         </state>
       </provider>
