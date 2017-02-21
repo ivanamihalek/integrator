@@ -83,7 +83,8 @@ def main():
 		print  "Usage: %s  <file name>" % argv[0]
 		exit(1)
 
-	db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
+	#db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
+	db = connect_to_mysql(user="blimps_production", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
 	if not db: exit(1)
 	cursor = db.cursor()
 	qry = 'set autocommit=1'  # not sure why this has to be done explicitly - it should be the default

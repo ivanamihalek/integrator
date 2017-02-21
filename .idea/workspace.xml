@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/12_get_gene_regions_from_ucsc.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot_parser.pl" afterPath="$PROJECT_DIR$/01_uniprot_parser.pl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" afterPath="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" afterPath="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -55,8 +50,8 @@
       <file leaf-file-name="11_add_uniprot_alt_names_to_id_table.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="720">
-              <caret line="44" column="49" lean-forward="false" selection-start-line="44" selection-start-column="49" selection-end-line="44" selection-end-column="49" />
+            <state relative-caret-position="828">
+              <caret line="86" column="87" lean-forward="false" selection-start-line="86" selection-start-column="87" selection-end-line="86" selection-end-column="87" />
               <folding>
                 <element signature="e#20#56#0" expanded="true" />
               </folding>
@@ -785,8 +780,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="720">
-          <caret line="44" column="49" lean-forward="false" selection-start-line="44" selection-start-column="49" selection-end-line="44" selection-end-column="49" />
+        <state relative-caret-position="828">
+          <caret line="86" column="87" lean-forward="false" selection-start-line="86" selection-start-column="87" selection-end-line="86" selection-end-column="87" />
           <folding>
             <element signature="e#20#56#0" expanded="true" />
           </folding>
