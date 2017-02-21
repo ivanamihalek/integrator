@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" afterPath="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py" afterPath="$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -47,11 +47,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="11_add_uniprot_alt_names_to_id_table.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="11_add_uniprot_alt_names_to_id_table.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1116">
-              <caret line="91" column="43" lean-forward="false" selection-start-line="91" selection-start-column="43" selection-end-line="91" selection-end-column="43" />
+            <state relative-caret-position="936">
+              <caret line="86" column="0" lean-forward="true" selection-start-line="86" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
               <folding>
                 <element signature="e#20#56#0" expanded="true" />
               </folding>
@@ -59,11 +59,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="12_cleanup_alias_names_in_uniprot.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="12_cleanup_alias_names_in_uniprot.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="828">
-              <caret line="23" column="41" lean-forward="true" selection-start-line="23" selection-start-column="41" selection-end-line="23" selection-end-column="41" />
+            <state relative-caret-position="468">
+              <caret line="13" column="43" lean-forward="false" selection-start-line="13" selection-start-column="43" selection-end-line="13" selection-end-column="43" />
               <folding />
             </state>
           </provider>
@@ -122,9 +122,9 @@
         <option value="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
         <option value="$PROJECT_DIR$/01_uniprot_parser.pl" />
         <option value="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.pl" />
-        <option value="$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py" />
         <option value="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" />
         <option value="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" />
+        <option value="$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py" />
       </list>
     </option>
   </component>
@@ -760,14 +760,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="828">
-          <caret line="23" column="41" lean-forward="true" selection-start-line="23" selection-start-column="41" selection-end-line="23" selection-end-column="41" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/22_metacyc_protein_id_mapper.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="756">
@@ -780,11 +772,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1116">
-          <caret line="91" column="43" lean-forward="false" selection-start-line="91" selection-start-column="43" selection-end-line="91" selection-end-column="43" />
+        <state relative-caret-position="936">
+          <caret line="86" column="0" lean-forward="true" selection-start-line="86" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
           <folding>
             <element signature="e#20#56#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="13" column="43" lean-forward="false" selection-start-line="13" selection-start-column="43" selection-end-line="13" selection-end-column="43" />
+          <folding />
         </state>
       </provider>
     </entry>
