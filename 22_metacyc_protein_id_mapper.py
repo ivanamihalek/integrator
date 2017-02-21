@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-from   integrator_utils.mysql import *
+from integrator_utils.mysql import *
+from Bio import pairwise2
 import os
 
 #########################################
@@ -41,6 +42,20 @@ def main():
     protein_id_translation = read_translation_table("/databases/meta_cyc/data/datfiles/protein-links.dat")
     gene_id_translation = read_translation_table("/databases/meta_cyc/data/datfiles/gene-links.dat")
 
+    # corrections:
+    # correct the name for some genes
+    # original name listed: C7orf10
+    # gene_id_translation["HS10959"][1] = "SUGCT"
+    # original name listed SC5DL - Uniprot says it is the same
+    # gene_id_translation["HS03271"][1] = "SC5D"
+    # original name listed APOA1BP - Uniprot says it is the same
+    # gene_id_translation["HS08839"][1] = "NAXE"
+    # original name listed CARKD - Uniprot says it is the same
+    # gene_id_translation["HS07908"][1] = "NAXD"
+    # original name listed  SC4MOL- Uniprot says it is the same
+    # gene_id_translation["HS00650"][1] = "MSMO1"
+    #exit()
+
     # note the skip-auto-rehash option in .ucsc_myql_conf
     # it is the equivalent to -A on the mysql command line
     # means: no autocompletion, which makes mysql get up mych faster
@@ -74,6 +89,7 @@ def main():
 
     missed_keys = {}
     metacyc_uniprot2protein = {}
+    # further manual corrections to metacyc
     metacyc_uniprot2protein["O94925"] = "MONOMER-11425"
     metacyc_uniprot2protein["P00747"] = "MONOMER-14919;MONOMER-14920"
     metacyc_uniprot2protein["F8WCM5"] = "ENSG00000129965-MONOMER"
@@ -107,23 +123,39 @@ def main():
     # scan through gene table
     # use uniprot ids to find metacyc_protein and metacyc_genes_ids
     # store them in gene table (add the columns to the table if needed)
-    qry = "select id, symbol, name, uniprot_ids from genes"
+    error_ct = 0
+    qry = "select id, symbol, alias_symbol, name, uniprot_ids from genes"
     for row in search_db(cursor, qry):
-        [id, symbol, name, uniprot_ids] = row
+        [id, blimps_symbol, alias_symbol, blimps_name, uniprot_ids] = row
         if not uniprot_ids: continue
+        if not alias_symbol: alias_symbol = ''
         wrote_gene = False
+        outstr = ""
         for upid in uniprot_ids.split(";"):
             if not  metacyc_uniprot2protein.has_key(upid): continue
-            if not wrote_gene: print id, symbol, name, uniprot_ids
+            if not wrote_gene: outstr += ", " .join ([str(i) for i in [id, blimps_symbol, blimps_name, uniprot_ids]]) + "\n"
             wrote_gene = True
             if not metacyc_uniprot2protein[upid] or  metacyc_uniprot2protein[upid]=='': continue
             for mc_protein_id in metacyc_uniprot2protein[upid].split(";"):
                 if  not metacyc_prot2gene[mc_protein_id] or metacyc_prot2gene[mc_protein_id]=='': continue
                 for mc_gene_id in metacyc_prot2gene[mc_protein_id].split(";"):
-                    print "\t", mc_protein_id, " ***  ", mc_gene_id
-                    print "\t", protein_id_translation[mc_protein_id][:3]
-                    if mc_gene_id !='': print "\t", gene_id_translation[mc_gene_id]
-        #if wrote_gene: exit()
+                    outstr +=  "\t" + mc_protein_id  + "  ***   " + mc_gene_id + "\n"
+                    outstr +=  "\t" + "   ".join([str(i) for i in  protein_id_translation[mc_protein_id][:3] ]) + "\n"
+                    if mc_gene_id !='':
+                        outstr +=  "\t" + "   ".join([str(i) for i in  gene_id_translation[mc_gene_id]]) + "\n"
+                        mc_gene_name = gene_id_translation[mc_gene_id][1]
+                        if not mc_gene_name or mc_gene_name=='': continue
+                        alias_symbol = "|"+alias_symbol+"|"
+                        if mc_gene_name != blimps_symbol and not mc_gene_name in alias_symbol:
+                            error_ct += 1
+                            outstr +=  "\t" + blimps_symbol + "   "+ alias_symbol + "   " + mc_gene_name + "\n"
+                            outstr +=  "\t======>  %d  <=====" % error_ct
+                            print outstr
+                            mc_name = protein_id_translation[mc_protein_id][2]
+                            alignments = pairwise2.align.globalxx(blimps_name, mc_name)
+                            print pairwise2.format_alignment(*alignments[0])
+                            print
+         #if wrote_gene: exit()
 
     return True
 
