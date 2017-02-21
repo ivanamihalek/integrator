@@ -84,12 +84,12 @@ def main():
 		exit(1)
 
 	#db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
-	db = connect_to_mysql(user="blimps_production", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
+	db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
 	if not db: exit(1)
 	cursor = db.cursor()
 	qry = 'set autocommit=1'  # not sure why this has to be done explicitly - it should be the default
 	search_db(cursor, qry, False)
-	switch_to_db(cursor, 'blimps_development')
+	switch_to_db(cursor, 'blimps_production')
 
 	filename = argv[1]
 	inf = open (filename, "r")

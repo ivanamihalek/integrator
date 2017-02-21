@@ -50,8 +50,8 @@
       <file leaf-file-name="11_add_uniprot_alt_names_to_id_table.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="828">
-              <caret line="86" column="87" lean-forward="false" selection-start-line="86" selection-start-column="87" selection-end-line="86" selection-end-column="87" />
+            <state relative-caret-position="1116">
+              <caret line="91" column="43" lean-forward="false" selection-start-line="91" selection-start-column="43" selection-end-line="91" selection-end-column="43" />
               <folding>
                 <element signature="e#20#56#0" expanded="true" />
               </folding>
@@ -780,8 +780,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="828">
-          <caret line="86" column="87" lean-forward="false" selection-start-line="86" selection-start-column="87" selection-end-line="86" selection-end-column="87" />
+        <state relative-caret-position="1116">
+          <caret line="91" column="43" lean-forward="false" selection-start-line="91" selection-start-column="43" selection-end-line="91" selection-end-column="43" />
           <folding>
             <element signature="e#20#56#0" expanded="true" />
           </folding>
