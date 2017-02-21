@@ -40,12 +40,10 @@ def store_if(hash, key, value):
 def main():
 
     protein_id_translation = read_translation_table("/databases/meta_cyc/data/datfiles/protein-links.dat")
-    gene_id_translation = read_translation_table("/databases/meta_cyc/data/datfiles/gene-links.dat")
+    gene_id_translation    = read_translation_table("/databases/meta_cyc/data/datfiles/gene-links.dat")
 
     # corrections:
     # correct the name for some genes
-    # original name listed: C7orf10
-    # gene_id_translation["HS10959"][1] = "SUGCT"
     # original name listed SC5DL - Uniprot says it is the same
     # gene_id_translation["HS03271"][1] = "SC5D"
     # original name listed APOA1BP - Uniprot says it is the same
@@ -143,7 +141,7 @@ def main():
                     outstr +=  "\t" + "   ".join([str(i) for i in  protein_id_translation[mc_protein_id][:3] ]) + "\n"
                     if mc_gene_id !='':
                         outstr +=  "\t" + "   ".join([str(i) for i in  gene_id_translation[mc_gene_id]]) + "\n"
-                        mc_gene_name = gene_id_translation[mc_gene_id][1]
+                        mc_gene_name = gene_id_translation[mc_gene_id][1].upper()
                         if not mc_gene_name or mc_gene_name=='': continue
                         alias_symbol = "|"+alias_symbol+"|"
                         if mc_gene_name != blimps_symbol and not mc_gene_name in alias_symbol:

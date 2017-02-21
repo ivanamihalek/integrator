@@ -2,7 +2,9 @@
 
 from integrator_utils.mysql import *
 from sys import argv
-from re import match, search
+from re import match, search, sub
+from socket import gethostname
+development =  gethostname()=='pegasus'
 
 ####################################################
 def find_gene_by_uniprot_id(cursor, uniprot_id):
@@ -57,7 +59,9 @@ def parse(entry):
 	if len(entry)==0: return [uniprot_id, gene_name, synonyms]
 	if not search(r'\nOS   Homo sapiens', entry): return [uniprot_id, gene_name, synonyms]
 
-
+	# the Name field may be split over several lines starting with GN
+	# it also has xrefs in {} (to get rid of)
+	name_lines = ""
 	for line in  entry.split("\n"):
 		if (line[:2] == "AC"):
 			# it looks like the first iD is current,
@@ -66,12 +70,19 @@ def parse(entry):
 			if not m: continue
 			uniprot_id = m.group(1)
 			pass
-		elif (line[:10]=="GN   Name="):
-			m = search(r'Name=(\w+);*', line)
-			gene_name = m.group(1)
-			m = search(r'Synonyms=([\w\,\s]+);*', line)
-			if not m: continue
-			synonyms = m.group(1).replace(r'\s','').split(",")
+		elif (line[:2]=="GN"):
+			name_lines += line
+
+	name_lines = sub(r'\{.*?\}','', name_lines)
+	# yes, there are cases without a name; see Q1T7F1
+	if name_lines == "": return [uniprot_id, gene_name, synonyms]
+
+	m = search(r'Name=([\w\-\s]+?);', name_lines)
+	if not m: return [uniprot_id, gene_name, synonyms]
+
+	gene_name = m.group(1)
+	m = search(r'Synonyms=([\w\,\s\-]+);', name_lines)
+	if m:  synonyms = m.group(1).replace(r'\s','').split(",")
 
 	return [uniprot_id, gene_name, synonyms]
 
@@ -83,13 +94,18 @@ def main():
 		print  "Usage: %s  <file name>" % argv[0]
 		exit(1)
 
-	#db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
-	db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
+	if development:
+		db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
+	else:
+		db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
 	if not db: exit(1)
 	cursor = db.cursor()
 	qry = 'set autocommit=1'  # not sure why this has to be done explicitly - it should be the default
 	search_db(cursor, qry, False)
-	switch_to_db(cursor, 'blimps_production')
+	if development:
+		switch_to_db(cursor, 'blimps_development')
+	else:
+		switch_to_db(cursor, 'blimps_production')
 
 	filename = argv[1]
 	inf = open (filename, "r")
