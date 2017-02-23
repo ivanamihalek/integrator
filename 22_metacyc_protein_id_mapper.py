@@ -44,14 +44,6 @@ def main():
 
     # corrections:
     # correct the name for some genes
-    # original name listed SC5DL - Uniprot says it is the same
-    # gene_id_translation["HS03271"][1] = "SC5D"
-    # original name listed APOA1BP - Uniprot says it is the same
-    # gene_id_translation["HS08839"][1] = "NAXE"
-    # original name listed CARKD - Uniprot says it is the same
-    # gene_id_translation["HS07908"][1] = "NAXD"
-    # original name listed  SC4MOL- Uniprot says it is the same
-    # gene_id_translation["HS00650"][1] = "MSMO1"
     #exit()
 
     # note the skip-auto-rehash option in .ucsc_myql_conf

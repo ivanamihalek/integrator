@@ -30,7 +30,6 @@ def find_gene_by_uniprot_id(cursor, uniprot_id):
 
 ####################################################
 def store(cursor, uniprot_id, gene_name, synonyms):
-	print  uniprot_id, gene_name, synonyms
 	ret = find_gene_by_uniprot_id(cursor, uniprot_id)
 	if not ret: return
 	for row in ret:
@@ -38,7 +37,8 @@ def store(cursor, uniprot_id, gene_name, synonyms):
 		[id, symbol, alias_symbol, uniprot_ids] = row
 		if not uniprot_ids: continue # not sure how this happens, but it does
 		# paranoid android
-		if not uniprot_id in uniprot_ids.split('|'): continue
+		# it can happen that the uniprot IDs do not match - we took care of that in  find_gene_by_uniprot()
+		#if not uniprot_id in uniprot_ids.split('|'): continue
 		if alias_symbol and alias_symbol != "": new_alias_symbols = alias_symbol.replace(' ','').split('|')
 		for syn in synonyms:
 			# make sure our 'alias' not actually the official symbol
@@ -79,10 +79,10 @@ def parse(entry):
 
 	m = search(r'Name=([\w\-\s]+?);', name_lines)
 	if not m: return [uniprot_id, gene_name, synonyms]
+	gene_name = m.group(1).replace(' ','')
 
-	gene_name = m.group(1)
 	m = search(r'Synonyms=([\w\,\s\-]+);', name_lines)
-	if m:  synonyms = m.group(1).replace(r'\s','').split(",")
+	if m:  synonyms = m.group(1).replace(' ','').split(",")
 
 	return [uniprot_id, gene_name, synonyms]
 
@@ -112,9 +112,10 @@ def main():
 
 	entry = ""
 	for line in inf:
-		if line[:2]=="ID":
+		if line[:2]=="//":
 			[uniprot_id, gene_name, synonyms] = parse(entry)
-			if len(synonyms)>0: store(cursor, uniprot_id, gene_name, synonyms)
+			if len(synonyms)>0:
+				store(cursor, uniprot_id, gene_name, synonyms)
 			entry = ""
 		else:
 			entry += line
