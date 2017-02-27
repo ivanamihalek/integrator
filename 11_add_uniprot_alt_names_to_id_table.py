@@ -8,7 +8,7 @@ development =  gethostname()=='pegasus'
 
 ####################################################
 def find_gene_by_uniprot_id(cursor, uniprot_id):
-	qry = 'select id,  symbol, alias_symbol, uniprot_ids from genes where uniprot_ids like "%%%s%%"' % uniprot_id
+	qry = 'select id,  symbol, synonyms, uniprot_ids from genes where uniprot_ids like "%%%s%%"' % uniprot_id
 	ret = search_db(cursor,qry)
 	if ret: return ret
 	# otherwise, we do not have the uniprot_id properly stored in genes table
@@ -20,7 +20,7 @@ def find_gene_by_uniprot_id(cursor, uniprot_id):
 	# uniprot_id is primary key in uniprot_basic_infos so it should be unique
 	# (i.e. there should not be more than one name here) - I am pretending that's not my problem here
 	gene_name = ret[0][0]
-	qry = 'select id,  symbol, alias_symbol, uniprot_ids from genes where symbol="%s"' % gene_name
+	qry = 'select id,  symbol, synonyms, uniprot_ids from genes where symbol="%s"' % gene_name
 	ret = search_db(cursor,qry)
 	if not ret: return None
 	# here however, if there is more than 1 return, I bail out
@@ -29,26 +29,17 @@ def find_gene_by_uniprot_id(cursor, uniprot_id):
 	return ret
 
 ####################################################
-def store(cursor, uniprot_id, gene_name, synonyms):
+def store(cursor, uniprot_id, gene_name, uniprot_synonyms):
 	ret = find_gene_by_uniprot_id(cursor, uniprot_id)
 	if not ret: return
 	for row in ret:
-		new_alias_symbols = []
-		[id, symbol, alias_symbol, uniprot_ids] = row
+		new_alias_symbols = uniprot_synonyms
+		[id, symbol, existing_synonyms, uniprot_ids] = row
+		if gene_name!= symbol: continue # it should not happen
 		if not uniprot_ids: continue # not sure how this happens, but it does
-		# paranoid android
-		# it can happen that the uniprot IDs do not match - we took care of that in  find_gene_by_uniprot()
-		#if not uniprot_id in uniprot_ids.split('|'): continue
-		if alias_symbol and alias_symbol != "": new_alias_symbols = alias_symbol.replace(' ','').split('|')
-		for syn in synonyms:
-			# make sure our 'alias' not actually the official symbol
-			# also make sure we don't have it already
-			if syn in [symbol]+new_alias_symbols: continue
-			new_alias_symbols.append(syn.replace(' ','')) #not sure where these spaces are coming from
-		new_alias_symbol = '|'.join(new_alias_symbols).replace(' ','')
-		if alias_symbol == new_alias_symbol: continue
-		qry  = "update genes set alias_symbol='%s' " % new_alias_symbol
-		qry += "where id=%d" % id
+		if existing_synonyms and existing_synonyms != "":
+			new_alias_symbols += existing_synonyms.replace(' ','').replace('\'','\'\'').split("|")
+		qry  = "update genes set synonyms='%s' where id=%d" % ("|".join(list(set(new_alias_symbols))), id)
 		search_db(cursor,qry,verbose=True)
 	return
 
@@ -81,18 +72,20 @@ def parse(entry):
 	if not m: return [uniprot_id, gene_name, synonyms]
 	gene_name = m.group(1).replace(' ','')
 
+	if "SPAR" in synonyms:
+		print entry
+		exit()
+
 	m = search(r'Synonyms=([\w\,\s\-]+);', name_lines)
-	if m:  synonyms = m.group(1).replace(' ','').split(",")
+	if m:  synonyms = m.group(1).replace(' ','').replace('\'','\'\'').split(",")
 
 	return [uniprot_id, gene_name, synonyms]
 
 
-
 ###################################################
 def main():
-	if len(argv) < 2:
-		print  "Usage: %s  <file name>" % argv[0]
-		exit(1)
+
+	filename = "/databases/uniprot/uniprot_sprot.dat"
 
 	if development:
 		db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
@@ -107,7 +100,6 @@ def main():
 	else:
 		switch_to_db(cursor, 'blimps_production')
 
-	filename = argv[1]
 	inf = open (filename, "r")
 
 	entry = ""

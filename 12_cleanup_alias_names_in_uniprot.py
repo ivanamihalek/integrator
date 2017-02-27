@@ -25,7 +25,8 @@ def main():
 		[id, alias_symbol] = row
 		if not alias_symbol or alias_symbol == "": continue
 		# for some reason replace(r'\s','') is not replacing space. I hate python.
-		new_alias_symbol = '|'.join(list(set(alias_symbol.replace(' ','').upper().split('|'))))
+		# to replace regexp, need to use re.sub - how hard is it to warn the user about such crap
+		new_alias_symbol = '|'.join(list(set(alias_symbol.replace(' ','').replace("\'","\'\'").upper().split('|'))))
 		if alias_symbol == new_alias_symbol: continue
 		qry  = "update genes set alias_symbol='%s' " % new_alias_symbol
 		qry += "where id=%d" % id
