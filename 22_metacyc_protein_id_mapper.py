@@ -185,8 +185,8 @@ def main():
     # store them in gene table (add the columns to the table if needed)
     error_ct = 0
     qry = "select id, symbol, synonyms,  uniprot_ids from genes"
-    for row in search_db(cursor, qry):
-    #for row in []:
+    #for row in search_db(cursor, qry):
+    for row in []:
         [id, blimps_symbol, blimps_synonyms,  uniprot_ids] = row
         if not uniprot_ids: continue
         if not blimps_synonyms: blimps_synonyms = ''
