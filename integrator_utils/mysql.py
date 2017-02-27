@@ -308,6 +308,7 @@ def search_db (cursor, qry, verbose=False):
 
 ########
 def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=None):
+    # type: (object, object, object, object, object) -> object
 
     if conf_file:
         if not  os.path.isfile(conf_file):

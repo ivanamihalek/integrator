@@ -9,7 +9,7 @@
 
 
 from integrator_utils.mysql import *
-from Bio import pairwise2
+from socket import gethostname
 import os
 
 #########################################
@@ -131,6 +131,23 @@ def create_metacyc_genes_entry(cursor, mc_gene, gene_id_translation):
     search_db(cursor, qry, verbose=True)
     return
 ##########################################
+def connect():
+    development = gethostname()=='pegasus'
+    if development:
+        db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
+    else:
+        db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
+    if not db: exit(1)
+    cursor = db.cursor()
+    qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
+    search_db(cursor,qry,False)
+    if development:
+        switch_to_db(cursor, 'blimps_development')
+    else:
+        switch_to_db(cursor, 'blimps_production')
+    return db, cursor
+
+##########################################
 def main():
 
     protein_id_translation = read_translation_table("/databases/meta_cyc/data/datfiles/protein-links.dat")
@@ -147,12 +164,7 @@ def main():
     # note the skip-auto-rehash option in .ucsc_myql_conf
     # it is the equivalent to -A on the mysql command line
     # means: no autocompletion, which makes mysql get up mych faster
-    db     = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
-    if not db: exit(1)
-    cursor = db.cursor()
-    qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
-    search_db(cursor,qry,False)
-    switch_to_db(cursor, 'blimps_development')
+    db, cursor = connect()
 
     # direct mapping
     metacyc_prot2gene = mc_prot2gene_mapping(cursor)
@@ -173,8 +185,8 @@ def main():
     # store them in gene table (add the columns to the table if needed)
     error_ct = 0
     qry = "select id, symbol, synonyms,  uniprot_ids from genes"
-    #for row in search_db(cursor, qry):
-    for row in []:
+    for row in search_db(cursor, qry):
+    #for row in []:
         [id, blimps_symbol, blimps_synonyms,  uniprot_ids] = row
         if not uniprot_ids: continue
         if not blimps_synonyms: blimps_synonyms = ''
@@ -267,7 +279,8 @@ def main():
                 else:
                     print "the return length", len(ret)
 
-
+    cursor.close()
+    db.close()
     return True
 
 

@@ -32,6 +32,7 @@ def main():
 		qry += "where id=%d" % id
 		search_db(cursor,qry,verbose=True)
 	cursor.close()
+	db.close()
 
 #########################################
 if __name__ == '__main__':
