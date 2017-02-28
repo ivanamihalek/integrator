@@ -13,26 +13,8 @@
 
 
 from integrator_utils.mysql import *
-from socket import gethostname
 import os
 
-
-##########################################
-def connect():
-	development = gethostname()=='pegasus'
-	if development:
-		db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
-	else:
-		db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
-	if not db: exit(1)
-	cursor = db.cursor()
-	qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
-	search_db(cursor,qry,False)
-	if development:
-		switch_to_db(cursor, 'blimps_development')
-	else:
-		switch_to_db(cursor, 'blimps_production')
-	return db, cursor
 
 ##########################################
 def find_human_monomers(cursor, protein_unique_id):
@@ -56,16 +38,26 @@ def main():
 	db, cursor = connect()
 
 	proteins = {}
-	qry  = 'select id, enzyme from  metacyc_enzrxns'
+	qry  = 'select unique_id, enzyme from  metacyc_enzrxns'
 	rows = search_db(cursor, qry)
 	for row in rows:
 		[enzrxn_id, enzyme_unique_id] = row
 		monomers = find_human_monomers(cursor, enzyme_unique_id)
 		if len(monomers)==0: continue
-		print  enzrxn_id, list(set(monomers))
 		proteins[enzrxn_id] = list(set(monomers))
 
 	print len(proteins.keys())
+	for enzrxn, proteins in proteins.iteritems():
+		for prot in proteins:
+			fixed_fields= {'from_field' : 'enzrxn',
+						   'from_id' : enzrxn,
+						   'to_field': 'protein',
+						   'to_id' :prot,
+						   'via' : 'enzyme'}
+			update_fields = {}
+			store_or_update (cursor, 'metacyc_edges', fixed_fields, update_fields, verbose=True)
+			#exit()
+
 	cursor.close()
 	db.close()
 	return True
@@ -73,4 +65,3 @@ def main():
 #########################################
 if __name__ == '__main__':
 	main()
-

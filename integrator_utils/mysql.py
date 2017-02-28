@@ -1,4 +1,5 @@
 import MySQLdb, sys, os
+from socket import gethostname
 
 #
 # This source code is part of tcga, a TCGA processing pipeline, written by Ivana Mihalek.
@@ -19,6 +20,22 @@ import MySQLdb, sys, os
 # 
 # Contact: ivana.mihalek@gmail.com
 #
+##########################################
+def connect():
+    development = gethostname()=='pegasus'
+    if development:
+        db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
+    else:
+        db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
+    if not db: exit(1)
+    cursor = db.cursor()
+    qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
+    search_db(cursor,qry,False)
+    if development:
+        switch_to_db(cursor, 'blimps_development')
+    else:
+        switch_to_db(cursor, 'blimps_production')
+    return db, cursor
 
 
 ########
