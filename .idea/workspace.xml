@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/24_extract_links_from_metacyc.py" afterPath="$PROJECT_DIR$/24_human_enzyme_edges.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/25_the_remaining_enzrxn_edges.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" afterPath="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/integrator_utils/mysql.py" afterPath="$PROJECT_DIR$/integrator_utils/mysql.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" afterPath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,8 +27,8 @@
       <file leaf-file-name="24_human_enzyme_edges.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/24_human_enzyme_edges.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="20" column="17" lean-forward="true" selection-start-line="20" selection-start-column="17" selection-end-line="20" selection-end-column="17" />
+            <state relative-caret-position="1485">
+              <caret line="67" column="0" lean-forward="true" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
               <folding>
                 <element signature="e#443#479#0" expanded="true" />
               </folding>
@@ -37,24 +36,22 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="25_the_remaining_enzrxn_edges.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/25_the_remaining_enzrxn_edges.py">
+      <file leaf-file-name="27_metacyc_pwy_hierarchy.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/27_metacyc_pwy_hierarchy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1188">
-              <caret line="46" column="24" lean-forward="true" selection-start-line="46" selection-start-column="24" selection-end-line="46" selection-end-column="24" />
+            <state relative-caret-position="-27">
+              <caret line="25" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mysql.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
+      <file leaf-file-name="25_metacyc_enzrxn_pathways.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/25_metacyc_enzrxn_pathways.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="72">
-              <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#23#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="1224">
+              <caret line="35" column="0" lean-forward="true" selection-start-line="27" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -100,7 +97,6 @@
         <option value="$PROJECT_DIR$/20_tentative_metacyc_parser.pl.pm" />
         <option value="$PROJECT_DIR$/20_tentative_metacyc_parser.pl" />
         <option value="$PROJECT_DIR$/20_metacyc_protein_parser.pl" />
-        <option value="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
         <option value="$PROJECT_DIR$/01_uniprot_parser.pl" />
         <option value="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.pl" />
         <option value="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" />
@@ -114,12 +110,20 @@
         <option value="$PROJECT_DIR$/integrator_utils/mysql.py" />
         <option value="$PROJECT_DIR$/24_human_enzyme_edges.py" />
         <option value="$PROJECT_DIR$/25_the_remaining_enzrxn_edges.py" />
+        <option value="$PROJECT_DIR$/20_metacyc_dat_parser.pl" />
+        <option value="$PROJECT_DIR$/26_metacyc_enzrxn_substrate_edges.py" />
+        <option value="$PROJECT_DIR$/27_the_remaining_enzrxn_edges.py" />
+        <option value="$PROJECT_DIR$/25_metacyc_substrate_inspector.py" />
+        <option value="$PROJECT_DIR$/30_metacyc_enrxn_regulators.py" />
+        <option value="$PROJECT_DIR$/25_metacyc_enzrxn_pathways.py" />
+        <option value="$PROJECT_DIR$/26_metacyc_pwy_hierarchy.py" />
+        <option value="$PROJECT_DIR$/27_metacyc_pwy_hierarchy.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="612" />
-    <option name="y" value="135" />
+    <option name="x" value="569" />
+    <option name="y" value="110" />
     <option name="width" value="3130" />
     <option name="height" value="1928" />
   </component>
@@ -166,8 +170,8 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -371,10 +375,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="612" y="135" width="3130" height="1928" extended-state="0" />
-    <editor active="true" />
+    <frame x="569" y="110" width="3130" height="1928" extended-state="0" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22653721" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22588997" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946485" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -404,55 +408,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot_parser.pl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="2" column="12" lean-forward="true" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/05_cleanup_biogrid_table.pl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="4" column="23" lean-forward="false" selection-start-line="4" selection-start-column="23" selection-end-line="4" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/06_homo_sapiens.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="324">
-          <caret line="9" column="31" lean-forward="false" selection-start-line="9" selection-start-column="3" selection-end-line="9" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/07_biogrid_graph.bash">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/08_biogrid_graph_low_throughput.bash">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/05_cleanup_biogrid_table.pl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="4" column="23" lean-forward="false" selection-start-line="4" selection-start-column="23" selection-end-line="4" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/06_homo_sapiens.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
@@ -647,27 +602,19 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1629">
-          <caret line="80" column="45" lean-forward="false" selection-start-line="80" selection-start-column="45" selection-end-line="80" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/22_metacyc_protein_id_mapper.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="396">
           <caret line="11" column="0" lean-forward="false" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
+        <state relative-caret-position="36">
           <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
           <folding>
-            <element signature="e#0#23#0" expanded="true" />
+            <element signature="e#0#23#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -676,24 +623,89 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
           <caret line="1" column="41" lean-forward="true" selection-start-line="1" selection-start-column="8" selection-end-line="1" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/25_the_remaining_enzrxn_edges.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1377">
+          <caret line="62" column="41" lean-forward="true" selection-start-line="62" selection-start-column="41" selection-end-line="62" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/20_metacyc_dat_parser.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1773">
+          <caret line="123" column="0" lean-forward="false" selection-start-line="123" selection-start-column="0" selection-end-line="123" selection-end-column="0" />
+          <folding>
+            <element signature="n#!!doc" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/27_the_remaining_enzrxn_edges.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1521">
+          <caret line="56" column="15" lean-forward="true" selection-start-line="56" selection-start-column="15" selection-end-line="56" selection-end-column="15" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/30_metacyc_enrxn_regulators.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="576">
+          <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/26_metacyc_enzrxn_substrate_edges.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="756">
+          <caret line="43" column="0" lean-forward="true" selection-start-line="39" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/25_metacyc_substrate_inspector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1296">
+          <caret line="73" column="15" lean-forward="false" selection-start-line="73" selection-start-column="15" selection-end-line="73" selection-end-column="15" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/26_metacyc_pwy_hierarchy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1449">
+          <caret line="62" column="24" lean-forward="true" selection-start-line="62" selection-start-column="24" selection-end-line="62" selection-end-column="24" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/24_human_enzyme_edges.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="20" column="17" lean-forward="true" selection-start-line="20" selection-start-column="17" selection-end-line="20" selection-end-column="17" />
+        <state relative-caret-position="1485">
+          <caret line="67" column="0" lean-forward="true" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
           <folding>
             <element signature="e#443#479#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/25_the_remaining_enzrxn_edges.py">
+    <entry file="file://$PROJECT_DIR$/25_metacyc_enzrxn_pathways.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1188">
-          <caret line="46" column="24" lean-forward="true" selection-start-line="46" selection-start-column="24" selection-end-line="46" selection-end-column="24" />
+        <state relative-caret-position="1224">
+          <caret line="35" column="0" lean-forward="true" selection-start-line="27" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/27_metacyc_pwy_hierarchy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-27">
+          <caret line="25" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
           <folding />
         </state>
       </provider>

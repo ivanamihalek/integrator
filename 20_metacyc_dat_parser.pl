@@ -1,15 +1,10 @@
 #!/usr/bin/perl
 
-# tx idsv... though in this particuar file (proteins.dat) it seems
-# we do not have the info stored under groups, only individua species
-# human 9606
-# mammals 40674
-# vertebrates 7742
-# metazoans 33208
-
-# plants 33090
-# archaea 2157
-# fungi 4751
+# the tables I am currently using
+# metacyc_classes.csv    metacyc_enzrxns.csv  metacyc_pathways.csv
+# metacyc_proteins.csv		metacyc_pubs.csv       metacyc_regulations.csv
+# metacyc_compounds.csv  metacyc_genes.csv    metacyc_protein_features.csv
+# metacyc_protligandcplxes.csv	metacyc_reactions.csv  metacyc_rnas.csv
 
 
 use strict;
@@ -126,7 +121,6 @@ print "to create the table: \n";
 print "mysql -u root -p blimps_environment < $tablename.sql\n";
 print "\n";
 print "to load data, use mysqlimport:\n";
-print "mysql --local-infile -uroot -p\n";
 print "mysqlimport -u root -p --local  blimps_development $tablename.csv \n";
 print "(mysqlimport expects the name of the table to be the name of the input file, minus extension)";
 print "===============================\n\n";
