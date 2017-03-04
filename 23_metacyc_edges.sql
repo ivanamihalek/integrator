@@ -1,10 +1,5 @@
 -- to create the table:
--- bash> mysql -u root blimps_environment < 02_uniprot_table.sql
--- to load dat, start mysql in local infile mode:
--- mysql --local-infile -uroot
--- then load a cleaned biogrid table from mysql shell
--- mysql>  load data local infile 'uniprot.csv' into table uniprot_basic_infos ignore 1 lines;
--- the horrible table name is to comply with rails pluralization convention
+-- bash> mysql -u root blimps_environment < 23_metacyc_edges.py
 
 CREATE TABLE `metacyc_edges` (
 `id` int(11)   NOT NULL AUTO_INCREMENT,
