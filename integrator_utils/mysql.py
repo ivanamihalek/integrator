@@ -101,7 +101,7 @@ def store_without_checking(cursor, table, fields, verbose=False):
     return True
 
 ########
-def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False):
+def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False, primary_key='id'):
 
     id = -1
     conditions = ""
@@ -118,7 +118,7 @@ def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False):
         first = False
 
     # check if the row exists
-    qry = "select id from %s  where %s "  % (table, conditions)
+    qry = "select %s from %s  where %s "  % (primary_key, table, conditions)
     rows   = search_db (cursor, qry, verbose)
     exists = rows and (type(rows[0][0]) is long)
 
