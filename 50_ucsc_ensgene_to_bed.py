@@ -18,6 +18,7 @@
 
 from integrator_utils.mysql import *
 
+##########################################
 def  process_exons(exonStarts, exonEnds):
 	exon_ranges = set()
 	if exonStarts[-1] == ',':  exonStarts = exonStarts[0:-1]
@@ -49,7 +50,7 @@ def remove_duplicate_regions(exon_coordinates):
 
 	processed_coords = []
 	for coords in sorted(list(exon_coordinates), key=lambda x: int(x.split("_")[0])):
-		[a_new, b_new] = coords.split("_")
+		[a_new, b_new] = [int(x) for x in coords.split("_")]
 		placed = False
 		for i in range(len(processed_coords)):
 			[a_old,b_old] = processed_coords[i]
@@ -101,14 +102,26 @@ def main():
 		strand = general_info[gene_id][1]
 		processed_coords = remove_duplicate_regions(exon_coordinates[gene_id])
 		number_of_exons = len(processed_coords)
-		exon_ct = 0
-		for [start, stop]   in processed_coords:
-			if strand=='-':
-				name = "%s_exon_%d" %(symbol, number_of_exons-exon_ct)
-			else:
-				name = "%s_exon_%d" %(symbol, exon_ct + 1)
-			print "\t".join([chrom, start, stop, name])
-			exon_ct += 1
+		if False:  # this is bed file
+			exon_ct = 0
+			for [start, stop]   in processed_coords:
+				if strand=='-':
+					name = "%s_exon_%d" %(symbol, number_of_exons-exon_ct)
+				else:
+					name = "%s_exon_%d" %(symbol, exon_ct + 1)
+				print "\t".join([chrom, str(start), str(stop), name])
+				exon_ct += 1
+		else:
+			# this i to be loaded into myswl table with  columns hg19_contig, hg19_from, hg19_to gene)symbol, exon_seqnum
+			exon_ct = 0
+			for [start, stop]   in processed_coords:
+				if strand=='-':
+					exon_seqnum = number_of_exons-exon_ct
+				else:
+					exon_seqnum = exon_ct + 1
+				# the '\N' is here to make the auto increment first field happy
+				print "\t".join(['\N', chrom, str(start), str(stop), symbol, str(exon_seqnum)])
+				exon_ct += 1
 
 
 	cursor.close()
