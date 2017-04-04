@@ -63,7 +63,7 @@ X:154931044-155260560
 By comparison with the website it seems that the number that they cite as the allele frequency is AC_Adj/AN_Adj
 there is AF or allele frq number in the VCF, but not clear what that is.
 
-Whrn comparing with the ExAC browser keep in mind that the browser itself might not be completely up to date.
+When comparing with the ExAC browser keep in mind that the browser itself might not be completely up to date.
 
 	'''
 

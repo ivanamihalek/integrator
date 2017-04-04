@@ -3,7 +3,7 @@
 
 ##########################################
 def main():
-	inf = open("/databases/agilent/v5_plus_5utr/S04380219_Regions.bed","r")
+	inf = open("/databases/agilent/v4/S03723314_Regions.bed","r")
 	for line in inf:
 		fields = line.rstrip().split("\t")
 		if len(fields)<3: continue
