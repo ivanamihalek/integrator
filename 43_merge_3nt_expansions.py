@@ -50,7 +50,8 @@ def main():
 	print "complex variants"
 	qry  = "select * from %s " % table
 	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
-	ct = 0
+
+	candidate = {}
 	for variant in search_db(cursor, qry):
 		[pos, ref, alt, var_counts, total_count] = variant
 		# from these further remove cases where the variant field is a list of SNPs
@@ -66,11 +67,26 @@ def main():
 		# try in the reverse direction too
 		if single_nt_expansion([x[::-1] for x in list_of_alts]): continue
 		# store all such cases, and see if some overlap and need to be merged
-		ct += 1
-		print ct, variant
+		candidate[pos] = variant
+
+	clusters = []
+	for cand_pos in candidate.keys():
+		cluster_found = False
+		for cluster in clusters:
+			if len([x for x in cluster if abs(cand_pos -x)<500]):
+				cluster.append(cand_pos)
+				cluster_found = True
+				break
+		if not cluster_found:
+			clusters.append([cand_pos])
+
+	for cluster in clusters:
+		if len(cluster)<2: continue
+		print "********************"
+		for pos in cluster:
+			print candidate[pos]
 		print
 
-	print
 	cursor.close()
 	db.close()
 
