@@ -51,7 +51,7 @@ def main():
 	qry  = "select * from %s " % table
 	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
 
-	candidate = {}
+	candidates = []
 	for variant in search_db(cursor, qry):
 		[pos, ref, alt, var_counts, total_count] = variant
 		# from these further remove cases where the variant field is a list of SNPs
@@ -67,24 +67,25 @@ def main():
 		# try in the reverse direction too
 		if single_nt_expansion([x[::-1] for x in list_of_alts]): continue
 		# store all such cases, and see if some overlap and need to be merged
-		candidate[pos] = variant
+		max_reach = pos +max([ref_len]+ [len(x) for x in list_of_alts] ) - 1
+		candidates.append([pos, ref, alt, var_counts, total_count, max_reach]) # I want the positions to remain sorted
 
 	clusters = []
-	for cand_pos in candidate.keys():
+	for candidate in candidates:
 		cluster_found = False
 		for cluster in clusters:
-			if len([x for x in cluster if abs(cand_pos -x)<500]):
-				cluster.append(cand_pos)
+			if len([x for x in cluster if x[0] <= candidate[0] <= x[-1]]):
+				cluster.append(candidate)
 				cluster_found = True
 				break
-		if not cluster_found:
-			clusters.append([cand_pos])
+		if not cluster_found: # start new cluster - cluster is a list of candidates
+			clusters.append([candidate])
 
 	for cluster in clusters:
 		if len(cluster)<2: continue
 		print "********************"
-		for pos in cluster:
-			print candidate[pos]
+		for candidate in cluster:
+			print candidate
 		print
 
 	cursor.close()
