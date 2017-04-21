@@ -2,42 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/06_ucsc/15_ucsc_ensgene_to_regions.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/01_uniprot_parser.pl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/02_uniprot_table.sql" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/05_cleanup_biogrid_table.pl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/06_homo_sapiens.sql" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/07_biogrid_graph.bash" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/08_biogrid_graph_low_throughput.bash" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/09_hgnc_table.sql" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/10_add_hgnc_synonyms_to_genes.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/11_add_uniprot_alt_names_to_id_table.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/12_cleanup_alias_names_in_uniprot.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/13_get_gene_regions_from_ucsc.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/14_read_in_gene_regions.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/16_pathways_from_reactome.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/20_metacyc_dat_parser.pl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/22_metacyc_protein_id_mapper.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/23_metacyc_edges.sql" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/24_human_enzyme_edges.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/25_metacyc_enzrxn_pathways.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/26_metacyc_pwy_hierarchy_inspect.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/27_metacyc_pwy_hierarchy.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/30_metacyc_substrate_inspector.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/31_metacyc_enzrxn_substrate_edges.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/32_metacyc_cofactor_inspector.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/33_metacyc_enrxn_regulators.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/40_exac_header_inspector.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/41_exac_mysql_tables.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/42_exac_variant_prob_distribution.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/43_find_3nt_expansions.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/45_find_motif_modifications.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/46_find_modified_regions.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/52_agilent_to_bed.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/54_ccds_to_bed.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/55_ensembl_phenotype_associated_to_bed.py" afterPath="" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/12_exac/60_omim_genes_exac_variants_to_vcf.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/12_exac/46_find_modified_regions.py" afterPath="$PROJECT_DIR$/12_exac/46_find_modified_regions.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -56,34 +23,14 @@
     <favorites_list name="integrator" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="13_get_gene_regions_from_ucsc.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/06_ucsc/13_get_gene_regions_from_ucsc.py">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
+      <file leaf-file-name="46_find_modified_regions.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/12_exac/46_find_modified_regions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="15_ucsc_ensgene_to_regions.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/06_ucsc/15_ucsc_ensgene_to_regions.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1345">
-              <caret line="60" column="52" lean-forward="true" selection-start-line="60" selection-start-column="52" selection-end-line="60" selection-end-column="52" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="mysql.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2916">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="-1484">
+              <caret line="65" column="45" lean-forward="true" selection-start-line="65" selection-start-column="45" selection-end-line="65" selection-end-column="45" />
               <folding>
-                <element signature="e#0#23#0" expanded="true" />
+                <element signature="e#246#282#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -169,14 +116,17 @@
         <option value="$PROJECT_DIR$/45_find_motif_modifications.py" />
         <option value="$PROJECT_DIR$/46_find_modified_regions.py" />
         <option value="$PROJECT_DIR$/06_ucsc/15_ucsc_ensgene_to_regions.py" />
+        <option value="$PROJECT_DIR$/12_exac/62_annotate_exac_variants.pl" />
+        <option value="$PROJECT_DIR$/12_exac/60_omim_genes_exac_variants_to_vcf.py" />
+        <option value="$PROJECT_DIR$/12_exac/46_find_modified_regions.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="637" />
-    <option name="y" value="89" />
-    <option name="width" value="2915" />
-    <option name="height" value="1901" />
+    <option name="x" value="484" />
+    <option name="y" value="112" />
+    <option name="width" value="2803" />
+    <option name="height" value="1944" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -193,7 +143,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -231,26 +180,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="14_capture_regions" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="06_ucsc" />
+              <option name="myItemId" value="12_exac" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -462,10 +398,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="637" y="89" width="2915" height="1901" extended-state="0" />
-    <editor active="true" />
+    <frame x="484" y="112" width="2803" height="1944" extended-state="0" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26836058" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29771823" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3286517" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32979977" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -510,16 +446,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="6" />
+      <option name="time" value="7" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/43_find_3nt_expansions.py" />
-    <entry file="file://$PROJECT_DIR$/52_agilent_to_bed.py" />
-    <entry file="file://$PROJECT_DIR$/40_exac_header_inspector.py" />
-    <entry file="file://$PROJECT_DIR$/54_ccds_to_bed.py" />
-    <entry file="file://$PROJECT_DIR$/55_ensembl_phenotype_associated_to_bed.py" />
     <entry file="file://$PROJECT_DIR$/42_exac_variant_prob_distribution.py" />
     <entry file="file://$PROJECT_DIR$/43_find_3nt_expansions.py" />
     <entry file="file://$PROJECT_DIR$/52_agilent_to_bed.py" />
@@ -582,13 +513,6 @@
     <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py" />
     <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py" />
     <entry file="file://$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" />
-    <entry file="file://$PROJECT_DIR$/integrator_utils/xml2csv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="576">
-          <caret line="16" column="0" lean-forward="false" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/54_ccds_to_bed.py" />
     <entry file="file://$PROJECT_DIR$/40_exac_header_inspector.py" />
     <entry file="file://$PROJECT_DIR$/52_agilent_to_bed.py" />
@@ -601,7 +525,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -609,7 +532,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -617,25 +539,66 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2808">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2916">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/06_ucsc/15_ucsc_ensgene_to_regions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1345">
-          <caret line="60" column="52" lean-forward="true" selection-start-line="60" selection-start-column="52" selection-end-line="60" selection-end-column="52" />
+        <state relative-caret-position="1021">
+          <caret line="48" column="0" lean-forward="false" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/12_exac/42_exac_variant_prob_distribution.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="4" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/12_exac/62_annotate_exac_variants.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="8" column="5" lean-forward="true" selection-start-line="8" selection-start-column="5" selection-end-line="8" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/12_exac/43_find_3nt_expansions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1620">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/12_exac/60_omim_genes_exac_variants_to_vcf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="121">
+          <caret line="16" column="57" lean-forward="true" selection-start-line="16" selection-start-column="57" selection-end-line="16" selection-end-column="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/integrator_utils/xml2csv.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="864">
+          <caret line="25" column="0" lean-forward="true" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/12_exac/46_find_modified_regions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1484">
+          <caret line="65" column="45" lean-forward="true" selection-start-line="65" selection-start-column="45" selection-end-line="65" selection-end-column="45" />
+          <folding>
+            <element signature="e#246#282#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

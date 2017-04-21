@@ -1,6 +1,15 @@
 #!/usr/bin/python
 
+# getting the  genomic region from UCSC DAS server
+# https://github.com/ivanamihalek/progesterone/blob/master/PR_binding_sites/scripts/ruby_modules/httputils.rb
+# python http request http://docs.python-requests.org/en/master/
+
 from integrator_utils.mysql import *
+
+import requests # http  requests
+import re
+
+assembly = "hg19"
 
 #########################################
 def to_almt_pos(sequence, nongapped_pos):
@@ -34,7 +43,7 @@ def insert (alignment, s, reference_position, ins):
 	return
 
 #########################################
-def reconstruct_alignment(cluster):
+def reconstruct_alignment(chrom, cluster):
 	smallest_ref_pos = min ([x[0] for x in cluster])
 	upper_bound_ref = max ([x[0] + len(x[1]) for x in cluster])
 	refseq = "x" * (upper_bound_ref - smallest_ref_pos)
@@ -43,6 +52,7 @@ def reconstruct_alignment(cluster):
 		relative_pos = pos - smallest_ref_pos
 		new_seq = refseq[:relative_pos] + ref + refseq[relative_pos + len(ref):]
 		refseq = new_seq
+	print " "*19, get_region_from_das(assembly, chrom, smallest_ref_pos, upper_bound_ref).upper()
 	print " %12d  %3d  %s" %  (smallest_ref_pos, 1, refseq)
 	print "     -------------------------------------------"
 	alignment = []
@@ -84,10 +94,22 @@ def reconstruct_alignment(cluster):
 	return
 
 #########################################
+def get_region_from_das(assembly, chrom, start, end):
+	das_request  = "http://genome.ucsc.edu/cgi-bin/das/%s/" % assembly
+	das_request += "dna?segment=chr%s:%s,%s" %(chrom, start, end)
+
+	ret = requests.get(das_request).text.lower().replace("\n","")
+	pattern = re.compile("<dna.*?>([\w\s]*)</dna>")
+	matches = re.findall(pattern, ret)
+	dna = ""
+	for m in matches: dna += m.replace(" ","")
+	return dna
+
+#########################################
 def main():
 
 	db, cursor = connect()
-	chrom = "1"
+	chrom = "22"
 	table = "exac_freqs_chr_" + chrom
 	print "*"*20
 	print table
@@ -107,7 +129,7 @@ def main():
 		list_of_alts = alt.split(",")
 		ref_len = len(ref)
 		if ref_len==1 and ("," in alt) and (len(alt)+1)==2*len(list_of_alts): continue
-		max_reach = pos +max([ref_len]+ [len(x) for x in list_of_alts] ) - 1
+		max_reach = pos +max([ref_len]+ [len(x) for x in list_of_alts]) - 1
 		candidates.append([pos, ref, alt, var_counts, total_count, max_reach]) # I want the positions to remain sorted
 
 	print "Done scanning. Looking for clusters."
@@ -123,13 +145,12 @@ def main():
 			clusters.append([candidate])
 
 	print "Done clustering."
-
 	ct = 0
 	for cluster in clusters:
 		if len(cluster)<2: continue
 		print "********************"
 		ct += 1
-		reconstruct_alignment(cluster)
+		reconstruct_alignment(chrom, cluster)
 
 	print ct
 	print
