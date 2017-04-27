@@ -109,7 +109,7 @@ def get_region_from_das(assembly, chrom, start, end):
 def main():
 
 	db, cursor = connect()
-	chrom = "22"
+	chrom = "1"
 	table = "exac_freqs_chr_" + chrom
 	print "*"*20
 	print table
