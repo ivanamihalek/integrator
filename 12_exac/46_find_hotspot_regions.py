@@ -5,9 +5,12 @@
 # python http request http://docs.python-requests.org/en/master/
 
 from integrator_utils.mysql import *
+from integrator_utils.periodic_mods import *
 
 import requests # http  requests
 import re
+
+
 
 assembly = "hg19"
 
@@ -44,6 +47,11 @@ def insert (alignment, s, reference_position, ins):
 
 #########################################
 def reconstruct_alignment(chrom, cluster):
+
+
+	periodic = periodicity_found(cluster)
+	if periodic: print "periodic"
+
 	smallest_ref_pos = min ([x[0] for x in cluster])
 	upper_bound_ref = max ([x[0] + len(x[1]) for x in cluster])
 	refseq = "x" * (upper_bound_ref - smallest_ref_pos)
@@ -58,7 +66,7 @@ def reconstruct_alignment(chrom, cluster):
 	alignment = []
 	seqinfo   = []
 	# formal "variant" to hold reference sequence
-	alt = [smallest_ref_pos, refseq[0], refseq[0], 1, 1, 1]
+	alt = [smallest_ref_pos, refseq[0], refseq[0], 1, 1, 1, None]
 	alignment.append(refseq)
 	seqinfo.append(alt)
 	for v in cluster:
@@ -69,8 +77,11 @@ def reconstruct_alignment(chrom, cluster):
 		a = -1 #  index of the alternative sequence fo this position
 		for sequence in alternatives:
 			a += 1
-			alt = [pos, ref, sequence, int(counts[a]), total_count, len(ref)]
+			motif = None
+			if periodic: motif = find_motif_in_pair(sequence, ref)
+			alt = [pos, ref, sequence, int(counts[a]), total_count, len(ref), motif]
 			seqinfo.append(alt)
+
 			refseq = alignment[0]
 			if len(sequence) <= len(ref):
 				seq_padded   = sequence + "-"*(len(ref)-len(sequence)) # negative padding == no padding
@@ -85,11 +96,14 @@ def reconstruct_alignment(chrom, cluster):
 				# for example, for variant A-->AGG at position 5, ref = A,  len(ref) = 1,
 				# sequence[len(ref):] = GG and we are inserting it right after position 5
 				insert (alignment,  s, relative_pos+len(ref)-1, sequence[len(ref):])
+
 	for s in range(len(alignment)):
 		modified_seq = alignment[s]
-		[pos, ref, sequence, count, total_count, max_reach] = seqinfo[s]
+		[pos, ref, sequence, count, total_count, max_reach, motif] = seqinfo[s]
 		print " %12d  %3d  %s" % (pos, pos-smallest_ref_pos+1, modified_seq),
-		print "       %7d  %7d    %s    %s" % (count, total_count, ref[:10], sequence[:10])
+		print "       %7d  %7d    %s    %s" % (count, total_count, ref[:10], sequence[:10]),
+		if motif: print "  motif : %s" % motif,
+		print
 
 	return
 
@@ -124,7 +138,7 @@ def main():
 
 	candidates = []
 	for variant in search_db(cursor, qry):
-		[pos, ref, alt, var_counts, total_count] = variant
+		[pos, ref, alt, var_counts, total_count, hotspot_id] = variant
 		# from these further remove cases where the variant field is a list of SNPs
 		list_of_alts = alt.split(",")
 		ref_len = len(ref)
@@ -148,7 +162,7 @@ def main():
 	ct = 0
 	for cluster in clusters:
 		if len(cluster)<2: continue
-		print "********************"
+		print "\n********************"
 		ct += 1
 		reconstruct_alignment(chrom, cluster)
 

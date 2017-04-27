@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from integrator_utils.mysql import *
+from mysql import *
 
 def three_nt_change(len_a,len_b):
 	if len_a==len_b: return False
@@ -27,6 +27,27 @@ def minimal_motif(ym):
 		if circular == ym:
 			return ym[:i]  # this is periodic with period i
 	return ym
+
+###############
+def find_motif_in_pair(alt, ref,  find_minimal = True):
+	if len(alt) > len(ref):
+		[A, B] = [alt, ref]
+	else:
+		[A, B] = [ref, alt]
+	if A[:len(B)] != B: return None  # this is not what I'm looking for
+	ym = A[len(B):]
+	# the simplest  possibility: x==y
+	if len(B) >= len(ym) and B[-len(ym):] == ym:
+		if not find_minimal or len(ym) == 1:
+			return ym
+		else:
+			return minimal_motif(ym)
+	mm = minimal_motif(ym)
+	if len(mm) < len(ym):
+		return mm
+
+	return None
+
 ###############
 def find_motif_in_variant(v, find_minimal = True):
 
@@ -38,21 +59,11 @@ def find_motif_in_variant(v, find_minimal = True):
 	# the period y to be determined by circular shifting
 	[pos, ref, alts, var_counts, total_count, max_reach] = v
 	for alt in alts.split(","):
-		if len(alt) > len(ref):
-			[A, B] = [alt, ref]
+		mm = find_motif_in_pair(alt, ref, find_minimal)
+		if not mm:
+			continue
 		else:
-			[A, B] = [ref, alt]
-		if A[:len(B)] != B: continue  # this is not what I'm looking for
-		ym = A[len(B):]
-		# the simplest  possibility: x==y
-		if len(B) >= len(ym) and B[-len(ym):] == ym:
-			if not find_minimal or len(ym)==1:
-				return ym
-			else:
-				return minimal_motif(ym)
-		mm = minimal_motif(ym)
-		if len(mm) < len(ym): return mm
-
+			return mm
 	return None
 
 ##########################################
@@ -115,7 +126,7 @@ def main():
 
 	print "Done clustering. Looking for repeats."
 
-	# TODO: even without periodicity some clustes seem to describe related events
+	# TODO: even without periodicity some clusters seem to describe related events
 
 	clusters_w_periodicity = []
 	for cluster in clusters:
@@ -144,4 +155,3 @@ def main():
 if __name__ == '__main__':
 	main()
 
-# 8,608,914
