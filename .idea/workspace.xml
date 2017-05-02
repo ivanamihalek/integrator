@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/16_orphadata/02_diseases_and_xrefs.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/12_exac/46_find_hotspot_regions.py" afterPath="$PROJECT_DIR$/12_exac/46_find_hotspot_regions.py" />
     </list>
     <ignored path="integrator.iws" />
@@ -27,8 +25,8 @@
       <file leaf-file-name="46_find_hotspot_regions.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/12_exac/46_find_hotspot_regions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="959">
-              <caret line="259" column="41" lean-forward="false" selection-start-line="259" selection-start-column="41" selection-end-line="259" selection-end-column="41" />
+            <state relative-caret-position="383">
+              <caret line="118" column="16" lean-forward="false" selection-start-line="118" selection-start-column="16" selection-end-line="118" selection-end-column="16" />
               <folding>
                 <element signature="e#246#282#0" expanded="true" />
               </folding>
@@ -125,8 +123,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="378" />
-    <option name="y" value="49" />
+    <option name="x" value="533" />
+    <option name="y" value="55" />
     <option name="width" value="3307" />
     <option name="height" value="1975" />
   </component>
@@ -386,7 +384,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="378" y="49" width="3307" height="1975" extended-state="0" />
+    <frame x="533" y="55" width="3307" height="1975" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19173047" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
@@ -614,8 +612,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/12_exac/46_find_hotspot_regions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="959">
-          <caret line="259" column="41" lean-forward="false" selection-start-line="259" selection-start-column="41" selection-end-line="259" selection-end-column="41" />
+        <state relative-caret-position="383">
+          <caret line="118" column="16" lean-forward="false" selection-start-line="118" selection-start-column="16" selection-end-line="118" selection-end-column="16" />
           <folding>
             <element signature="e#246#282#0" expanded="true" />
           </folding>

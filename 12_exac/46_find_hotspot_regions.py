@@ -9,6 +9,7 @@ from integrator_utils.periodic_mods import *
 
 import requests # http  requests
 import re
+from collections import deque
 
 assembly = "hg19"
 
@@ -86,38 +87,56 @@ def snip(string):
 	return r
 
 #######################################
-def chainable(a,b,motif):
-	if len(a)==len(b):
-		if a==b:return True
-		return False
-	if len(a) < len(b):
-		shorter = a
-		longer = b
-	else:
-		shorter = b
-		longer  = a
-	if (len(longer)-len(shorter))%len(motif)!=0: return False
-	multiplier = (len(longer)-len(shorter))/len(motif)
-	patch = motif*multiplier
-	for i in range(len(shorter)+1):
-		if shorter[:i]+patch+shorter[i:] == longer: return True
-	return False
+def decompositions(string, motif):
+	# decomposition is left_pad, multiplier (how many times does the motif repeat), right_pad
+	l = len(motif)
+	match_positions = deque()
+	for i in range(len(string)):
+		if string[i:i+l]==motif:
+			match_positions.append(i)
+
+	if len(match_positions)==0:
+		# the trivial decomposition, if there is no match inside
+		decomps = [[string, 1, ""]]
+		return decomps
+
+	decomps = []
+	multiplier = 0
+	start      = -1
+	while match_positions:
+		mp = match_positions.popleft()
+		if multiplier==0: start = mp
+		multiplier += 1
+		if len(match_positions)==0 or mp+l != match_positions[0]:
+			decomps.append([string[:start], multiplier, string[start+multiplier*l:] ])
+			multiplier = 0
+
+	return decomps
 
 #######################################
 def find_chainable(raw_seqs, motifs):
+	print raw_seqs
+	print motifs
 	for motif in motifs:
 		clusters = []
+		cluster_pads = []
+		# sort descending, by length
+		raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
 		for new_seq in raw_seqs:
-			cluster_found = False
-			for cluster in clusters:
-				for prev_seq in cluster:
-					# if new_seq and prev_seq are chainable by motif, add this
-					if chainable(prev_seq, new_seq, motif):
+			for decomposition in  decompositions(new_seq, motif):
+				[padding_left, multiplier, padding_right] = decomposition
+				cluster_found = False
+				for cluster in clusters:
+					cluster_index = clusters.index(cluster)
+					if cluster_pads[cluster_index] == [padding_left, padding_right]:
 						cluster.append(new_seq)
 						cluster_found = True
 						break
-			# if not seq placed, start new cluster
-			if not cluster_found: clusters.append([new_seq])
+				# if not seq placed, start new cluster
+				if not cluster_found:
+					clusters.append([new_seq])
+					cluster_pads.append([padding_left, padding_right])
+
 		print "-------" , motif
 		for cluster in clusters:
 			if len(cluster)<2: continue
@@ -128,6 +147,7 @@ def find_chainable(raw_seqs, motifs):
 		print"--------------"
 	print
 	return
+
 #########################################
 def reconstruct_alignment(chrom, cluster):
 
@@ -257,7 +277,7 @@ def main():
 	print "Done clustering."
 	reasonable_clusters = [c for c in clusters if len(c)>=2]
 	ct = 0
-	for cluster in reasonable_clusters[-5:]:
+	for cluster in reasonable_clusters[15:18]:
 		ct += 1
 		reconstruct_alignment(chrom, cluster)
 
