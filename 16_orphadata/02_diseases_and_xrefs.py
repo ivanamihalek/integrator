@@ -2,24 +2,23 @@
 
 import xmltodict
 
-def recursive_print(mistery_object):
+def recursive_print(mistery_object, depth):
 	if not  mistery_object: return
 	if type(mistery_object) is unicode or type(mistery_object) is str:
-		print "is unicode or  string:"
-		print mistery_object
+		#print "\t"*depth, "is unicode or string:"
+		print "\t"*depth, mistery_object
 	elif type(mistery_object) is list:
-		print "is list:"
+		#print "\t"*depth, "is list:"
 		for item in mistery_object:
-			print   recursive_print(item)
+			recursive_print(item, depth+1)
 	else:
 		try:
 			for k2, v2 in mistery_object.iteritems():
 				if not v2: continue
-				print
-				print "key:", k2
-				print recursive_print (v2)
+				print "\t"*depth, "key:", k2
+				recursive_print (v2, depth + 1)
 		except:
-			print "unrecognized type", mistery_object
+			print "\t"*depth, "unrecognized type", mistery_object
 
 
 ##########################################
@@ -34,7 +33,7 @@ def main():
 	# doc['JDBOR']['DisorderList']['Disorder'] is a list
 	disorders = doc['JDBOR']['DisorderList']['Disorder']
 	for disorder in disorders:
-		recursive_print (disorder)
+		recursive_print (disorder, 0)
 		print
 		exit()
 

@@ -4,13 +4,18 @@ from collections import deque
 #######################################
 def decomposition(string, motif):
 	# decomposition is left_pad, multiplier (how many times does the motif repeat), right_pad
-	# the trivial decomposition, if there is no match inside
-	decompositions = [[string, 1, ""]]
 	l = len(motif)
 	match_positions = deque()
 	for i in range(len(string)):
 		if string[i:i+l]==motif:
 			match_positions.append(i)
+
+        # the trivial decomposition, if there is no match inside
+        if len(match_positions)==0:
+	        decomps = [[string, 1, ""]]
+                return decomps
+
+        decomps = []
 	multiplier = 0
 	start      = -1
 	while match_positions:
@@ -18,18 +23,31 @@ def decomposition(string, motif):
                 if multiplier==0: start = mp
                 multiplier += 1
 		if len(match_positions)==0 or mp+l != match_positions[0]:
-                   decompositions.append([string[:start], multiplier, string[start+multiplier*l:] ])
+                   decomps.append([string[:start], multiplier, string[start+multiplier*l:] ])
                    multiplier = 0
                 
-	return decompositions
+	return decomps
 
 #########################################
 def main():
+
+        
     for string in ["lllabcrrr", "lllabcabcrrr" , "lllabc", "abcrrr" ,  "lllrrrrrr", "",
                    "abc", "abcabc",   "lllabcabcabcrrr", "lllabcabcmmmmabcrrr" ]:
         print string
         print decomposition(string, "abc")
         print
+
+    for string in [u'CCAGTCTTT', u'CGTCTTT', u'CCA', u'CCAGTCT']:
+        print string
+        print decomposition(string, "T")
+        print
+
+    for string in ['TTCA','TTGGGCA']:
+        print string
+        print decomposition(string, "G")
+        print
+        
     return
 
 #########################################

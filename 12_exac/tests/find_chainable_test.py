@@ -3,6 +3,10 @@ from collections import deque
 
 #######################################
 def decompositions(string, motif):
+
+        # the trivial decomposition, if there is no match inside
+        decomps = [[string, 1, ""]]
+        
 	# decomposition is left_pad, multiplier (how many times does the motif repeat), right_pad
 	l = len(motif)
 	match_positions = deque()
@@ -10,13 +14,10 @@ def decompositions(string, motif):
 		if string[i:i+l]==motif:
 			match_positions.append(i)
 
-        # the trivial decomposition, if there is no match inside
         if len(match_positions)==0:
-	        decomps = [[string, 1, ""]]
-                return decomps
+               return decomps
 
-        decomps = []
-	multiplier = 0
+ 	multiplier = 0
 	start      = -1
 	while match_positions:
 		mp = match_positions.popleft()
@@ -37,13 +38,14 @@ def find_chainable(raw_seqs, motifs):
 		# sort descending, by length
                 raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
 		for new_seq in raw_seqs:
-			for decomposition in  decompositions(new_seq, motif):
- 				[padding_left, multiplier, padding_right] = decomposition
+ 			for decomposition in  decompositions(new_seq, motif):
+  				[padding_left, multiplier, padding_right] = decomposition
 				cluster_found = False
-				for cluster in clusters:
-					cluster_index = clusters.index(cluster)
-                                        print  cluster_pads[cluster_index], [padding_left, padding_right]
-					if cluster_pads[cluster_index] == [padding_left, padding_right]:
+				for cluster_index in range(len(clusters)):
+                                        
+					cluster = clusters[cluster_index]
+                                        #print  cluster_pads[cluster_index], [padding_left, padding_right]
+ 					if cluster_pads[cluster_index] == [padding_left, padding_right]:
 						cluster.append(new_seq)
 						cluster_found = True
 						break
@@ -64,10 +66,12 @@ def find_chainable(raw_seqs, motifs):
 
 #########################################
 def main():
-    #raw_seqs = [u'AGAAGATGAT', u'AGAT', u'A', u'AGAAGAT', u'AGAA', u'AGATGATGAT', u'AGAAGATGATGAT', u'AGAAGATGATGATGAT', u'AGAAGAAT', u'AGAAGATGA']
-    #motifs = ['GAT']
-    raw_seqs = [u'CCAGTCTTT', u'CGTCTTT', u'CCA', u'CCAGTCT']
-    motifs = ['T']
+    raw_seqs = [u'AGAAGATGAT', u'AGAT', u'A', u'AGAAGAT', u'AGAA', u'AGATGATGAT', u'AGAAGATGATGAT', u'AGAAGATGATGATGAT', u'AGAAGAAT', u'AGAAGATGA']
+    motifs = ['GAT']
+    #raw_seqs = [u'CCAGTCTTT', u'CGTCTTT', u'CCA', u'CCAGTCT']
+    #motifs = ['T']
+    #raw_seqs=['GCACCC','GCA']
+    #motifs=['C']
     find_chainable(raw_seqs, motifs)
     return
 
