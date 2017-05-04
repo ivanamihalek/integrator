@@ -1,121 +1,144 @@
 #!/usr/bin/python
 from collections import deque
 
-#######################################
-def decompositions(string, motif):
-
-        # the trivial decomposition, if there is no match inside
-        decomps = [[string, 0, ""]]
-        
-	# decomposition is left_pad, multiplier (how many times does the motif repeat), right_pad
-	l = len(motif)
-	match_positions = deque()
-	for i in range(len(string)):
-		if string[i:i+l]==motif:
-			match_positions.append(i)
-
-        if len(match_positions)==0:
-               return decomps
-
- 	multiplier = 0
-	start      = -1
-	while match_positions:
-		mp = match_positions.popleft()
-                if multiplier==0: start = mp
-                multiplier += 1
-		if len(match_positions)==0 or mp+l != match_positions[0]:
-                   decomps.append([string[:start], multiplier, string[start+multiplier*l:] ])
-                   multiplier = 0
-                
-	return decomps
 
 #######################################
-def equivalent_padding(padding1, padding2):
+class FiniteStateMachine:
 
-        #return padding1==padding2
+	def __init__(self, string, motifs):
+		self.string = string
+		self.motifs = motifs
+		self.motifs.sort(lambda x, y: cmp(-len(x), -len(y)))
+		self.pattern = []
+		self.no_motif_string = ""
 
-        [left1, right1] = padding1
-        [left2, right2] = padding2
+	def find_pattern(self):
+		self.no_match_state()
+		return self.pattern
 
-        
-        left_ok = left1==left2
+	def match_state(self, motif):
+		if not motif or len(motif)==0: return
+		count = 0
+		while len(self.string) and self.string[:len(motif)]==motif:
+			count += 1
+			self.string = self.string[len(motif):]
+		if count > 0:  self.pattern.append([motif,count])
+		self.no_match_state()
+		return
 
-        if right1==right2:
-                right_ok = True
-        else:
-                shorter = len(right1)
-                if len(right1)>len(right2):  shorter = len(right2)
-
-                right_ok = (shorter>2) and right1[:shorter]== right2[:shorter]
-       
-        return left_ok and right_ok
-
-#######################################
-def find_chainable(raw_seqs, motifs):
-	clusters = {}
-	cluster_pads = {}
-	for motif in motifs:
-		clusters[motif] = []
-		cluster_pads[motif] = []
-                raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
-		for new_seq in raw_seqs:
-			# special case: motif is an insert in the new seq:
-			if not motif in new_seq:
-				for cluster_index in range(len(clusters[motif])):
-					cluster = clusters[motif][cluster_index]
-					if "".join(cluster_pads[motif][cluster_index]) == new_seq:
-						cluster.append(0)
+	def no_match_state (self):
+		matched_motif = None
+		while len(self.string) and not matched_motif:
+			mms = filter (lambda mm: self.string[:len(mm)]==mm,  self.motifs)
+			if len(mms)==0: # no motif
+				self.no_motif_string +=  self.string[0]
+				self.string = self.string[1:]
 			else:
-                                for decomposition in  decompositions(new_seq, motif):
-                                        [padding_left, multiplier, padding_right] = decomposition
-                                        print new_seq, decomposition
-                                        cluster_found = False
-                                        for cluster_index in range(len(clusters[motif])):
+				matched_motif = mms[0]
 
-                                                cluster = clusters[motif][cluster_index]
-                                                #print  cluster_pads[cluster_index], [padding_left, padding_right]
-                                                if equivalent_padding (cluster_pads[motif][cluster_index], [padding_left, padding_right]):
-                                                        cluster.append(multiplier)
-                                                        cluster_found = True
-                                                        break
-                                        # if not seq placed, start new cluster
-                                        if not cluster_found:
-                                                clusters[motif].append([multiplier])
-                                                cluster_pads[motif].append([padding_left, padding_right])
-                
-	return clusters, cluster_pads
+		self.emit_no_motif()
+		self.match_state(matched_motif)
+		return
+
+	def emit_no_motif(self):
+		if len(self.no_motif_string) > 0: self.pattern.append([self.no_motif_string, 1])
+		self.no_motif_string = ""
+		return
+
+#######################################
+def decomposition(string, motifs):
+	fsm = FiniteStateMachine(string, motifs)
+	return fsm.find_pattern()
+
+
+#######################################
+def equivalent(p1, p2):
+	# pattern is a list of pairs [motif, number_of_repeats]
+	# two patterns are equivalent if the order of motifs is the same,
+	# irrespective of the number of times they repeat
+	number_of_motifs = len(p1)
+	if number_of_motifs != len(p2): return False
+	matching_motifs = filter(lambda i: p1[i][0] == p2[i][0], range(number_of_motifs))
+	return len(matching_motifs) == number_of_motifs
+
+def to_string(pattern):
+	string = ""
+	for [motif,number_of_repeats] in pattern:
+		string += motif*number_of_repeats
+	return string
+
+#######################################
+def find_comparable_patterns(raw_seqs, motifs):
+	clusters = []
+	raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
+	for new_seq in raw_seqs:
+		new_pattern = decomposition(new_seq, motifs)
+		#print new_seq, new_pattern
+		cluster_found = False
+		for cluster in clusters:
+			#patterns for all members of a cluster should be the same
+			pattern = cluster[0]
+			if equivalent(pattern,new_pattern):
+				cluster.append(new_pattern)
+				cluster_found = True
+				break
+		# if not seq placed, start new cluster
+		if not cluster_found:
+			clusters.append([new_pattern])
+
+	return clusters
 
 #########################################
 def main():
-    #raw_seqs = [u'AGAAGATGAT', u'AGAT', u'A', u'AGAAGAT', u'AGAA', u'AGATGATGAT', u'AGAAGATGATGAT', u'AGAAGATGATGATGAT', u'AGAAGAAT', u'AGAAGATGA']
-    #motifs = ['GAT']
-    raw_seqs = [u'CCAGTCTTT', u'CGTCTTT', u'CCA', u'CCAGTCT']
-    motifs = ['T']
-    #raw_seqs=['GCACCC','GCA']
+	#raw_seqs = [u'AGAAGATGAT', u'AGAT', u'A', u'AGAAGAT', u'AGAA', u'AGATGATGAT', u'AGAAGATGATGAT', u'AGAAGATGATGATGAT', u'AGAAGAAT', u'AGAAGATGA']
+	#motifs = ['GAT']
+	#raw_seqs = [u'CCAGTCTTT', u'CGTCTTT', u'CCA', u'CCAGTCT']
+	#motifs = ['T']
+	#raw_seqs=['GCACCC','GCA']
     #motifs=['C']
     #raw_seqs =  ['TGT','TT','TG','TGTT','TTT']
     #motifs=['T']
-    clusters_with_motif, cluster_pads = find_chainable(raw_seqs, motifs)
-    if True:
-	for motif, clusters in clusters_with_motif.iteritems():
-		print "------- motif: ", motif
-		for cluster_index in range(len(clusters)):
-			cluster = clusters[cluster_index]
 
-			if len(cluster)<2: continue
-			print "cluster:             ", cluster_pads[motif][cluster_index]
-			cluster.sort()
-			left_pad  = cluster_pads[motif][cluster_index][0]
-			right_pad = cluster_pads[motif][cluster_index][1]
-			for multiplier in cluster:
-				raw_seq = left_pad + motif*multiplier + right_pad
-				print multiplier, raw_seq
+	raw_seqs = ["CTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGCTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGC", "CTGCTGTTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGC",
+				"CTGCTGTTGCTGCTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGCTGCTGTTGCTGC",
+				"TGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGC",
+				"CTGCTGTTGCTGTTGCTGT",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGTTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGTTGTTGCTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGTTGTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGCTTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGCTGCTGCTGCTGCTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGCTGC",
+				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC"]
+	motifs = ["TGC", "TGCTGT"]
+	tot_cluster_length = 0
+	for cluster in find_comparable_patterns(raw_seqs, motifs):
+		tot_cluster_length += len(cluster)
+		if len(cluster)<2: continue
+		print "cluster:             "
+		for pattern in cluster:
+			print pattern
+		for pattern in cluster:
+			print to_string(pattern)
 		print"--------------"
 	print
-
-
-    
-    return
+	print len(raw_seqs), tot_cluster_length
+	return
 
 #########################################
 if __name__ == '__main__':
