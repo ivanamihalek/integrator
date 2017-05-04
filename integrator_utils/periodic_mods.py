@@ -71,8 +71,13 @@ def to_string(pattern):
 		string += motif*number_of_repeats
 	return string
 
+def prettyprint(pattern):
+
+	return ",".join([p[0]+ ":"+ p[1] for p in pattern])
+
+
 #######################################
-#######################################
+###################################
 
 def three_nt_change(len_a,len_b):
 	if len_a==len_b: return False

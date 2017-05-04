@@ -187,7 +187,8 @@ def reconstruct_alignment(chrom, cluster):
 		if len(cluster)<2: continue
 		print "cluster:             "
 		for pattern in cluster:
-			print pattern, freq[to_string(pattern)]
+			print pattern
+			print prettyprint(pattern), freq[to_string(pattern)]
 			print to_string(pattern)
 		print"--------------"
 	print
@@ -253,7 +254,7 @@ def main():
 	print "Done scanning. Looking for clusters. Max pos:", max_pos
 
 	clusters = []
-	for candidate in candidates[:1000]:
+	for candidate in candidates:
 		cluster_found = False
 		for cluster in clusters:
 			if len([x for x in cluster if x[0] <= candidate[0] <= max(x[0]+3,x[-1]) ]):
