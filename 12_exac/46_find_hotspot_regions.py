@@ -89,7 +89,7 @@ def snip(string):
 #######################################
 def decompositions(string, motif):
 	# the trivial decomposition, if there is no match inside
-	decomps = [[string, 1, ""]]
+	decomps = [[string, 0, ""]]
 	# decomposition is left_pad, multiplier (how many times does the motif repeat), right_pad
 	l = len(motif)
 	match_positions = deque()
@@ -112,49 +112,58 @@ def decompositions(string, motif):
 
 	return decomps
 
+
+#######################################
+def equivalent_padding(padding1, padding2):
+
+	#return padding1== padding2
+	[left1, right1] = padding1
+	[left2, right2] = padding2
+
+	left_ok = left1 == left2
+
+	if right1 == right2:
+		right_ok = True
+	else:
+		shorter = len(right1)
+		if len(right1) > len(right2):  shorter = len(right2)
+
+		right_ok = (shorter > 2) and right1[:shorter] == right2[:shorter]
+
+	return left_ok and right_ok
+
+
 #######################################
 def find_chainable(raw_seqs, motifs):
-	#print raw_seqs
-	#print motifs
+	clusters = {}
+	cluster_pads = {}
 	for motif in motifs:
-		clusters = []
-		cluster_pads = []
+		clusters[motif] = []
+		cluster_pads[motif] = []
 		# sort descending, by length
 		raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
 		for new_seq in raw_seqs:
 			# special case: motif is an insert in the new seq:
 			if not motif in new_seq:
-				for cluster_index in range(len(clusters)):
-					cluster = clusters[cluster_index]
-					if "".join(cluster_pads[cluster_index]) == new_seq:
-						cluster.append(new_seq)
+				for cluster_index in range(len(clusters[motif])):
+					cluster = clusters[motif][cluster_index]
+					if "".join(cluster_pads[motif][cluster_index]) == new_seq:
+						cluster.append(0)
 			else:
 				for decomposition in  decompositions(new_seq, motif):
 					[padding_left, multiplier, padding_right] = decomposition
 					cluster_found = False
-					for cluster_index in range(len(clusters)):
-						cluster = clusters[cluster_index]
-						if cluster_pads[cluster_index] == [padding_left, padding_right]:
-							cluster.append(new_seq)
+					for cluster_index in range(len(clusters[motif])):
+						cluster = clusters[motif][cluster_index]
+						if equivalent_padding (cluster_pads[motif][cluster_index], [padding_left, padding_right]):
+							cluster.append(multiplier)
 							cluster_found = True
 							break
 					# if not seq placed, start new cluster
 					if not cluster_found:
-						clusters.append([new_seq])
-						cluster_pads.append([padding_left, padding_right])
-		#if len(motif) != 3: continue
-		print "-------" , motif
-		for cluster_index in range(len(clusters)):
-			cluster = clusters[cluster_index]
-
-			if len(cluster)<2: continue
-			# new_seq to cluster
-			print "cluster:             ", cluster_pads[cluster_index]
-			cluster.sort(lambda x, y: cmp(len(x), len(y)))
-			for seq in cluster: print seq
-		print"--------------"
-	print
-	return
+						clusters[motif].append([multiplier])
+						cluster_pads[motif].append([padding_left, padding_right])
+	return clusters, cluster_pads
 
 #########################################
 def reconstruct_alignment(chrom, cluster):
@@ -200,10 +209,13 @@ def reconstruct_alignment(chrom, cluster):
 			seqinfo.append(alt)
 			add_modified_seq(alignment, sequence, ref, relative_pos)
 	raw_seqs = []
+	freq = {}
+	freq[original_region] = "1:1"
 	for s in range(1,len(alignment)):
 		modified_seq = alignment[s]
 		[pos, ref, sequence, count, total_count, max_reach, motif] = seqinfo[s]
 		raw_seq = modified_seq.replace('-','')
+		freq[raw_seq] = "%d:%d" % (count,total_count)
 		duplicate = " "
 		if raw_seq in raw_seqs:
 			duplicate = "d"
@@ -219,7 +231,29 @@ def reconstruct_alignment(chrom, cluster):
 			print "  in ref %d times" %  number_of_appearances(motif, original_region[relative_pos:]),
 		print
 
-	find_chainable([original_region]+raw_seqs, motifs)
+	clusters_with_motif, cluster_pads = find_chainable([original_region]+raw_seqs, motifs)
+	for motif, clusters in clusters_with_motif.iteritems():
+		print "------- motif: ", motif
+		for cluster_index in range(len(clusters)):
+			cluster = clusters[cluster_index]
+
+			if len(cluster)<2: continue
+			print "cluster:             ", cluster_pads[motif][cluster_index]
+			cluster.sort()
+			left_pad  = cluster_pads[motif][cluster_index][0]
+			right_pad = cluster_pads[motif][cluster_index][1]
+			report = ""
+			report += "motif: %s at position: %d\n" % (motif, smallest_ref_pos + len(left_pad) - 1)
+			report += "freqs:  \n"
+
+			for multiplier in cluster:
+				raw_seq = left_pad + motif*multiplier + right_pad
+				report +=  "%d:%s \n" % (multiplier, freq[raw_seq])
+				print multiplier, raw_seq
+			print "\nreport: "
+			print report
+		print"--------------"
+	print
 
 
 	return
@@ -240,7 +274,7 @@ def get_region_from_das(assembly, chrom, start, end):
 def main():
 
 	db, cursor = connect()
-	chrom = "X"
+	chrom = "22"
 	table = "exac_freqs_chr_" + chrom
 	print "*"*20
 	print table
@@ -257,6 +291,8 @@ def main():
 	max_pos = -1
 	for variant in search_db(cursor, qry):
 		[pos, ref, alt, var_counts, total_count, hotspot_id] = variant
+		if pos < 28194894: continue
+		if pos > 28194933: break
 		# I don't want large rearrangements here
 		if len(ref)>30: continue
 		# from these further remove cases where the variant field is a list of SNPs
@@ -281,7 +317,7 @@ def main():
 	print "Done scanning. Looking for clusters. Max pos:", max_pos
 
 	clusters = []
-	for candidate in candidates[-1200:-1000]:
+	for candidate in candidates:
 		cluster_found = False
 		for cluster in clusters:
 			if len([x for x in cluster if x[0] <= candidate[0] <= max(x[0]+3,x[-1]) ]):
