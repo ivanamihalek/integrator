@@ -5,11 +5,10 @@
 # python http request http://docs.python-requests.org/en/master/
 
 from integrator_utils.mysql import *
-from integrator_utils.periodic_mods import *
 
 import requests # http  requests
 import re
-from collections import deque
+from integrator_utils.periodic_mods import *
 
 assembly = "hg19"
 
@@ -36,6 +35,7 @@ def insert (alignment, s, reference_position, ins):
 		else:
 			alignment[s2] = aux[:reference_position] + "-"*len(ins) + aux[reference_position:]
 	return
+
 #########################################
 def replace_piece (refseq, relative_pos, newseq):
 	modified_seq = refseq
@@ -86,84 +86,35 @@ def snip(string):
 	if len(string) > 10: r = string[:10] + "..."
 	return r
 
-#######################################
-def decompositions(string, motif):
-	# the trivial decomposition, if there is no match inside
-	decomps = [[string, 0, ""]]
-	# decomposition is left_pad, multiplier (how many times does the motif repeat), right_pad
-	l = len(motif)
-	match_positions = deque()
-	for i in range(len(string)):
-		if string[i:i+l]==motif:
-			match_positions.append(i)
-
-	if len(match_positions)==0:
-		return decomps
-
-	multiplier = 0
-	start      = -1
-	while match_positions:
-		mp = match_positions.popleft()
-		if multiplier==0: start = mp
-		multiplier += 1
-		if len(match_positions)==0 or mp+l != match_positions[0]:
-			decomps.append([string[:start], multiplier, string[start+multiplier*l:] ])
-			multiplier = 0
-
-	return decomps
 
 
 #######################################
-def equivalent_padding(padding1, padding2):
+def find_comparable_patterns(raw_seqs, motifs):
+	clusters = []
+	# it si important that these are sorted, because I will
+	# allow as a special exception that only the first
+	# motif is present, but then
+	# pattern would not be equal to cluster[0] unless sorted
+	raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
+	for new_seq in raw_seqs:
+		new_pattern = decomposition(new_seq, motifs)
+		#print new_seq, new_pattern
+		cluster_found = False
+		for cluster in clusters:
+			#patterns for all members of a cluster should be the same
+			pattern = cluster[0]
+			if equivalent(pattern,new_pattern):
+				cluster.append(new_pattern)
+				cluster_found = True
+				break
+		# if not seq placed, start new cluster
+		if not cluster_found:
+			clusters.append([new_pattern])
 
-	#return padding1== padding2
-	[left1, right1] = padding1
-	[left2, right2] = padding2
-
-	left_ok = left1 == left2
-
-	if right1 == right2:
-		right_ok = True
-	else:
-		shorter = len(right1)
-		if len(right1) > len(right2):  shorter = len(right2)
-
-		right_ok = (shorter > 2) and right1[:shorter] == right2[:shorter]
-
-	return left_ok and right_ok
+	return clusters
 
 
-#######################################
-def find_chainable(raw_seqs, motifs):
-	clusters = {}
-	cluster_pads = {}
-	for motif in motifs:
-		clusters[motif] = []
-		cluster_pads[motif] = []
-		# sort descending, by length
-		raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
-		for new_seq in raw_seqs:
-			# special case: motif is an insert in the new seq:
-			if not motif in new_seq:
-				for cluster_index in range(len(clusters[motif])):
-					cluster = clusters[motif][cluster_index]
-					if "".join(cluster_pads[motif][cluster_index]) == new_seq:
-						cluster.append(0)
-			else:
-				for decomposition in  decompositions(new_seq, motif):
-					[padding_left, multiplier, padding_right] = decomposition
-					cluster_found = False
-					for cluster_index in range(len(clusters[motif])):
-						cluster = clusters[motif][cluster_index]
-						if equivalent_padding (cluster_pads[motif][cluster_index], [padding_left, padding_right]):
-							cluster.append(multiplier)
-							cluster_found = True
-							break
-					# if not seq placed, start new cluster
-					if not cluster_found:
-						clusters[motif].append([multiplier])
-						cluster_pads[motif].append([padding_left, padding_right])
-	return clusters, cluster_pads
+
 
 #########################################
 def reconstruct_alignment(chrom, cluster):
@@ -208,7 +159,7 @@ def reconstruct_alignment(chrom, cluster):
 			alt = [pos, ref, sequence, int(counts[a]), total_count, len(ref), motif]
 			seqinfo.append(alt)
 			add_modified_seq(alignment, sequence, ref, relative_pos)
-	raw_seqs = []
+	raw_seqs = [original_region]
 	freq = {}
 	freq[original_region] = "1:1"
 	for s in range(1,len(alignment)):
@@ -231,30 +182,15 @@ def reconstruct_alignment(chrom, cluster):
 			print "  in ref %d times" %  number_of_appearances(motif, original_region[relative_pos:]),
 		print
 
-	clusters_with_motif, cluster_pads = find_chainable([original_region]+raw_seqs, motifs)
-	for motif, clusters in clusters_with_motif.iteritems():
-		print "------- motif: ", motif
-		for cluster_index in range(len(clusters)):
-			cluster = clusters[cluster_index]
 
-			if len(cluster)<2: continue
-			print "cluster:             ", cluster_pads[motif][cluster_index]
-			cluster.sort()
-			left_pad  = cluster_pads[motif][cluster_index][0]
-			right_pad = cluster_pads[motif][cluster_index][1]
-			report = ""
-			report += "motif: %s at position: %d\n" % (motif, smallest_ref_pos + len(left_pad) - 1)
-			report += "freqs:  \n"
-
-			for multiplier in cluster:
-				raw_seq = left_pad + motif*multiplier + right_pad
-				report +=  "%d:%s \n" % (multiplier, freq[raw_seq])
-				print multiplier, raw_seq
-			print "\nreport: "
-			print report
+	for cluster in find_comparable_patterns(raw_seqs, motifs):
+		if len(cluster)<2: continue
+		print "cluster:             "
+		for pattern in cluster:
+			print pattern, freq[to_string(pattern)]
+			print to_string(pattern)
 		print"--------------"
 	print
-
 
 	return
 
@@ -291,8 +227,8 @@ def main():
 	max_pos = -1
 	for variant in search_db(cursor, qry):
 		[pos, ref, alt, var_counts, total_count, hotspot_id] = variant
-		if pos < 28194894: continue
-		if pos > 28194933: break
+		#if pos < 28194894: continue
+		#if pos > 28194933: break
 		# I don't want large rearrangements here
 		if len(ref)>30: continue
 		# from these further remove cases where the variant field is a list of SNPs
@@ -317,7 +253,7 @@ def main():
 	print "Done scanning. Looking for clusters. Max pos:", max_pos
 
 	clusters = []
-	for candidate in candidates:
+	for candidate in candidates[:1000]:
 		cluster_found = False
 		for cluster in clusters:
 			if len([x for x in cluster if x[0] <= candidate[0] <= max(x[0]+3,x[-1]) ]):

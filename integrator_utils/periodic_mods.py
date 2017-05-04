@@ -1,6 +1,78 @@
 #!/usr/bin/python
 
-from mysql import *
+
+#######################################
+class FiniteStateMachine:
+
+	def __init__(self, string, motifs):
+		self.string = string
+		self.motifs = motifs
+		self.motifs.sort(lambda x, y: cmp(-len(x), -len(y)))
+		self.pattern = []
+		self.no_motif_string = ""
+
+	def find_pattern(self):
+		self.no_match_state()
+		return self.pattern
+
+	def match_state(self, motif):
+		if not motif or len(motif)==0: return
+		count = 0
+		while len(self.string) and self.string[:len(motif)]==motif:
+			count += 1
+			self.string = self.string[len(motif):]
+		if count > 0:  self.pattern.append([motif,count])
+		self.no_match_state()
+		return
+
+	def no_match_state (self):
+		matched_motif = None
+		while len(self.string) and not matched_motif:
+			mms = filter (lambda mm: self.string[:len(mm)]==mm,  self.motifs)
+			if len(mms)==0: # no motif
+				self.no_motif_string +=  self.string[0]
+				self.string = self.string[1:]
+			else:
+				matched_motif = mms[0]
+
+		self.emit_no_motif()
+		self.match_state(matched_motif)
+		return
+
+	def emit_no_motif(self):
+		if len(self.no_motif_string) > 0: self.pattern.append([self.no_motif_string, 1])
+		self.no_motif_string = ""
+		return
+
+#######################################
+def decomposition(string, motifs):
+	fsm = FiniteStateMachine(string, motifs)
+	return fsm.find_pattern()
+
+
+#######################################
+def equivalent(p1, p2):
+	# pattern is a list of pairs [motif, number_of_repeats]
+	# two patterns are equivalent if the order of motifs is the same,
+	# irrespective of the number of times they repeat
+	number_of_motifs = len(p1)
+	number_of_motifs_2 = len(p2)
+	# exceptions: not sure how to handle this
+	shorter = min(number_of_motifs,number_of_motifs_2)
+	if shorter==1:
+		return p1[0][0] == p2[0][0]
+	if number_of_motifs != len(p2): return False
+	matching_motifs = filter(lambda i: p1[i][0] == p2[i][0], range(number_of_motifs))
+	return len(matching_motifs) == number_of_motifs
+
+def to_string(pattern):
+	string = ""
+	for [motif,number_of_repeats] in pattern:
+		string += motif*number_of_repeats
+	return string
+
+#######################################
+#######################################
 
 def three_nt_change(len_a,len_b):
 	if len_a==len_b: return False
@@ -48,6 +120,8 @@ def find_motif_in_pair(alt, ref,  find_minimal = True):
 
 	return None
 
+
+
 ###############
 def find_motif_in_variant(v, find_minimal = True):
 
@@ -79,79 +153,4 @@ def periodicity_found(cluster):
 	# no variant has a repeating motif
 	return False
 
-##########################################
-def main():
-
-	if False:
-		v = [16269823L, 'A', 'T,AAAAAAT', '13,3', 69068L, 16269829L]
-		find_motif_in_variant(v, find_minimal=False)
-		find_motif_in_variant(v, find_minimal=True)
-		exit()
-
-	db, cursor = connect()
-	chrom = "22"
-	table = "exac_freqs_chr_" + chrom
-	print "*"*20
-	print table
-	print "number of variants:", search_db(cursor, "select count(1) from %s" % table)[0][0]
-	qry  = "select count(1) from %s " % table
-	qry += "where char_length(reference)=1 and char_length(variants)=1"
-	print "simple SNPs",  search_db(cursor, qry)[0][0]
-	print
-	print "complex variants"
-	qry  = "select * from %s " % table
-	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
-
-	candidates = []
-	for variant in search_db(cursor, qry):
-		[pos, ref, alt, var_counts, total_count] = variant
-		# from these further remove cases where the variant field is a list of SNPs
-		list_of_alts = alt.split(",")
-		ref_len = len(ref)
-		if ref_len==1 and ("," in alt) and (len(alt)+1)==2*len(list_of_alts): continue
-		max_reach = pos +max([ref_len]+ [len(x) for x in list_of_alts] ) - 1
-		candidates.append([pos, ref, alt, var_counts, total_count, max_reach]) # I want the positions to remain sorted
-
-	print "Done scanning. Looking for clusters."
-	clusters = []
-	for candidate in candidates:
-		cluster_found = False
-		for cluster in clusters:
-			if len([x for x in cluster if x[0] <= candidate[0] <= x[-1]]):
-				cluster.append(candidate)
-				cluster_found = True
-				break
-		if not cluster_found: # start new cluster - cluster is a list of candidates
-			clusters.append([candidate])
-
-	print "Done clustering. Looking for repeats."
-
-	# TODO: even without periodicity some clusters seem to describe related events
-
-	clusters_w_periodicity = []
-	for cluster in clusters:
-		if len(cluster)<2: continue
-		if not periodicity_found(cluster): continue
-		clusters_w_periodicity.append(cluster)
-
-	for cluster in clusters_w_periodicity:
-		print "********************"
-		smallest_pos = min ([x[0] for x in cluster])
-		for v in cluster:
-			[pos, ref, alts, var_counts, total_count, max_reach] = v
-			motif = find_motif_in_variant(v)
-			print " %12d   %s           %s " % (pos, " "*(pos-smallest_pos) + ref, alts),
-			if motif: print "  motif : %s" % motif,
-			print
-		print
-
-	print len(clusters)
-	print
-	cursor.close()
-	db.close()
-
-	return
-#########################################
-if __name__ == '__main__':
-	main()
 
