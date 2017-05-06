@@ -9,6 +9,7 @@ from integrator_utils.mysql import *
 import requests # http  requests
 import re
 from integrator_utils.periodic_mods import *
+from time import time
 
 assembly = "hg19"
 
@@ -161,54 +162,41 @@ def get_region_from_das(assembly, chrom, start, end):
 	for m in matches: dna += m.replace(" ","")
 	return dna
 
-#########################################
-def main():
-
-	db, cursor = connect()
-	chrom = "22"
-
-
-	table = "exac_freqs_chr_" + chrom
-	print "*"*20
-	print table
-	print "number of variants:", search_db(cursor, "select count(1) from %s" % table)[0][0]
-	qry  = "select count(1) from %s " % table
-	qry += "where char_length(reference)=1 and char_length(variants)=1"
-	print "simple SNPs",  search_db(cursor, qry)[0][0]
-	print
-	print "complex variants"
-	qry  = "select * from %s " % table
-	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
-
+########################################
+def find_complex_variants(cursor, table):
 	candidates = []
-	max_pos = -1
+	qry = "select * from %s " % table
+	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
+	long_vars_count = 0
 	for variant in search_db(cursor, qry):
 		[pos, ref, alt, var_counts, total_count, hotspot_id] = variant
-		#if pos < 28194894: continue
-		#if pos > 28194933: break
+		# if pos < 28194894: continue
+		# if pos > 28194933: break
 		# I don't want large rearrangements here
-		if len(ref)>30: continue
+		if len(ref) > 30:
+			long_vars_count += 1
+			continue
 		# from these further remove cases where the variant field is a list of SNPs
-		if alt=='' or var_counts=='': continue
+		if alt == '' or var_counts == '': continue
 		list_of_alts = alt.split(",")
 		ref_len = len(ref)
-		if ref_len==1 and ("," in alt) and (len(alt)+1)==2*len(list_of_alts): continue
+		if ref_len == 1 and ("," in alt) and (len(alt) + 1) == 2 * len(list_of_alts): continue
 		# remove cases with count 0
 		new_alts = []
 		new_counts = []
 		list_of_counts = var_counts.split(",")
 		for i in range(len(list_of_alts)):
-			if int(list_of_counts[i])==0: continue
-			if  list_of_alts[i]=='' or  list_of_counts[i]=='': continue
+			if int(list_of_counts[i]) == 0: continue
+			if list_of_alts[i] == '' or list_of_counts[i] == '': continue
 			new_alts.append(list_of_alts[i])
 			new_counts.append(list_of_counts[i])
 		max_reach = pos + ref_len - 1
-		if max_pos<pos: max_pos = pos
 		# I want the positions to remain sorted
-		candidates.append([pos, ref, ",".join(new_alts),  ",".join(new_counts), total_count, max_reach])
+		candidates.append([pos, ref, ",".join(new_alts), ",".join(new_counts), total_count, max_reach])
+	return candidates, long_vars_count
 
-	print "Done scanning. Looking for clusters. Max pos:", max_pos
-
+#########################################
+def find_clusters_of_candidates(candidates):
 	clusters = []
 	for candidate in candidates:
 		cluster_found = False
@@ -223,29 +211,59 @@ def main():
 	# lets look at isolated cases too - exac might already
 	# have some periodic expansions there
 	reasonable_clusters = [c for c in clusters if len(c)>=1]
+	return reasonable_clusters
 
-	max_pos = -1
-	for cluster in reasonable_clusters:
-		pos = cluster[0][0]
-		if max_pos < pos: max_pos = pos
-	print "Done clustering. Max pos:", max_pos
+#########################################
+def main():
 
-	for cluster in reasonable_clusters:
-		# no varaints: cluster is just the number of postions here, not the number of
-		# vars repoted for each
-		[start,end, number_of_variants] = characterize_region(cluster)
-		print " from: %d    to: %d    tot number of vars: %d  " % (start,end, number_of_variants)
-		periodic = periodicity_found(cluster)
-		if periodic:
-			# find motifs and their repetition patterns
-			# with the estimate of the frequency for the pattern
-			motifs, report = motif_report(chrom,cluster)
-			print motifs
-			print report
-			print
+	db, cursor = connect()
+	chroms = [str(i) for i in range(1,23)] + ['X','Y']
+	chroms.reverse()
+	for chrom in chroms[:5]:
+		t0 = time()
+		table = "exac_freqs_chr_" + chrom
+		print
+		print "*"*20
+		print table
+		print "number of variants:", search_db(cursor, "select count(1) from %s" % table)[0][0]
+		qry  = "select count(1) from %s " % table
+		qry += "where char_length(reference)=1 and char_length(variants)=1"
+		print "simple SNPs",  search_db(cursor, qry)[0][0]
 
-	print len(reasonable_clusters)
-	print
+		candidates, long_vars_ct = find_complex_variants(cursor, table)
+		print
+		print "Complex variants with reference<30:", len(candidates),
+		print "  long variants: ", long_vars_ct
+
+		clusters =  find_clusters_of_candidates(candidates)
+		print
+		print "Done clustering. Max pos:", max([cluster[0][0] for cluster in clusters])
+		print "Number of hotspot regions:", len(clusters)
+
+		number_of_vars_in_clusters = 0
+		number_of_clusters_with_periodic_motifs = 0
+		for cluster in clusters:
+			# no varaints: cluster is just the number of postions here, not the number of
+			# vars repoted for each
+			[start,end, number_of_variants] = characterize_region(cluster)
+			number_of_vars_in_clusters += number_of_variants
+			#print " from: %d    to: %d    tot number of vars: %d  " % (start,end, number_of_variants)
+			periodic = periodicity_found(cluster)
+			if periodic:
+				number_of_clusters_with_periodic_motifs += 1
+				# find motifs and their repetition patterns
+				# with the estimate of the frequency for the pattern
+				#motifs, report = motif_report(chrom,cluster)
+				#print motifs
+				#print report
+				#print
+
+		print
+		print "Number of variants with clusters:", number_of_vars_in_clusters
+		print "Number of clusters with periodic motifs:", number_of_clusters_with_periodic_motifs
+		print
+		print "time taken %.2f min" % ((time() - t0) / 60.0)
+		print
 	cursor.close()
 	db.close()
 
