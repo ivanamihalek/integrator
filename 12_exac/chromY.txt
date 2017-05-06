@@ -1,0 +1,399 @@
+********************
+exac_freqs_chr_Y
+number of variants: 2797
+simple SNPs 2519
+
+complex variants
+Done scanning. Looking for clusters. Max pos: 24551718
+Done clustering. Max pos: 24551718
+
+********************
+periodic
+      2710308    1  GT
+     -------------------------------------------
+      2710308    1  TT-   TT-              37    28248    GT    TT
+      2710308    1  GTT   GTT              57    28248    GT    GTT   motif : T  2 times   in ref 1 times
+      2710308    1  G--   G--               1    28248    GT    G
+cluster:             
+[[u'G', 1], ['T', 2]]
+GTT
+[[u'G', 1], ['T', 1]]
+GT
+[[u'G', 1]]
+G
+stem: [[u'G', 1]]
+2710308,G:1,T:2,57:28248,G:1,T:1,1:1,G:1,1:28248
+--------------
+
+
+********************
+periodic
+      2710318    1  GT
+     -------------------------------------------
+      2710318    1  GTT   GTT               3    28318    GT    GTT   motif : T  2 times   in ref 1 times
+cluster:             
+[[u'G', 1], ['T', 2]]
+GTT
+[[u'G', 1], ['T', 1]]
+GT
+stem: [[u'G', 1]]
+2710318,G:1,T:2,3:28318,G:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+      2722817    1  GT
+     -------------------------------------------
+      2722817    1  GTT   GTT               1    23882    GT    GTT   motif : T  2 times   in ref 1 times
+cluster:             
+[[u'G', 1], ['T', 2]]
+GTT
+[[u'G', 1], ['T', 1]]
+GT
+stem: [[u'G', 1]]
+2722817,G:1,T:2,1:23882,G:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+      3447816    1  GCC
+     -------------------------------------------
+      3447816    1  G--   G--              16    28808    GCC    G   motif : C  0 times   in ref 2 times
+cluster:             
+[[u'G', 1], ['C', 2]]
+GCC
+[[u'G', 1]]
+G
+stem: [[u'G', 1]]
+3447816,G:1,C:2,1:1,G:1,16:28808
+--------------
+
+
+********************
+periodic
+     14821339    1  CA
+     -------------------------------------------
+     14821339    1  CAA   CAA               1     6702    CA    CAA   motif : A  2 times   in ref 1 times
+cluster:             
+[[u'C', 1], ['A', 2]]
+CAA
+[[u'C', 1], ['A', 1]]
+CA
+stem: [[u'C', 1]]
+14821339,C:1,A:2,1:6702,C:1,A:1,1:1
+--------------
+
+
+********************
+periodic
+     14851414    1  AT
+     -------------------------------------------
+     14851414    1  ATT   ATT               2    10121    AT    ATT   motif : T  2 times   in ref 1 times
+     14851414    1  A--   A--               1    10121    AT    A
+cluster:             
+[[u'A', 1], ['T', 2]]
+ATT
+[[u'A', 1], ['T', 1]]
+AT
+[[u'A', 1]]
+A
+stem: [[u'A', 1]]
+14851414,A:1,T:2,2:10121,A:1,T:1,1:1,A:1,1:10121
+--------------
+
+
+********************
+periodic
+     14898435    1  CTTT
+     -------------------------------------------
+     14898435    1  CTT-------   CTT-------             205    14810    CTTT    CTT   motif : T  2 times   in ref 3 times
+     14898435    1  CTTTT-----   CTTTT-----            5544    14810    CTTT    CTTTT   motif : T  4 times   in ref 3 times
+     14898435    1  CTTT-TT---   CTTTTT----             183    14810    CTTT    CTTTTT   motif : T  5 times   in ref 3 times
+     14898435    1  CT--------   CT--------               1    14810    CTTT    CT   motif : T  1 times   in ref 3 times
+     14898435    1  CTTT---TTT   CTTTTTT---               8    14810    CTTT    CTTTTTT   motif : T  6 times   in ref 3 times
+cluster:             
+[[u'C', 1], ['T', 6]]
+CTTTTTT
+[[u'C', 1], ['T', 5]]
+CTTTTT
+[[u'C', 1], ['T', 4]]
+CTTTT
+[[u'C', 1], ['T', 3]]
+CTTT
+[[u'C', 1], ['T', 2]]
+CTT
+[[u'C', 1], ['T', 1]]
+CT
+stem: [[u'C', 1]]
+14898435,C:1,T:6,8:14810,C:1,T:5,183:14810,C:1,T:4,5544:14810,C:1,T:3,1:1,C:1,T:2,205:14810,C:1,T:1,1:14810
+--------------
+
+
+********************
+periodic
+     14923724    1  CT
+     -------------------------------------------
+     14923724    1  CTT   CTT               7    16826    CT    CTT   motif : T  2 times   in ref 1 times
+cluster:             
+[[u'C', 1], ['T', 2]]
+CTT
+[[u'C', 1], ['T', 1]]
+CT
+stem: [[u'C', 1]]
+14923724,C:1,T:2,7:16826,C:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+     14924998    1  T
+     -------------------------------------------
+     14924998    1  TAA   TAA               2    17561    T    TAA   motif : A  2 times   in ref 0 times
+cluster:             
+[[u'T', 1], ['A', 2]]
+TAA
+[[u'T', 1]]
+T
+stem: [[u'T', 1]]
+14924998,T:1,A:2,2:17561,T:1,1:1
+--------------
+
+
+********************
+periodic
+     14945825    1  TGT
+     -------------------------------------------
+     14945825    1  T-T-   TT--               1    25346    TG    T
+     14945826    2  TG--   TG--               5    16789    GT    G
+     14945826    2  TGTT   TGTT               3    16789    GT    GTT   motif : T  2 times   in ref 1 times
+     14945826    2  TTT-   TTT-               1    16789    GT    TT
+cluster:             
+[['T', 1], [u'G', 1], ['T', 2]]
+TGTT
+[['T', 1], [u'G', 1], ['T', 1]]
+TGT
+stem: [['T', 1], [u'G', 1]]
+14945825,T:1,G:1,T:2,3:16789,T:1,G:1,T:1,1:1
+--------------
+cluster:             
+[['T', 3]]
+TTT
+[['T', 2]]
+TT
+stem: []
+14945825,T:3,1:16789,T:2,1:25346
+--------------
+
+
+********************
+periodic
+     14949981    1  AT
+     -------------------------------------------
+     14949981    1  ATT   ATT               1    10864    AT    ATT   motif : T  2 times   in ref 1 times
+cluster:             
+[[u'A', 1], ['T', 2]]
+ATT
+[[u'A', 1], ['T', 1]]
+AT
+stem: [[u'A', 1]]
+14949981,A:1,T:2,1:10864,A:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+     14954404    1  CTT
+     -------------------------------------------
+     14954404    1  CT----   CT----               1    15171    CTT    CT   motif : T  1 times   in ref 2 times
+     14954404    1  CTTT--   CTTT--           14720    15171    CTT    CTTT   motif : T  3 times   in ref 2 times
+     14954404    1  CTT-TT   CTTTT-              14    15171    CTT    CTTTT   motif : T  4 times   in ref 2 times
+cluster:             
+[[u'C', 1], ['T', 4]]
+CTTTT
+[[u'C', 1], ['T', 3]]
+CTTT
+[[u'C', 1], ['T', 2]]
+CTT
+[[u'C', 1], ['T', 1]]
+CT
+stem: [[u'C', 1]]
+14954404,C:1,T:4,14:15171,C:1,T:3,14720:15171,C:1,T:2,1:1,C:1,T:1,1:15171
+--------------
+
+
+********************
+periodic
+     14968772    1  TAAA
+     -------------------------------------------
+     14968772    1  TAA--   TAA--              59     7425    TAAA    TAA   motif : A  2 times   in ref 3 times
+     14968772    1  TAAAA   TAAAA               7     7425    TAAA    TAAAA   motif : A  4 times   in ref 3 times
+cluster:             
+[[u'T', 1], ['A', 4]]
+TAAAA
+[[u'T', 1], ['A', 3]]
+TAAA
+[[u'T', 1], ['A', 2]]
+TAA
+stem: [[u'T', 1]]
+14968772,T:1,A:4,7:7425,T:1,A:3,1:1,T:1,A:2,59:7425
+--------------
+
+
+********************
+periodic
+     15028397    1  CTT
+     -------------------------------------------
+     15028397    1  CT--   CT--               1    18958    CTT    CT   motif : T  1 times   in ref 2 times
+     15028397    1  CTTT   CTTT               6    18958    CTT    CTTT   motif : T  3 times   in ref 2 times
+cluster:             
+[[u'C', 1], ['T', 3]]
+CTTT
+[[u'C', 1], ['T', 2]]
+CTT
+[[u'C', 1], ['T', 1]]
+CT
+stem: [[u'C', 1]]
+15028397,C:1,T:3,6:18958,C:1,T:2,1:1,C:1,T:1,1:18958
+--------------
+
+
+********************
+periodic
+     15028566    1  AT
+     -------------------------------------------
+     15028566    1  ATT   ATT               8    29753    AT    ATT   motif : T  2 times   in ref 1 times
+     15028566    1  GT-   GT-               2    29753    AT    GT
+cluster:             
+[[u'A', 1], ['T', 2]]
+ATT
+[[u'A', 1], ['T', 1]]
+AT
+stem: [[u'A', 1]]
+15028566,A:1,T:2,8:29753,A:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+     15029495    1  CTT
+     -------------------------------------------
+     15029495    1  CT----   CT----              36      791    CTT    CT   motif : T  1 times   in ref 2 times
+     15029495    1  CTTT--   CTTT--              16      791    CTT    CTTT   motif : T  3 times   in ref 2 times
+     15029495    1  TTT---   TTT---              26      791    CTT    TTT
+     15029495    1  CTT-TT   CTTTT-               2      791    CTT    CTTTT   motif : T  4 times   in ref 2 times
+cluster:             
+[[u'C', 1], ['T', 4]]
+CTTTT
+[[u'C', 1], ['T', 3]]
+CTTT
+[[u'C', 1], ['T', 2]]
+CTT
+[[u'C', 1], ['T', 1]]
+CT
+stem: [[u'C', 1]]
+15029495,C:1,T:4,2:791,C:1,T:3,16:791,C:1,T:2,1:1,C:1,T:1,36:791
+--------------
+
+
+********************
+periodic
+     15448217    1  TAA
+     -------------------------------------------
+     15448217    1  TA--   TA--               4    13005    TAA    TA   motif : A  1 times   in ref 2 times
+     15448217    1  TAAA   TAAA              15    13005    TAA    TAAA   motif : A  3 times   in ref 2 times
+cluster:             
+[[u'T', 1], ['A', 3]]
+TAAA
+[[u'T', 1], ['A', 2]]
+TAA
+[[u'T', 1], ['A', 1]]
+TA
+stem: [[u'T', 1]]
+15448217,T:1,A:3,15:13005,T:1,A:2,1:1,T:1,A:1,4:13005
+--------------
+
+
+********************
+periodic
+     16845407    1  AT
+     -------------------------------------------
+     16845407    1  ATT   ATT               8     3344    AT    ATT   motif : T  2 times   in ref 1 times
+cluster:             
+[[u'A', 1], ['T', 2]]
+ATT
+[[u'A', 1], ['T', 1]]
+AT
+stem: [[u'A', 1]]
+16845407,A:1,T:2,8:3344,A:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+     21894633    1  CAAA
+     -------------------------------------------
+     21894633    1  CAA--   CAA--              57     2710    CAAA    CAA   motif : A  2 times   in ref 3 times
+     21894633    1  CA---   CA---               1     2710    CAAA    CA   motif : A  1 times   in ref 3 times
+     21894633    1  CAAAA   CAAAA              35     2710    CAAA    CAAAA   motif : A  4 times   in ref 3 times
+cluster:             
+[[u'C', 1], ['A', 4]]
+CAAAA
+[[u'C', 1], ['A', 3]]
+CAAA
+[[u'C', 1], ['A', 2]]
+CAA
+[[u'C', 1], ['A', 1]]
+CA
+stem: [[u'C', 1]]
+21894633,C:1,A:4,35:2710,C:1,A:3,1:1,C:1,A:2,57:2710,C:1,A:1,1:2710
+--------------
+
+
+********************
+periodic
+     22930880    1  GT
+     -------------------------------------------
+     22930880    1  GTT   GTT               9    13313    GT    GTT   motif : T  2 times   in ref 1 times
+cluster:             
+[[u'G', 1], ['T', 2]]
+GTT
+[[u'G', 1], ['T', 1]]
+GT
+stem: [[u'G', 1]]
+22930880,G:1,T:2,9:13313,G:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+     23545275    1  GT
+     -------------------------------------------
+     23545275    1  GTT   GTT              47     2401    GT    GTT   motif : T  2 times   in ref 1 times
+cluster:             
+[[u'G', 1], ['T', 2]]
+GTT
+[[u'G', 1], ['T', 1]]
+GT
+stem: [[u'G', 1]]
+23545275,G:1,T:2,47:2401,G:1,T:1,1:1
+--------------
+
+
+********************
+periodic
+     24052489    1  GAA
+     -------------------------------------------
+     24052489    1  G--   G--               1     1376    GAA    G   motif : A  0 times   in ref 2 times
+cluster:             
+[[u'G', 1], ['A', 2]]
+GAA
+[[u'G', 1]]
+G
+stem: [[u'G', 1]]
+24052489,G:1,A:2,1:1,G:1,1:1376
+--------------
+
+166
+

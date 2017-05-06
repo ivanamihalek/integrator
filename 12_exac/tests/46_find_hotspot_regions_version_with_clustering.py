@@ -80,28 +80,67 @@ def	number_of_appearances(motif, string):
 			break
 	return count
 
-#########################################
-def characterize_region(cluster):
-	smallest_ref_pos = min ([x[0] for x in cluster])
-	upper_bound_ref  = max ([x[0] + len(x[1]) -1 for x in cluster])
-	number_of_variants = 0
-	for v in cluster:
-		[pos, ref, alts, var_counts, total_count, max_reach] = v
-		number_of_variants += len( filter(lambda x: len(x)>0 and int(x)>0, var_counts.split(",")) )
-	return [smallest_ref_pos, upper_bound_ref, number_of_variants]
+#######################################
+def snip(string):
+	r = string
+	if len(string) > 10: r = string[:10] + "..."
+	return r
+
+
+
+#######################################
+def find_comparable_patterns(raw_seqs, motifs):
+	clusters = []
+	# it si important that these are sorted, because I will
+	# allow as a special exception that only the first
+	# motif is present, but then
+	# pattern would not be equal to cluster[0] unless sorted
+	raw_seqs.sort(lambda x, y: cmp(-len(x), -len(y)))
+	for new_seq in raw_seqs:
+		new_pattern = decomposition(new_seq, motifs)
+		#print new_seq, new_pattern
+		cluster_found = False
+		for cluster in clusters:
+			#patterns for all members of a cluster should be the same
+			pattern = cluster[0]
+			if equivalent(pattern,new_pattern):
+				cluster.append(new_pattern)
+				cluster_found = True
+				break
+		# if not seq placed, start new cluster
+		if not cluster_found:
+			clusters.append([new_pattern])
+
+	return clusters
+
+
+
 
 #########################################
-def motif_report(chrom, cluster):
+def reconstruct_alignment(chrom, cluster):
+
+
+	periodic = periodicity_found(cluster)
+	if not periodic: return
+
+	print "\n********************"
+	print "periodic"
 
 	smallest_ref_pos = min ([x[0] for x in cluster])
-	upper_bound_ref  = max ([x[0] + len(x[1]) -1 for x in cluster])
+	upper_bound_ref = max ([x[0] + len(x[1]) -1 for x in cluster])
 	original_region = get_region_from_das(assembly, chrom, smallest_ref_pos, upper_bound_ref).upper()
 	refseq = original_region
-
+	for v in cluster:
+		[pos, ref, alts, var_counts, total_count, max_reach] = v
+		relative_pos = pos - smallest_ref_pos
+		new_seq = refseq[:relative_pos] + ref + refseq[relative_pos + len(ref):]
+		refseq = new_seq
+	print " %12d  %3d  %s" %  (smallest_ref_pos, 1, refseq)
+	print "     -------------------------------------------"
+	alignment = []
 	seqinfo   = []
 	motifs    = []
-	alignment = []
-	# I don't really need the alignment here, but since I have it implemented ...
+	# formal "variant" to hold reference sequence
 	alt = [smallest_ref_pos, refseq[0], refseq[0], 1, 1, 1, None]
 	alignment.append(refseq)
 	seqinfo.append(alt)
@@ -114,7 +153,8 @@ def motif_report(chrom, cluster):
 		a = -1 #  index of the alternative sequence fo this position
 		for sequence in alternatives:
 			a += 1
-			motif = find_motif_in_pair(sequence, ref)
+			motif = None
+			if periodic: motif = find_motif_in_pair(sequence, ref)
 			if motif and not motif in motifs: motifs.append(motif)
 			alt = [pos, ref, sequence, int(counts[a]), total_count, len(ref), motif]
 			seqinfo.append(alt)
@@ -126,28 +166,45 @@ def motif_report(chrom, cluster):
 		modified_seq = alignment[s]
 		[pos, ref, sequence, count, total_count, max_reach, motif] = seqinfo[s]
 		raw_seq = modified_seq.replace('-','')
-		# it seemed to me at one point that eac might have duplicates, but they seem
-		# to have caught them and assigned them a frequency of 0
-		if count==0: continue
+		freq[raw_seq] = "%d:%d" % (count,total_count)
+		duplicate = " "
 		if raw_seq in raw_seqs:
-			pass
+			duplicate = "d"
 		else:
 			raw_seqs.append(raw_seq)
-		freq[raw_seq] = "%d:%d" % (count,total_count)
+		raw_seq_padded = raw_seq + '-'*(len(modified_seq)-len(raw_seq))
+		relative_pos = pos-smallest_ref_pos
+		print " %12d  %3d  %s   %s   %s" % (pos, relative_pos+1, modified_seq, raw_seq_padded, duplicate),
+
+		print "    %7d  %7d    %s    %s" % (count, total_count, snip(ref), snip(sequence)),
+		if motif:
+			print "  motif : %s  %d times" % (motif, number_of_appearances(motif, raw_seq[relative_pos:])),
+			print "  in ref %d times" %  number_of_appearances(motif, original_region[relative_pos:]),
+		print
 
 	########### REPORT/STORE TO DB ##########################
 	# never mind the clustering - I am not sure any more that it helps
 	# motif counting though should protect me from counting as diffent
 	# variants when a motif indel is assigned to a different place in the reepeat expansion
 	# as different a variant
-	#for cluster in find_comparable_patterns(raw_seqs, motifs):
-	report_items= []
-	for seq in raw_seqs:
-		pattern = decomposition(seq, motifs)
-		report_items.append(prettyprint(pattern) + "," + freq[to_string(pattern)])
+	for cluster in find_comparable_patterns(raw_seqs, motifs):
+		if len(cluster)<2: continue
+		print "cluster:             "
+		#report_items = [str(smallest_ref_pos+len(stem)-1)]
+		report_items = [str(smallest_ref_pos)]
+		for pattern in cluster:
+			print pattern
+			report_items.append (prettyprint(pattern))
+			report_items.append (freq[to_string(pattern)])
+			print to_string(pattern)
+		com_length = common_motifs_length(cluster)
 
+		print "stem:",  cluster[0][:com_length]
+		print ",".join(report_items)
+		print"--------------"
+	print
 
-	return ",".join(motifs), ";".join(report_items)
+	return
 
 #########################################
 def get_region_from_das(assembly, chrom, start, end):
@@ -166,8 +223,6 @@ def main():
 
 	db, cursor = connect()
 	chrom = "22"
-
-
 	table = "exac_freqs_chr_" + chrom
 	print "*"*20
 	print table
@@ -231,18 +286,7 @@ def main():
 	print "Done clustering. Max pos:", max_pos
 
 	for cluster in reasonable_clusters:
-		# no varaints: cluster is just the number of postions here, not the number of
-		# vars repoted for each
-		[start,end, number_of_variants] = characterize_region(cluster)
-		print " from: %d    to: %d    tot number of vars: %d  " % (start,end, number_of_variants)
-		periodic = periodicity_found(cluster)
-		if periodic:
-			# find motifs and their repetition patterns
-			# with the estimate of the frequency for the pattern
-			motifs, report = motif_report(chrom,cluster)
-			print motifs
-			print report
-			print
+		reconstruct_alignment(chrom, cluster)
 
 	print len(reasonable_clusters)
 	print

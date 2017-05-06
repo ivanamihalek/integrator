@@ -31,9 +31,9 @@ def main():
 	#motifs = ['T']
 	#raw_seqs=['GCACCC','GCA']
     #motifs=['C']
-    #raw_seqs =  ['TGT','TT','TG','TGTT','TTT']
-    #motifs=['T']
-
+	raw_seqs =  ['TGT','TT','TG','TGTT','TTT']
+	motifs=['T']
+	'''
 	raw_seqs = ["CTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGC",
 				"CTGCTGTTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGC",
 				"CTGCTGCTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGC", "CTGCTGTTGCTGTTGCTGC",
@@ -60,7 +60,9 @@ def main():
 				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGCTGCTGCTGCTGCTGCTGC",
 				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGCTGC",
 				"CTGCTGTTGCTGTTGCTGTTGCTGCTGCTGCTGCTGCTGTTGCTGCTGCTGCTGCTGCTGCTGCTGCTGCTGC"]
+
 	motifs = ["TGC", "TGCTGT"]
+	'''
 	tot_cluster_length = 0
 	for cluster in find_comparable_patterns(raw_seqs, motifs):
 		tot_cluster_length += len(cluster)

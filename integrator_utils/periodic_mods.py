@@ -59,8 +59,9 @@ def equivalent(p1, p2):
 	number_of_motifs_2 = len(p2)
 	# exceptions: not sure how to handle this
 	shorter = min(number_of_motifs,number_of_motifs_2)
-	if shorter==1:
-		return p1[0][0] == p2[0][0]
+	longer  = max(number_of_motifs,number_of_motifs_2)
+	if shorter==1 and shorter!=longer:
+		return p1[0] == p2[0]
 	if number_of_motifs != len(p2): return False
 	matching_motifs = filter(lambda i: p1[i][0] == p2[i][0], range(number_of_motifs))
 	return len(matching_motifs) == number_of_motifs
@@ -73,7 +74,25 @@ def to_string(pattern):
 
 def prettyprint(pattern):
 
-	return ",".join([p[0]+ ":"+ p[1] for p in pattern])
+	return ",".join([str(p[0])+ ":"+ str(p[1]) for p in pattern])
+
+def common_motifs_length(cluster_of_patterns):
+	# the  cluster of patters is  assumed to have the same
+    # motifs, and in the same order, but of the different frequency
+
+	common_pattern = cluster_of_patterns[0][:]
+	for pattern in cluster_of_patterns[1:]:
+		if len(pattern)<len(common_pattern):
+			del common_pattern[len(pattern):]
+		else:
+			for i in range(len(common_pattern)):
+				# pattern[i][0] should be the same as common_pattern[i][0]
+				# by definition of the cluster (that's the motif)
+				if pattern[i][1]!=common_pattern[i][1]:
+					del common_pattern[i:]
+					break
+	return len(common_pattern)
+
 
 
 #######################################
