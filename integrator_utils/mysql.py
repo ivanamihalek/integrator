@@ -173,14 +173,12 @@ def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False, 
                 qry += ", "
             if  value is None:
                 qry += " null "
-            elif type(value) is int:
-                qry += " %d" % value
-            elif type(value) is float:
-                qry += " %f" % value
-            else:
+            elif type(value) is str:
                 # strip its own quotes
                 value =value.replace("'", "").replace('"', '')
                 qry += " \"%s\"" % value
+            else:
+                qry += '{}'.format(value)
             first = False
         qry += ")"
         

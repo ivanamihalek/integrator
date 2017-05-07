@@ -98,6 +98,10 @@ def motif_report(chrom, cluster):
 	upper_bound_ref  = max ([x[0] + len(x[1]) -1 for x in cluster])
 	original_region = get_region_from_das(assembly, chrom, smallest_ref_pos, upper_bound_ref).upper()
 	refseq = original_region
+	if not refseq or len(refseq)==0:
+		print " problem obtaining region on the reference sequence:"
+		print assembly, chrom, smallest_ref_pos, upper_bound_ref
+		return None, None
 
 	seqinfo   = []
 	motifs    = []
@@ -182,7 +186,7 @@ def find_complex_variants(cursor, table):
 		ref_len = len(ref)
 		if ref_len == 1 and ("," in alt) and (len(alt) + 1) == 2 * len(list_of_alts): continue
 		# remove cases with count 0
-		new_alts = []
+		new_alts   = []
 		new_counts = []
 		list_of_counts = var_counts.split(",")
 		for i in range(len(list_of_alts)):
@@ -213,13 +217,18 @@ def find_clusters_of_candidates(candidates):
 	reasonable_clusters = [c for c in clusters if len(c)>=1]
 	return reasonable_clusters
 
+########################################
+# the clustering and motif searching bomb for  the region
+# 14:106330014-106330121 resulting in the report string > 65,000 chracters
+
 #########################################
 def main():
 
 	db, cursor = connect()
-	chroms = [str(i) for i in range(1,23)] + ['X','Y']
+	#chroms = [str(i) for i in range(1,23)] + ['X','Y']
+	chroms = [str(i) for i in range(1,10)]
 	chroms.reverse()
-	for chrom in chroms[:5]:
+	for chrom in chroms:
 		t0 = time()
 		table = "exac_freqs_chr_" + chrom
 		print
@@ -240,24 +249,29 @@ def main():
 		print "Done clustering. Max pos:", max([cluster[0][0] for cluster in clusters])
 		print "Number of hotspot regions:", len(clusters)
 
+
 		number_of_vars_in_clusters = 0
 		number_of_clusters_with_periodic_motifs = 0
 		for cluster in clusters:
-			# no varaints: cluster is just the number of postions here, not the number of
+			# no varaints: cluster is just the number of positions here, not the number of
 			# vars repoted for each
 			[start,end, number_of_variants] = characterize_region(cluster)
-			number_of_vars_in_clusters += number_of_variants
-			#print " from: %d    to: %d    tot number of vars: %d  " % (start,end, number_of_variants)
 			periodic = periodicity_found(cluster)
+			if not periodic and number_of_variants<2: continue
+			number_of_vars_in_clusters += number_of_variants
+			fixed_fields  = {'chrom':chrom, 'start':start, 'end':end}
+			update_fields = {'number_of_variants': number_of_variants}
 			if periodic:
 				number_of_clusters_with_periodic_motifs += 1
 				# find motifs and their repetition patterns
 				# with the estimate of the frequency for the pattern
-				#motifs, report = motif_report(chrom,cluster)
-				#print motifs
-				#print report
-				#print
+				motifs, pattern_freqs = motif_report(chrom,cluster)
+				if motifs:
+					update_fields['motifs'] = motifs
+					if len(pattern_freqs)<10000:
+						update_fields['pattern_freqs'] = pattern_freqs
 
+			store_or_update(cursor, 'exac_hotspots', fixed_fields, update_fields)
 		print
 		print "Number of variants with clusters:", number_of_vars_in_clusters
 		print "Number of clusters with periodic motifs:", number_of_clusters_with_periodic_motifs
@@ -271,5 +285,3 @@ def main():
 #########################################
 if __name__ == '__main__':
 	main()
-
-# 8,608,914
