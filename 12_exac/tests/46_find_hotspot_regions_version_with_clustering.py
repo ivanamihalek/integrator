@@ -222,7 +222,7 @@ def get_region_from_das(assembly, chrom, start, end):
 def main():
 
 	db, cursor = connect()
-	chrom = "14"
+	chrom = "2"
 	table = "exac_freqs_chr_" + chrom
 	print "*"*20
 	print table
@@ -241,8 +241,8 @@ def main():
 		[pos, ref, alt, var_counts, total_count, hotspot_id] = variant
 		#if pos < 28194894: continue
 		#if pos > 28194933: break
-		if pos <106330014 : continue
-		if pos >106330121 : break
+		if pos <120404600 : continue
+		if pos >120404650 : break
 		# I don't want large rearrangements here
 		if len(ref)>30: continue
 		# from these further remove cases where the variant field is a list of SNPs

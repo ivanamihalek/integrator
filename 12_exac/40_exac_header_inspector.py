@@ -60,6 +60,13 @@ X:154931044-155260560
 
 =========================================================
 
+When stratifying the frequency info, it seems that the counts are already adjustes: it says "chromosome count"
+which seems to be the same as the adjusting above:
+
+##INFO=<ID=AN_NFE,Number=1,Type=Integer,Description="Non-Finnish European Chromosome Count">
+(and if you sum all chromosome counts, they add up to AN_adj, so that should be ok)
+=========================================================
+
 By comparison with the website it seems that the number that they cite as the allele frequency is AC_Adj/AN_Adj
 there is AF or allele frq number in the VCF, but not clear what that is.
 

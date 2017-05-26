@@ -226,7 +226,7 @@ def main():
 
 	db, cursor = connect()
 	#chroms = [str(i) for i in range(1,23)] + ['X','Y']
-	chroms = [str(i) for i in range(1,10)]
+	chroms = [str(i) for i in range(10,23) + ['X','Y']]
 	chroms.reverse()
 	for chrom in chroms:
 		t0 = time()
