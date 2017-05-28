@@ -23,7 +23,7 @@ def main():
 		qry += " sas_counts text, sas_tot_count int, "
 		qry += " hotspot_id int, "
 		qry += " PRIMARY KEY (position) )" # the default engine is InnoDB
-		search_db(cursor, qry, verbose=True)
+		#search_db(cursor, qry, verbose=True)
 	cursor.close()
 	db.close()
 	return True

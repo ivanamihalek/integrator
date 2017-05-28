@@ -27,7 +27,7 @@ sub parse() {
 	$entry || return;
 	$entry =~ /\nOS   Homo sapiens/ || return;
 	#print $entry;
-	my ($uniprot_id, $full_name,$gene_name, $tissue, $fn) = ("", "", "", "", "");
+	my ($uniprot_id, $full_name,$gene_name, $tissue, $fn, $ec_number) = ("", "", "", "", "", "");
 	my $reading_function  = 0;
 	foreach (split "\n", $entry) {
 		if  (/^ID/) {
@@ -39,23 +39,30 @@ sub parse() {
 			$uniprot_id =~ s/\s//g;
 		} elsif (/^DE   RecName: /) {
 			$_  =~ s/^DE   RecName: //;
+			$_  =~ s/\{.+?\}//;
 			($full_name)  = split ";";
 			$full_name  =~ s/Full=//g;
+		} elsif (/^DE\s*EC\=([\d\.]+)[\s\;\n]+/){
+			$ec_number  = $1;
 		} elsif (/^GN   Name=/) {
 			$_ =~ s/^GN   Name=//;
 			($gene_name) = split /[;\s]/; # it ocurred to some idiot to put cross0references here
 		} elsif (/^RC   TISSUE/) {
 			$_ =~ s/^RC   TISSUE=//;
 			my $tiss = $_;
-			# their attempt to xlnk are just making things messy; sometimes we can forget to close the bracket too
+			# their attempts to xlnk are just making things messy; sometimes we can forget to close the bracket too
 			$tiss =~ s/\{.*?\}//g;
 			$tiss =~ s/\{.*?$//g;
+			$tiss =~ s/^.*?\}//g;
 			(substr $tiss, -1) eq ',' && chop $tiss;
 			(substr $tiss, -1) eq ';' || ($tiss.=";");
 			($tissue =~ $tiss) ||  ($tissue .= $tiss);
 		} elsif (/^CC/) {
 			if (/\-!\-/) {
-				$reading_function  && last;
+				if ($reading_function) {
+					$fn =~ s/\{.*?\}//g;
+					last;
+				}
 
 				if (/FUNCTION/) {
 					$reading_function  = 1;
@@ -68,8 +75,9 @@ sub parse() {
 			}
 		}
 	}
-	print "$uniprot_id\t$gene_name\t$full_name\t$tissue\t";
+	print "$uniprot_id\t$gene_name\t$full_name\t$tissue\t$ec_number\t";
 	print "$fn\n";
+	print "\n";
 	#exit;
 
 }
