@@ -9,6 +9,7 @@
 CREATE TABLE `uniprot_basic_infos` (
 `uniprot_id` varchar(40)   NOT NULL,
 `gene_name` varchar(40)   DEFAULT NULL,
+`ec_number` varchar(40)   DEFAULT NULL,
 `full_name`  varchar(100)   DEFAULT NULL,
 `tissue`  blob   DEFAULT NULL,
 `function` blob  DEFAULT NULL,

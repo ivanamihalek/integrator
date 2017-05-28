@@ -1,5 +1,8 @@
 #! /usr/bin/perl -w
 
+# store as uniprot_basic_infos.csv
+# and load with
+#  mysqlimport --local -u root -p blimps_development  uniprot_basic_infos.csv
 use strict;
 use warnings;
 sub parse();
@@ -75,9 +78,8 @@ sub parse() {
 			}
 		}
 	}
-	print "$uniprot_id\t$gene_name\t$full_name\t$tissue\t$ec_number\t";
+	print "$uniprot_id\t$gene_name\t$ec_number\t$full_name\t$tissue\t";
 	print "$fn\n";
-	print "\n";
 	#exit;
 
 }

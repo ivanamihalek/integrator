@@ -27,13 +27,19 @@ replace["250951"] = None
 replace["258920"] = "258900" # moved by omim
 replace["612934"] = "614921" # moved by omim
 replace["600737"] = "605820" # moved by omim
-
-replace[""] = None
-replace[""] = None
-replace[""] = None
-
-
-replace[""] = None
+replace["307600"] = "602014" # moved by omim
+replace["540000"] = None # mitochondrialy encoded
+replace["545000"] = None # mitochondrialy encoded
+replace["535000"] = None # mitochondrialy encoded
+replace["530000"] = None
+replace["520000"] = None # mitochondrialy encoded
+replace["500009"] = None # mitochondrialy encoded
+replace["500002"] = None # mitochondrialy encoded
+replace["500001"] = None # mitochondrialy encoded
+replace["551500"] = None # mitochondrialy encoded
+replace["551000"] = None # mitochondrialy encoded
+replace["557000"] = None # mitochondrialy encoded
+replace["609055"] = "256730" #mapping by Ivana - the phenotype may be caused by other genes too
 fix = {}
 
 #  mim_number | gene_symbols  | gene_name  | approved_symbol |
@@ -69,6 +75,7 @@ def main():
 	fix_omim_table(cursor)
 
 	not_found = []
+	total_found = 0
 	total = 0
 	for line in infile:
 		total += 1
@@ -85,8 +92,11 @@ def main():
 			# it looks like there is some mixup wiht disease and gene number
 			qry = 'select * from omim_genemaps where mim_number = %d ' % int(omim_disease_id)
 			ret = search_db(cursor, qry)
-			if not ret: not_found.append(omim_disease_id)
-	print total, len(not_found)
+			if not ret:
+				not_found.append(omim_disease_id)
+				continue
+		total_found += 1
+	print total, total_found
 
 	for omim_disease_id in not_found:
 		print omim_disease_id
