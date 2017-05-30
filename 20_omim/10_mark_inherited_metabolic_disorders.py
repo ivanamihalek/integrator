@@ -85,21 +85,25 @@ def main():
 			omim_disease_id = replace[omim_disease_id]
 		qry = 'select * from omim_genemaps where phenotypes like "%%%s%%"' % omim_disease_id
 		ret = search_db(cursor, qry)
-		if ret:
-			#print ret
-			pass
-		else:
+		if not ret:
 			# it looks like there is some mixup wiht disease and gene number
 			qry = 'select * from omim_genemaps where mim_number = %d ' % int(omim_disease_id)
 			ret = search_db(cursor, qry)
 			if not ret:
 				not_found.append(omim_disease_id)
 				continue
-		total_found += 1
-	print total, total_found
+		for line in ret:
+			[id, mim_number , gene_symbols , gene_name , approved_symbol,
+			entrez_gene_id , ensembl_gene_id , phenotypes , mouse_gene_symbol , inherited_error_of_metabolism] = line
+			print id, mim_number, phenotypes
+			qry = "update omim_genemaps set inherited_error_of_metabolism=1 where id=%d" %id
+			search_db(cursor, qry)
 
-	for omim_disease_id in not_found:
-		print omim_disease_id
+		total_found += 1
+	print "total diseases scanned:", total, "mapped to gene", total_found
+
+	#for omim_disease_id in not_found:
+	#	print omim_disease_id
 
 #########################################
 if __name__ == '__main__':
