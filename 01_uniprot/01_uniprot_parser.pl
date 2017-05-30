@@ -30,7 +30,7 @@ sub parse() {
 	$entry || return;
 	$entry =~ /\nOS   Homo sapiens/ || return;
 	#print $entry;
-	my ($uniprot_id, $full_name,$gene_name, $tissue, $fn, $ec_number) = ("", "", "", "", "", "");
+	my ($uniprot_id, $full_name,$gene_name, $tissue, $fn, $ec_number, $ensembl_id) = ("", "", "", "", "", "", "");
 	my $reading_function  = 0;
 	foreach (split "\n", $entry) {
 		if  (/^ID/) {
@@ -47,6 +47,8 @@ sub parse() {
 			$full_name  =~ s/Full=//g;
 		} elsif (/^DE\s*EC\=([\d\.]+)[\s\;\n]+/){
 			$ec_number  = $1;
+		} elsif (/^DR   Ensembl.*(ENSG\d{11}).*/){
+			$ensembl_id  = $1;
 		} elsif (/^GN   Name=/) {
 			$_ =~ s/^GN   Name=//;
 			($gene_name) = split /[;\s]/; # it ocurred to some idiot to put cross0references here
@@ -64,7 +66,7 @@ sub parse() {
 			if (/\-!\-/) {
 				if ($reading_function) {
 					$fn =~ s/\{.*?\}//g;
-					last;
+					$reading_function  = 0;
 				}
 
 				if (/FUNCTION/) {
@@ -78,8 +80,7 @@ sub parse() {
 			}
 		}
 	}
-	print "$uniprot_id\t$gene_name\t$ec_number\t$full_name\t$tissue\t";
+	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$full_name\t$tissue\t";
 	print "$fn\n";
-	#exit;
 
 }

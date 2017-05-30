@@ -94,9 +94,9 @@ def main():
 				continue
 		for line in ret:
 			[id, mim_number , gene_symbols , gene_name , approved_symbol,
-			entrez_gene_id , ensembl_gene_id , phenotypes , mouse_gene_symbol , inherited_error_of_metabolism] = line
+			entrez_gene_id , ensembl_gene_id , phenotypes , mouse_gene_symbol , inborn_error_of_metabolism] = line
 			print id, mim_number, phenotypes
-			qry = "update omim_genemaps set inherited_error_of_metabolism=1 where id=%d" %id
+			qry = "update omim_genemaps set inborn_error_of_metabolism=1 where id=%d" %id
 			search_db(cursor, qry)
 
 		total_found += 1

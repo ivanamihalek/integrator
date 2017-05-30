@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/20_omim/10_mark_metabolic.py" afterPath="$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" afterPath="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" afterPath="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py" afterPath="$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -23,11 +25,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
-      <file leaf-file-name="10_mark_inherited_metabolic_disorders.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py">
+      <file leaf-file-name="01_uniprot_parser.pl" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1075">
-              <caret line="99" column="4" lean-forward="true" selection-start-line="99" selection-start-column="4" selection-end-line="99" selection-end-column="4" />
+            <state relative-caret-position="1335">
+              <caret line="86" column="0" lean-forward="true" selection-start-line="86" selection-start-column="0" selection-end-line="86" selection-end-column="0" />
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="02_uniprot_table.sql" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="703">
+              <caret line="19" column="0" lean-forward="true" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -56,6 +70,7 @@
       <find>[motif]</find>
       <find>,</find>
       <find>|</find>
+      <find>inherit</find>
     </findStrings>
     <replaceStrings>
       <replace>#</replace>
@@ -75,7 +90,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/27_the_remaining_enzrxn_edges.py" />
         <option value="$PROJECT_DIR$/25_metacyc_substrate_inspector.py" />
         <option value="$PROJECT_DIR$/30_metacyc_enrxn_regulators.py" />
         <option value="$PROJECT_DIR$/25_metacyc_enzrxn_pathways.py" />
@@ -121,17 +135,18 @@
         <option value="$PROJECT_DIR$/12_exac/41_exac_mysql_tables.py" />
         <option value="$PROJECT_DIR$/18_mesh/01_parse_mesh_ascii.pl" />
         <option value="$PROJECT_DIR$/20_omim/10_mark_emtabolic.py" />
-        <option value="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" />
-        <option value="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" />
         <option value="$PROJECT_DIR$/20_omim/02_omim_genemap_table.sql" />
         <option value="$PROJECT_DIR$/20_omim/10_mark_metabolic.py" />
         <option value="$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py" />
+        <option value="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" />
+        <option value="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" />
+        <option value="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="504" />
-    <option name="y" value="86" />
+    <option name="x" value="768" />
+    <option name="y" value="276" />
     <option name="width" value="2829" />
     <option name="height" value="1795" />
   </component>
@@ -174,6 +189,48 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="22_pdb" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="20_omim" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="10_metacyc" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="01_uniprot" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -188,13 +245,13 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/06_ucsc" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/integrator_utils" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -384,9 +441,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="504" y="86" width="2829" height="1795" extended-state="0" />
+    <frame x="768" y="276" width="2829" height="1795" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23047014" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23047014" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3277685" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -440,14 +498,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/integrator_utils/xml2csv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" />
     <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py" />
     <entry file="file://$PROJECT_DIR$/integrator_utils/xml2csv.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -642,13 +692,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="666">
-          <caret line="18" column="0" lean-forward="true" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/01_uniprot/11_add_uniprot_alt_names_to_id_table.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -656,10 +699,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
+    <entry file="file://$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="4" column="32" lean-forward="false" selection-start-line="4" selection-start-column="32" selection-end-line="4" selection-end-column="32" />
+        <state relative-caret-position="518">
+          <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -673,9 +717,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1075">
-          <caret line="99" column="4" lean-forward="true" selection-start-line="99" selection-start-column="4" selection-end-line="99" selection-end-column="4" />
+        <state relative-caret-position="222">
+          <caret line="70" column="47" lean-forward="false" selection-start-line="70" selection-start-column="40" selection-end-line="70" selection-end-column="47" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/10_metacyc/22_metacyc_protein_id_mapper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1184">
+          <caret line="206" column="41" lean-forward="false" selection-start-line="206" selection-start-column="41" selection-end-line="206" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="703">
+          <caret line="19" column="0" lean-forward="true" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1335">
+          <caret line="86" column="0" lean-forward="true" selection-start-line="86" selection-start-column="0" selection-end-line="86" selection-end-column="0" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
