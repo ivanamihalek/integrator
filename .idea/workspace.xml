@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" afterPath="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/uniprot_basic_infos.csv" afterPath="$PROJECT_DIR$/01_uniprot/uniprot_basic_infos.csv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" afterPath="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" />
     </list>
     <ignored path="integrator.iws" />
@@ -27,8 +27,8 @@
       <file leaf-file-name="10_find_pdb_models_for_iem_proteins.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="555">
-              <caret line="15" column="14" lean-forward="false" selection-start-line="15" selection-start-column="14" selection-end-line="15" selection-end-column="14" />
+            <state relative-caret-position="962">
+              <caret line="26" column="40" lean-forward="false" selection-start-line="26" selection-start-column="40" selection-end-line="26" selection-end-column="40" />
               <folding />
             </state>
           </provider>
@@ -37,10 +37,11 @@
       <file leaf-file-name="01_uniprot_parser.pl" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1073">
-              <caret line="29" column="21" lean-forward="true" selection-start-line="29" selection-start-column="21" selection-end-line="29" selection-end-column="21" />
+            <state relative-caret-position="444">
+              <caret line="18" column="31" lean-forward="false" selection-start-line="18" selection-start-column="31" selection-end-line="18" selection-end-column="31" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
+                <element signature="e#353#385#0#Perl5" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -144,8 +145,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="509" />
-    <option name="y" value="170" />
+    <option name="x" value="189" />
+    <option name="y" value="84" />
     <option name="width" value="2986" />
     <option name="height" value="1876" />
   </component>
@@ -426,7 +427,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="509" y="170" width="2986" height="1876" extended-state="0" />
+    <frame x="189" y="84" width="2986" height="1876" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23040858" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
@@ -714,18 +715,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="555">
-          <caret line="15" column="14" lean-forward="false" selection-start-line="15" selection-start-column="14" selection-end-line="15" selection-end-column="14" />
+        <state relative-caret-position="962">
+          <caret line="26" column="40" lean-forward="false" selection-start-line="26" selection-start-column="40" selection-end-line="26" selection-end-column="40" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1073">
-          <caret line="29" column="21" lean-forward="true" selection-start-line="29" selection-start-column="21" selection-end-line="29" selection-end-column="21" />
+        <state relative-caret-position="444">
+          <caret line="18" column="31" lean-forward="false" selection-start-line="18" selection-start-column="31" selection-end-line="18" selection-end-column="31" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
+            <element signature="e#353#385#0#Perl5" expanded="true" />
           </folding>
         </state>
       </provider>

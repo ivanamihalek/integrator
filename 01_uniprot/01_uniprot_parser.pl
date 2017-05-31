@@ -7,12 +7,20 @@ use strict;
 use warnings;
 sub parse();
 
+
 @ARGV ||
 	die "Usage:  $0  <file name> \n";
 
 my $filename = $ARGV[0];
 open (IF, "<$filename" )
 	|| die "Cno $filename: $!.\n";
+
+
+my %manual_fix_for_ensembl = ();
+#not sure what is going on here:
+#  O43826 is annotated an manually reviewed entry for SLC37A4, associated with ENSG00000281500 --> patch in ensembl GRCh38
+# U3KQS2 is unreviewd, un-annotated, also says SLC37A4, and associated with ENSG00000137700 ensembl GRCh37
+$manual_fix_for_ensembl{'O43826'} = 'ENSG00000137700';
 
 my $entry = "";
 while ( <IF> ) {
@@ -40,6 +48,7 @@ sub parse() {
 			$_  =~ s/^AC//;
 			($uniprot_id)  = split ";";
 			$uniprot_id =~ s/\s//g;
+			defined $manual_fix_for_ensembl{$uniprot_id} && ($ensembl_id=$manual_fix_for_ensembl{$uniprot_id});
 		} elsif (/^DE   RecName: /) {
 			$_  =~ s/^DE   RecName: //;
 			$_  =~ s/\{.+?\}//;
