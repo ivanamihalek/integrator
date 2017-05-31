@@ -48,7 +48,10 @@ sub parse() {
 		} elsif (/^DE\s*EC\=([\d\.]+)[\s\;\n]+/){
 			$ec_number  = $1;
 		} elsif (/^DR   Ensembl.*(ENSG\d{11}).*/){
-			$ensembl_id  = $1;
+			if ($ensembl_id !~ $1) {
+				$ensembl_id && ($ensembl_id .= ";");
+				$ensembl_id .= $1;
+			}
 		} elsif (/^GN   Name=/) {
 			$_ =~ s/^GN   Name=//;
 			($gene_name) = split /[;\s]/; # it ocurred to some idiot to put cross0references here
