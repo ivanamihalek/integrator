@@ -11,6 +11,7 @@ CREATE TABLE `uniprot_basic_infos` (
 `gene_name` varchar(40)   DEFAULT NULL,
 `ensembl_gene_id` varchar(40)   DEFAULT NULL,
 `ec_number` varchar(40)   DEFAULT NULL,
+`canonical_aa_length` int   DEFAULT NULL,
 `full_name`  varchar(100)   DEFAULT NULL,
 `tissue`  blob   DEFAULT NULL,
 `function` blob  DEFAULT NULL,

@@ -20,7 +20,7 @@ def main():
 	else:
 		switch_to_db(cursor, 'blimps_production')
 
-	qry = "select id, alias_symbol from genes where not alias_symbol is  null"
+	qry = "select id, synonyms from genes where synonyms is not null"
 	for row in search_db(cursor,qry):
 		[id, alias_symbol] = row
 		if not alias_symbol or alias_symbol == "": continue
@@ -28,7 +28,7 @@ def main():
 		# to replace regexp, need to use re.sub - how hard is it to warn the user about such crap
 		new_alias_symbol = '|'.join(list(set(alias_symbol.replace(' ','').replace("\'","\'\'").upper().split('|'))))
 		if alias_symbol == new_alias_symbol: continue
-		qry  = "update genes set alias_symbol='%s' " % new_alias_symbol
+		qry  = "update genes set synonyms='%s' " % new_alias_symbol
 		qry += "where id=%d" % id
 		search_db(cursor,qry,verbose=True)
 	cursor.close()

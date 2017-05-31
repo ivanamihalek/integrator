@@ -64,8 +64,6 @@ def fix_omim_table(cursor):
 			qry +="VALUES (%s) " % fix[mim_number]
 			ret = search_db(cursor, qry, verbose=True)
 
-
-
 ##########################################
 def main():
 	infile = open("/databases/omim/omim_inherited_metabolic_disorders_list.txt")
@@ -87,7 +85,7 @@ def main():
 		ret = search_db(cursor, qry)
 		if not ret:
 			# it looks like there is some mixup wiht disease and gene number
-			qry = 'select * from omim_genemaps where mim_number = %d ' % int(omim_disease_id)
+			qry = 'select * from omim_genemaps where mim_number=%d ' % int(omim_disease_id)
 			ret = search_db(cursor, qry)
 			if not ret:
 				not_found.append(omim_disease_id)
@@ -95,8 +93,9 @@ def main():
 		for line in ret:
 			[id, mim_number , gene_symbols , gene_name , approved_symbol,
 			entrez_gene_id , ensembl_gene_id , phenotypes , mouse_gene_symbol , inborn_error_of_metabolism] = line
+			if not ensembl_gene_id or ensembl_gene_id=="": continue # this does not map to a gene; could be del o some such
 			print id, mim_number, phenotypes
-			qry = "update omim_genemaps set inborn_error_of_metabolism=1 where id=%d" %id
+			qry = "update omim_genemaps set inborn_error_of_metabolism=1 where id=%d" % id
 			search_db(cursor, qry)
 
 		total_found += 1

@@ -24,7 +24,7 @@ $manual_fix_for_ensembl{'O43826'} = 'ENSG00000137700';
 
 my $entry = "";
 while ( <IF> ) {
-	if (/^ID/) {
+	if (/^\/\//) {
 		parse();
 		$entry = $_;
 	} else {
@@ -38,7 +38,8 @@ sub parse() {
 	$entry || return;
 	$entry =~ /\nOS   Homo sapiens/ || return;
 	#print $entry;
-	my ($uniprot_id, $full_name,$gene_name, $tissue, $fn, $ec_number, $ensembl_id) = ("", "", "", "", "", "", "");
+	my ($uniprot_id, $full_name,$gene_name, $tissue, $fn, $ec_number, $ensembl_id,$aa_lengths) =
+		("", "", "", "", "", "", "", "");
 	my $reading_function  = 0;
 	foreach (split "\n", $entry) {
 		if  (/^ID/) {
@@ -90,9 +91,13 @@ sub parse() {
 				$_ =~ s/CC      //;
 				$fn .= $_." ";
 			}
+		} elsif (/^SQ\s+SEQUENCE\s+(\d+)\s*AA/) {
+			#$aa_lengths && ($aa_lengths.=";");
+			# as of this writing, there is singe SQ field, presumably corresponding to the canonical sequence
+			$aa_lengths || ($aa_lengths .= $1);
 		}
 	}
-	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$full_name\t$tissue\t";
+	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$aa_lengths\t$full_name\t$tissue\t";
 	print "$fn\n";
 
 }
