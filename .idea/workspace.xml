@@ -2,12 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" afterPath="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/22_ensembl/01_ensembl_phenotypes_table.sql" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" afterPath="$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/22_pdb/integrator_utils" afterPath="$PROJECT_DIR$/24_pdb/integrator_utils" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" afterPath="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/12_cleanup_alias_names_in_uniprot.py" afterPath="$PROJECT_DIR$/01_uniprot/12_cleanup_alias_names_in_uniprot.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/uniprot_basic_infos.csv" afterPath="$PROJECT_DIR$/01_uniprot/uniprot_basic_infos.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py" afterPath="$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" afterPath="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -27,22 +26,35 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
-      <file leaf-file-name="11_add_uniprot_alt_names_to_id_table.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/01_uniprot/11_add_uniprot_alt_names_to_id_table.py">
+      <file leaf-file-name="02_uniprot_table.sql" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-999">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="740">
+              <caret line="20" column="18" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="12_cleanup_alias_names_in_uniprot.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/01_uniprot/12_cleanup_alias_names_in_uniprot.py">
+      <file leaf-file-name="01_ensembl_phenotypes_table.sql" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/22_ensembl/01_ensembl_phenotypes_table.sql">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="777">
-              <caret line="22" column="63" lean-forward="false" selection-start-line="22" selection-start-column="63" selection-end-line="22" selection-end-column="63" />
+            <state relative-caret-position="185">
+              <caret line="5" column="35" lean-forward="true" selection-start-line="5" selection-start-column="35" selection-end-line="5" selection-end-column="35" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="01_uniprot_parser.pl" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="148">
+              <caret line="4" column="77" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="77" />
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+                <element signature="e#353#385#0#Perl5" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -90,7 +102,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/30_metacyc_enrxn_regulators.py" />
         <option value="$PROJECT_DIR$/25_metacyc_enzrxn_pathways.py" />
         <option value="$PROJECT_DIR$/26_metacyc_pwy_hierarchy.py" />
         <option value="$PROJECT_DIR$/27_metacyc_pwy_hierarchy.py" />
@@ -137,16 +148,17 @@
         <option value="$PROJECT_DIR$/20_omim/02_omim_genemap_table.sql" />
         <option value="$PROJECT_DIR$/20_omim/10_mark_metabolic.py" />
         <option value="$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py" />
-        <option value="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" />
-        <option value="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" />
         <option value="$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl" />
         <option value="$PROJECT_DIR$/01_uniprot/12_cleanup_alias_names_in_uniprot.py" />
+        <option value="$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py" />
+        <option value="$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql" />
+        <option value="$PROJECT_DIR$/22_ensembl/01_ensembl_phenotypes_table.sql" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="189" />
-    <option name="y" value="86" />
+    <option name="x" value="122" />
+    <option name="y" value="92" />
     <option name="width" value="3319" />
     <option name="height" value="1875" />
   </component>
@@ -176,48 +188,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="22_pdb" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="20_omim" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="01_uniprot" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -427,8 +397,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="189" y="86" width="3319" height="1875" extended-state="0" />
-    <editor active="true" />
+    <frame x="122" y="92" width="3319" height="1875" extended-state="0" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24013257" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -484,13 +453,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/integrator_utils/xml2csv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" />
     <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py" />
     <entry file="file://$PROJECT_DIR$/integrator_utils/xml2csv.py">
@@ -684,26 +646,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/22_pdb/10_find_pdb_models_for_iem_proteins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="333">
-          <caret line="9" column="28" lean-forward="false" selection-start-line="9" selection-start-column="28" selection-end-line="9" selection-end-column="28" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2516">
           <caret line="68" column="75" lean-forward="true" selection-start-line="68" selection-start-column="75" selection-end-line="68" selection-end-column="75" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="222">
-          <caret line="6" column="48" lean-forward="true" selection-start-line="6" selection-start-column="48" selection-end-line="6" selection-end-column="48" />
           <folding />
         </state>
       </provider>
@@ -716,30 +662,53 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
+    <entry file="file://$PROJECT_DIR$/01_uniprot/12_cleanup_alias_names_in_uniprot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1711">
-          <caret line="96" column="46" lean-forward="false" selection-start-line="96" selection-start-column="46" selection-end-line="96" selection-end-column="46" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="e#353#385#0#Perl5" expanded="true" />
-            <element signature="e#2640#2675#0#Perl5" expanded="true" />
-          </folding>
+        <state relative-caret-position="74">
+          <caret line="3" column="30" lean-forward="true" selection-start-line="3" selection-start-column="30" selection-end-line="3" selection-end-column="30" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/01_uniprot/11_add_uniprot_alt_names_to_id_table.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-999">
+        <state relative-caret-position="-2553">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/12_cleanup_alias_names_in_uniprot.py">
+    <entry file="file://$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="777">
-          <caret line="22" column="63" lean-forward="false" selection-start-line="22" selection-start-column="63" selection-end-line="22" selection-end-column="63" />
+        <state relative-caret-position="70">
+          <caret line="16" column="11" lean-forward="true" selection-start-line="16" selection-start-column="11" selection-end-line="16" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/01_uniprot_parser.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="4" column="77" lean-forward="true" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="77" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#353#385#0#Perl5" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="740">
+          <caret line="20" column="18" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/22_ensembl/01_ensembl_phenotypes_table.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="185">
+          <caret line="5" column="35" lean-forward="true" selection-start-line="5" selection-start-column="35" selection-end-line="5" selection-end-column="35" />
           <folding />
         </state>
       </provider>

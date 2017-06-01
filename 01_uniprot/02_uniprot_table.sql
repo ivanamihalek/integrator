@@ -5,6 +5,8 @@
 -- then load a cleaned biogrid table from mysql shell
 -- mysql>  load data local infile 'uniprot.csv' into table uniprot_basic_infos ignore 1 lines;
 -- the horrible table name is to comply with rails pluralization convention
+-- simpler -- not the matching file and table name
+-- mysqlimport --local -u root -p blimps_development  uniprot_basic_infos.csv
 
 CREATE TABLE `uniprot_basic_infos` (
 `uniprot_id` varchar(40)   NOT NULL,

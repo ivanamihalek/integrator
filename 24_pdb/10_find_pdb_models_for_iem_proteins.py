@@ -35,25 +35,26 @@ def main():
 			print "no ensembl_gene_id: ", approved_symbol
 			print phenotypes
 			exit()
-		print approved_symbol, ensembl_gene_id, phenotypes
-		qry  = "select uniprot_id from uniprot_basic_infos where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
+		qry  = "select uniprot_id, canonical_aa_length from uniprot_basic_infos where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
 		ret2 = search_db(cursor, qry)
 		proteins += len(ret2)
 		if not ret2:
 			uniprot_not_found.append(ensembl_gene_id)
 			continue
 		for line2 in ret2:
-			[uniprot_id] = line2
+			[uniprot_id, canonical_aa_length] = line2
 			if not pdbmodels.has_key(uniprot_id):
 				no_models.append(uniprot_id)
-				print "no structure"
 				continue
+			for model in pdbmodels[uniprot_id]:
+				[coordinate_id, provider, start, end, template, qmean, qmean_norm,url] = model
 
-			print "\t", uniprot_id
-			found += 1
-			print pdbmodels[uniprot_id]
+			# the gene, corresponding to x and y uniprots, which is/is not an enzyme
+			# has the best disjunct models in ...
+			# this protein is natural n-mer
+			# it binds a,b,c
+			# the compounds found in the model correspond to
 
-		exit()
 	print "proteins:", proteins
 	if len(uniprot_not_found)>0:
 		print 'uniprot entries not found:'
