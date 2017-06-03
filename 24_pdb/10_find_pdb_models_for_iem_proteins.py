@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 from integrator_utils.mysql import *
+import os
+import urllib
 
 def parse_meta(swissmetafile):
 	infile = open(swissmetafile,"r")
@@ -14,9 +16,21 @@ def parse_meta(swissmetafile):
 	return models
 
 ##########################################
+def parse_url(ur):
+	# url of the form
+	#https://swissmodel.expasy.org/repository/uniprot/P22304.pdb?from=34&to=550&template=5fql.1.A&provider=swissmodel
+	[addr, fnm] = ur.split('?')
+	uniprot_id = addr.split("/")[-1].replace('.pdb','')
+	pdbname =  uniprot_id
+	for field in fnm.split("&"):
+		[k,v] = field.split("=")
+		pdbname += "_" + v
+	pdbname += ".pdb"
+	return pdbname
+##########################################
 def main():
-
-	swissmodel_meta_file = "/databases/swissmodel/index_human.csv"
+	swissmodel_dir = "/databases/swissmodel"
+	swissmodel_meta_file = swissmodel_dir+"/index_human.csv"
 
 	db, cursor = connect()
 
@@ -35,25 +49,33 @@ def main():
 			print "no ensembl_gene_id: ", approved_symbol
 			print phenotypes
 			exit()
-		qry  = "select uniprot_id, canonical_aa_length from uniprot_basic_infos where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
+		qry  = "select uniprot_id, canonical_aa_length, old_ids from uniprot_basic_infos where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
 		ret2 = search_db(cursor, qry)
 		proteins += len(ret2)
 		if not ret2:
 			uniprot_not_found.append(ensembl_gene_id)
 			continue
 		for line2 in ret2:
-			[uniprot_id, canonical_aa_length] = line2
+			[uniprot_id, canonical_aa_length, old_ids] = line2
 			if not pdbmodels.has_key(uniprot_id):
-				no_models.append(uniprot_id)
-				continue
+				uniprot_id_found = None
+				for old_id in old_ids.split(";"):  # looks like this is never really the problem
+					if pdbmodels.has_key(old_id):
+						uniprot_id_found = old_id
+						break
+				if not uniprot_id_found:
+					no_models.append(uniprot_id)
+					continue
+				uniprot_id = uniprot_id_found
+			# make folder if it does not exist
+			path = "/".join([swissmodel_dir,approved_symbol[0], approved_symbol])
+			if not os.path.exists(path): os.makedirs(path)
 			for model in pdbmodels[uniprot_id]:
 				[coordinate_id, provider, start, end, template, qmean, qmean_norm,url] = model
-
-			# the gene, corresponding to x and y uniprots, which is/is not an enzyme
-			# has the best disjunct models in ...
-			# this protein is natural n-mer
-			# it binds a,b,c
-			# the compounds found in the model correspond to
+				fraction = float(int(end)-int(start)+1)/int(canonical_aa_length)>0.75
+				pdbname = parse_url(url)
+				filepath = path+"/"+pdbname
+				if not os.path.exists(filepath) or os.stat(filepath).st_size == 0: urllib.urlretrieve (url, filepath)
 
 	print "proteins:", proteins
 	if len(uniprot_not_found)>0:
@@ -61,8 +83,8 @@ def main():
 		for ensembl_gene_id in uniprot_not_found:
 			print ensembl_gene_id
 
-	if False and len(no_models)>0:
-		print 'pdb models not found:'
+	if len(no_models)>0:
+		print len(no_models),'pdb models not found:'
 		for uniprot_id in no_models:
 			print uniprot_id
 	print "structure model found:", found

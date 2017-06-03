@@ -15,8 +15,9 @@ CREATE TABLE `uniprot_basic_infos` (
 `ec_number` varchar(40)   DEFAULT NULL,
 `canonical_aa_length` int   DEFAULT NULL,
 `full_name`  varchar(100)   DEFAULT NULL,
-`tissue`  blob   DEFAULT NULL,
-`function` blob  DEFAULT NULL,
+`tissue`  text   DEFAULT NULL,
+`function` text  DEFAULT NULL,
+`old_ids` text   DEFAULT NULL,
   PRIMARY KEY (`uniprot_id`),
   KEY `gene_name_idx` (`gene_name`)
 ) ENGINE=MyISAM;

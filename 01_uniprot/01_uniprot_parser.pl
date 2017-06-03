@@ -38,7 +38,7 @@ sub parse() {
 	$entry || return;
 	$entry =~ /\nOS   Homo sapiens/ || return;
 	#print $entry;
-	my ($uniprot_id, $full_name,$gene_name, $tissue, $fn, $ec_number, $ensembl_id,$aa_lengths) =
+	my ($uniprot_ids, $full_name,$gene_name, $tissue, $fn, $ec_number, $ensembl_id,$aa_lengths) =
 		("", "", "", "", "", "", "", "");
 	my $reading_function  = 0;
 	foreach (split "\n", $entry) {
@@ -46,10 +46,10 @@ sub parse() {
 		} elsif (/^AC/) {
 			# it looks like the first iD is current,
 			# and the rest are the older ids
-			$_  =~ s/^AC//;
-			($uniprot_id)  = split ";";
-			$uniprot_id =~ s/\s//g;
-			defined $manual_fix_for_ensembl{$uniprot_id} && ($ensembl_id=$manual_fix_for_ensembl{$uniprot_id});
+			# # AC can also stretch through multiple lines
+			$_ =~ s/^AC//;
+			$uniprot_ids .= $_;
+
 		} elsif (/^DE   RecName: /) {
 			$_  =~ s/^DE   RecName: //;
 			$_  =~ s/\{.+?\}//;
@@ -97,7 +97,12 @@ sub parse() {
 			$aa_lengths || ($aa_lengths .= $1);
 		}
 	}
+	$uniprot_ids =~ s/\s//g;
+	my @aux = split (";", $uniprot_ids);
+	my $uniprot_id = shift @aux;
+	defined $manual_fix_for_ensembl{$uniprot_id} && ($ensembl_id = $manual_fix_for_ensembl{$uniprot_id});
+	my $old_uniprot_ids = join ";", @aux;
 	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$aa_lengths\t$full_name\t$tissue\t";
-	print "$fn\n";
+	print "$fn\t$old_uniprot_ids\n";
 
 }
