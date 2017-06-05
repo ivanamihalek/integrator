@@ -2,12 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/01_uniprot/04_uniprot_seq_table.sql" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/01_uniprot/05_uniprot_seq_parser.pl" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/26_rare_diseases/01_screen_proficiency_table.sql" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/01_uniprot/uniprot_basic_infos.csv" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" afterPath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/24_pdb/12_compile_model.py" afterPath="$PROJECT_DIR$/24_pdb/12_compile_model.py" />
     </list>
     <ignored path="integrator.iws" />
@@ -38,15 +32,26 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="12_compile_model.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="12_compile_model.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/24_pdb/12_compile_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1474">
-              <caret line="202" column="25" lean-forward="false" selection-start-line="202" selection-start-column="25" selection-end-line="202" selection-end-column="25" />
+            <state relative-caret-position="1480">
+              <caret line="247" column="0" lean-forward="true" selection-start-line="247" selection-start-column="0" selection-end-line="247" selection-end-column="0" />
               <folding>
-                <element signature="e#8290#8339#0" expanded="false" />
-                <element signature="e#8441#8697#0" expanded="false" />
+                <element signature="e#18#54#0" expanded="true" />
+                <marker date="1496700289255" expanded="false" signature="14075:14130" ph="..." />
+                <marker date="1496700289255" expanded="false" signature="14225:14488" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="geom_epitope.pl" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1362">
+              <caret line="107" column="38" lean-forward="false" selection-start-line="107" selection-start-column="38" selection-end-line="107" selection-end-column="38" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -86,6 +91,9 @@
       <find>|</find>
       <find>inherit</find>
       <find>model_info[A]['end']</find>
+      <find>[$aa]</find>
+      <find>{$res_seq}</find>
+      <find>residue</find>
     </findStrings>
     <replaceStrings>
       <replace>#</replace>
@@ -98,6 +106,9 @@
       <replace>update_fields[''] =</replace>
       <replace>,</replace>
       <replace>Ae</replace>
+      <replace>{$aa1}</replace>
+      <replace>{$res_label}</replace>
+      <replace>molecule</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -106,7 +117,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/50_hmtdb_strip_html.py" />
         <option value="$PROJECT_DIR$/50_ucss_known_gene_to_bed.py" />
         <option value="$PROJECT_DIR$/50_ucsc_known_gene_to_bed.py" />
         <option value="$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" />
@@ -156,15 +166,16 @@
         <option value="$PROJECT_DIR$/01_uniprot/04_uniprot_seq_table.sql" />
         <option value="$PROJECT_DIR$/01_uniprot/05_uniprot_seq_parser.pl" />
         <option value="$PROJECT_DIR$/26_rare_diseases/01_screen_proficiency_table.sql" />
+        <option value="$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl" />
         <option value="$PROJECT_DIR$/24_pdb/12_compile_model.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="198" />
-    <option name="y" value="83" />
-    <option name="width" value="3234" />
-    <option name="height" value="1932" />
+    <option name="x" value="362" />
+    <option name="y" value="180" />
+    <option name="width" value="3269" />
+    <option name="height" value="1905" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -218,6 +229,24 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="01_uniprot" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="01_uniprot" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator_utils" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -432,10 +461,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="198" y="83" width="3234" height="1932" extended-state="0" />
+    <frame x="362" y="180" width="3269" height="1905" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22108844" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21872132" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32739156" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3291741" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -484,12 +513,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="9" />
+      <option name="time" value="10" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py" />
     <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py" />
     <entry file="file://$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" />
     <entry file="file://$PROJECT_DIR$/54_ccds_to_bed.py" />
@@ -768,12 +796,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/24_pdb/12_compile_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1474">
-          <caret line="202" column="25" lean-forward="false" selection-start-line="202" selection-start-column="25" selection-end-line="202" selection-end-column="25" />
+        <state relative-caret-position="1480">
+          <caret line="247" column="0" lean-forward="true" selection-start-line="247" selection-start-column="0" selection-end-line="247" selection-end-column="0" />
           <folding>
-            <element signature="e#8290#8339#0" expanded="false" />
-            <element signature="e#8441#8697#0" expanded="false" />
+            <element signature="e#18#54#0" expanded="true" />
+            <marker date="1496700289255" expanded="false" signature="14075:14130" ph="..." />
+            <marker date="1496700289255" expanded="false" signature="14225:14488" ph="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1362">
+          <caret line="107" column="38" lean-forward="false" selection-start-line="107" selection-start-column="38" selection-end-line="107" selection-end-column="38" />
+          <folding />
         </state>
       </provider>
     </entry>
