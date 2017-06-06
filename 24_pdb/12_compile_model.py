@@ -7,6 +7,8 @@ scratch_dir    = "/home/ivana/scratch"
 struct         = "/home/ivana/projects/enzyme_modeling/code/struct/struct"
 pdb_affine     = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/pdb_affine_tfm.pl"
 geom_epitope   = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_epitope.pl"
+compiled_model_repository = "/home/ivana/monogenic/public/pdb"
+cwd    = os.getcwd()
 
 chain_pos = 21  #length 1
 res_name_pos = 17
@@ -17,6 +19,15 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
                   'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N',
                   'GLY': 'G', 'HIS': 'H', 'LEU': 'L', 'ARG': 'R', 'TRP': 'W',
                   'ALA': 'A', 'VAL':'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M'}
+# http://www-structmed.cimr.cam.ac.uk/Course/Crystals/optimization.html
+# popular crystallographic additives
+# * Glycerol, which may stop nucleation and may give you fewer, larger crystals, and
+# has the advantage of doubling as a cryo-protectant. "GOL","PGO","PGR"
+# * Ethanol or dioxane, which have the effect of poisoning the crystals and stopping too much nucleation
+# *Divalent cations like magnesium "EDO","EOH", "DIO
+# * A detergent such as beta-octyl-glucoside "SOG","HTG"
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL"]
+physiological_ions =["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
 
 ##########################################
 def parse_url(ur):
@@ -72,7 +83,6 @@ def check_res_numbers(cursor, swissmodel_dir, path, model):
 		identical_pct[chain] = int(100*identical_pct[chain])
 	return identical_pct
 
-
 ########################################
 def fix_by_hand(url):
 	# some url's are broken
@@ -83,8 +93,6 @@ def fix_by_hand(url):
 	fnm = manual_hack[url]
 	[uni, start, end, template, provider] = fnm.replace('.pdb','').split("_")
 	return fnm, {'start':start, 'end':end, 'qmean':0.0,'qmean_norm':0.0, 'provider':provider}
-
-
 
 ########################################
 def parse_meta(swissmetafile):
@@ -130,12 +138,13 @@ def overlap(model_info, A, B):
 			return B, A
 	return None, None
 
-	
 #########################################
 def find_model_clusters(model_info, path):
 	cluster = {}
 	not_eligible_for_anchor = []
 	for model in next(os.walk(path))[2]:
+		# ignore junk in the directory
+		if "_pdb" not in model and "_swissmodel" not in model: continue
 		if model_info[model]['provider']!='swissmodel':
 			not_eligible_for_anchor.append(model)
 		else:
@@ -177,21 +186,13 @@ def extract_ligands(path, filename, scratch):
 		# the ligands (as opposed to modified residues) by setting the chain to "_"
 		if chain != "_": continue
 		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
-		# http://www-structmed.cimr.cam.ac.uk/Course/Crystals/optimization.html
-		# popular crystallographic additives
-		# * Glycerol, which may stop nucleation and may give you fewer, larger crystals, and
-		# has the advantage of doubling as a cryo-protectant. "GOL","PGO","PGR"
-        # * Ethanol or dioxane, which have the effect of poisoning the crystals and stopping too much nucleation
-        # *Divalent cations like magnesium "EDO","EOH", "DIO
-        # * A detergent such as beta-octyl-glucoside "SOG","HTG"
-		if resname in ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG"]: continue
+		if resname in crystallographic_additives: continue
 		if not resname in ligands: ligands.append(resname)
 		outfile.write(line)
 	infile.close()
 	outfile.close()
 
 	return ligands, outfilename
-
 
 #########################################
 def map_ligands_to_model (model_info, path, model, anchor, ligand_file_path, scratch):
@@ -236,13 +237,10 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 	ret = subprocess.check_output(cmd, shell=True)
 	for line in  ret.split("\n"):
 		if line.replace(" ","")=="": continue
-		print line
 		clashing_molecules.append(line[:4].replace(" ",""))
 
 	# get rid of duplicates
 	clashing_molecules = list(set(clashing_molecules))
-	print ligand_file_tfmd_path, " clashing ", clashing_molecules
-
 	# remove clashing molecules from the file; renumber
 	outfile = open ("tmp_ligand.pdb","w")
 
@@ -263,29 +261,53 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 		# -1 will grab the chain id too
 		reslabel = line[res_number_pos-1:res_number_pos+res_number_length+1].replace(" ","")
 		if reslabel in clashing_molecules: continue
-		print reslabel , "---", clashing_molecules
 		resnumber = int(reslabel[1:])
 		if resnumber != prev_resnumber:
 			output_resno += 1
 			prev_resnumber = resnumber
-			new_ligands.append(line[res_name_pos:res_name_pos+res_name_length])
+			new_ligands.append(line[res_name_pos:res_name_pos+res_name_length].replace(" ",""))
 		outfile.write(line[:res_number_pos] + "%4d"%output_resno + line[res_number_pos+4:])
 	infile.close()
-
 	outfile.close()
 	os.rename("tmp_ligand.pdb",compiled_ligand_file_path)
 	return new_ligands
 
 #########################################
-def compile_ligands():
-	return
+def strip_and_glue (path, anchor, chains_in_anchor, compiled_ligand_file_path, ligand_list, scratch):
+	# the last filed in the name is the source (pdb or swissmodel) which we'll replace with "compiled"
+	compiled_model = "_".join(anchor.split("_")[:-1] + ["compiled.pdb"])
+	os.chdir(scratch)
+
+	outfile = open(compiled_model,"w")
+	infile  = open(path+"/"+anchor, "r")
+	for line in infile:
+		if line[:4]=='ATOM' or line[:6] == 'HETATM':
+			resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
+			if resname in crystallographic_additives + ligand_list: continue
+		outfile.write(line)
+	infile.close()
+	outfile.close()
+
+	distances = [] # residues to any of the ligands
+	cmd = "{} {} {} 10.0".format(geom_epitope, path+"/"+anchor,compiled_ligand_file_path)
+	for line in subprocess.check_output(cmd, shell=True).split("\n"):
+		field = line.lstrip().rstrip().split()
+		if len(field)<2: continue
+		chain = field[0][0]
+		if chains_in_anchor[0]==chain:
+			resn  = field[0][1:4]
+			distance = float(field[1])
+			distances.append("%s:%.2f"%(resn,distance))
+	distance_string = ",".join(distances)
+
+	#concatenate protein and ligand files
+	cmd = "cat {} >> {}".format(compiled_ligand_file_path, compiled_model)
+	subprocess.call(cmd, shell=True)
+
+	return compiled_model, distance_string
 
 #########################################
-def strip_and_glue (anchor, compiled_ligand_file):
-	return
-
-#########################################
-def compile_model(model_info, path, protein):
+def compile_model (model_info, path, protein):
 	print "compiling model for", protein
 	# find the anchor models
 	# there can be multiple models if they are non-overlapping
@@ -295,8 +317,10 @@ def compile_model(model_info, path, protein):
 	for anchor, anchored in cluster.iteritems():
 		print anchor, anchored
 	# aligns structurally all models to their anchor
-	compiled_ligand_list = []
-	cwd = os.getcwd()
+	compiled_ligands_for_model = {}
+	compiled_models = []
+	chains = {}
+	distance_string = ""
 	for anchor, anchored in cluster.iteritems():
 		os.chdir(cwd)
 		# lignads do no have a name that signs like a residue or modified residue
@@ -320,35 +344,49 @@ def compile_model(model_info, path, protein):
 			# remove clashing ligands adn ligands far from the main chain
 			# add ligands which are not clashing with the exisitng ones
 			compiled_ligand_list += new_ligands
-		print compiled_ligand_list
-		exit()
+		print anchor, compiled_ligand_list
 		# strip anchor of all ligands
 		# put in the compiled ligand files - call the whole thing compiled_from_to
 		# move out of scratch
-		compiled_model = strip_and_glue (anchor, compiled_ligand_file_path)
-		#shutil.rmtree(scratch,ignore_errors=True)
-	return compiled_model, compiled_ligand_list
+		chns = sorted(model_info[anchor]['identical_pct'].keys())
+		compiled_model, distance_string = strip_and_glue (path, anchor, chns, compiled_ligand_file_path, compiled_ligand_list, scratch)
+		chains[compiled_model] = chns
+		if compiled_model and len(compiled_model)>0:
+			compiled_models.append(compiled_model)
+			compiled_ligands_for_model[compiled_model] = compiled_ligand_list
+			os.rename(compiled_model,  path+"/"+compiled_model)
+
+		shutil.rmtree(scratch,ignore_errors=True)
+
+	return compiled_models, chains, compiled_ligands_for_model, distance_string
 
 ##########################################
-def store_ligands (cursor, compiled_ligand_list):
-	return
-##########################################
-def distance_to_ligands(compiled_model, compiled_ligand_list):
-	return
-##########################################
-def store_distance_string (cursor, distance_string):
+def store_ligands (cursor, approved_symbol, path, compiled_models, chains, compiled_ligands_for_model, distance_string):
+
+	for model in compiled_models:
+		shutil.copy(path+"/"+model, compiled_model_repository+"/"+model)
+		fixed_fields  = {'gene_symbol':approved_symbol, 'structure_file': model}
+		chain = chains[model][0]
+		other_chains = ",".join(chains[model][1:])
+		# TODO: FE2 is an ion, and is 3 letters long ...
+		ions = ",".join(list(set([x for x in compiled_ligands_for_model[model] if x in physiological_ions] )))
+		substrates = ",".join(list(set([x for x in compiled_ligands_for_model[model] if not x in physiological_ions])))
+		update_fields = {'chain': chain, 'other_chains': other_chains, 'ions': ions,
+		                 'substrates': substrates, 'distance_to_ligands':distance_string}
+		store_or_update (cursor, 'monogenic_development.structures', fixed_fields, update_fields)
+
 	return
 
 ##########################################
 def main():
 
-	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine, geom_epitope]:
+	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine, geom_epitope, compiled_model_repository]:
 		if os.path.exists(dependency): continue
 		print dependency, " not found"
 		exit()
 
 	swissmodel_meta_file = swissmodel_dir+"/index_human.csv"
-	model_info = parse_meta(swissmodel_meta_file) # there are more files (proteins/genes) here than qhat we will be using
+	model_info = parse_meta(swissmodel_meta_file) # there are more files (proteins/genes) here than what we will be using
 	db, cursor = connect()
 
 	#switch_to_db(cursor, "monogenic_development")
@@ -362,9 +400,9 @@ def main():
 			qry = "select approved_symbol from omim_genemaps where mim_number='%s'" % omim_id
 			ret2 = search_db(cursor, qry)
 			for line2 in ret2:
-				protein = line2[0]
-				print "\t", protein
-				path = "/". join([swissmodel_dir,protein[0],protein])
+				approved_symbol = line2[0]
+				print "\t", approved_symbol
+				path = "/". join([swissmodel_dir,approved_symbol[0],approved_symbol])
 				if not os.path.exists(path):
 					print "\t", "\t", path, "not found"
 					continue
@@ -379,13 +417,10 @@ def main():
 					print "\t", "\t", 'swissmodel not found'
 					continue #  sometimes the models is not found - not sure if it is an old index file
 
-				compiled_model, compiled_ligand_list = compile_model(model_info, path,protein)
+				compiled_models, chains, compiled_ligands_for_model, distance_string = compile_model(model_info, path, approved_symbol)
 				# store compiled model in hte pdb directory of the monogenic server
 				# store the list  of the ligands to the database
-				store_ligands (cursor, compiled_ligand_list)
-				# measure the distance of all residues to ligands - store in the same order as lignads themselves
-				distance_string = distance_to_ligands(compiled_model, compiled_ligand_list)
-				store_distance_string (cursor, distance_string)
+				store_ligands (cursor, approved_symbol, path, compiled_models, chains, compiled_ligands_for_model, distance_string)
 
  ########################################
 if __name__ == '__main__':

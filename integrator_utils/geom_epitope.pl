@@ -57,7 +57,11 @@ while ( <PDBFILE1> ) {
     $res_name_1[$res_seq] = substr $_,  17, 3; $res_name_1 [$res_seq]=~ s/\s//g;
     $ctr++;
 }
-$atom_1_ctr{$prev_res_label} = $ctr;
+if ($prev_res_label) {
+    $atom_1_ctr{$prev_res_label} = $ctr;
+    push @labels_1, $prev_res_label;
+}
+
 
 $ctr = 0;
 my @atom_2 = ();
@@ -93,10 +97,8 @@ foreach my $aa1 (@labels_1) {
                 $y2 = $atom_2[$ctr2][2];
                 $z2 = $atom_2[$ctr2][3];
 
-                my  $r = ($x1-$x2)*($x1-$x2)+ ($y1-$y2)*($y1-$y2)
-                    +($z1-$z2)*($z1-$z2);
+                my  $r = ($x1-$x2)*($x1-$x2) + ($y1-$y2)*($y1-$y2) + ($z1-$z2)*($z1-$z2);
                 $r = sqrt ($r);
-
                 if ($r <= $CUTOFF_R && $nearest > $r) {
                     $nearest = $r;
                 }

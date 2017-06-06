@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/28_conservation/01_exolocator_pep_alignmants.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/24_pdb/12_compile_model.py" afterPath="$PROJECT_DIR$/24_pdb/12_compile_model.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/integrator_utils/geom_epitope.pl" afterPath="$PROJECT_DIR$/integrator_utils/geom_epitope.pl" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -35,32 +39,31 @@
       <file leaf-file-name="12_compile_model.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/24_pdb/12_compile_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1480">
-              <caret line="247" column="0" lean-forward="true" selection-start-line="247" selection-start-column="0" selection-end-line="247" selection-end-column="0" />
+            <state relative-caret-position="185">
+              <caret line="393" column="32" lean-forward="true" selection-start-line="393" selection-start-column="32" selection-end-line="393" selection-end-column="32" />
               <folding>
                 <element signature="e#18#54#0" expanded="true" />
-                <marker date="1496700289255" expanded="false" signature="14075:14130" ph="..." />
-                <marker date="1496700289255" expanded="false" signature="14225:14488" ph="..." />
+                <element signature="e#1671#2021#0" expanded="false" />
+                <element signature="e#1671#1688#0" expanded="false" />
+                <element signature="e#2108#2566#0" expanded="false" />
+                <element signature="e#2671#3502#0" expanded="false" />
+                <element signature="e#3568#4036#0" expanded="false" />
+                <element signature="e#4111#4582#0" expanded="false" />
+                <element signature="e#4659#5345#0" expanded="false" />
+                <element signature="e#5433#6420#0" expanded="false" />
+                <element signature="e#6512#7225#0" expanded="false" />
+                <element signature="e#7357#8541#0" expanded="false" />
+                <element signature="e#10680#11866#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="geom_epitope.pl" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl">
+      <file leaf-file-name="02_alignment_cleanup.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1362">
-              <caret line="107" column="38" lean-forward="false" selection-start-line="107" selection-start-column="38" selection-end-line="107" selection-end-column="38" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="10_find_pdb_models_for_iem_proteins.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="962">
-              <caret line="28" column="18" lean-forward="false" selection-start-line="17" selection-start-column="0" selection-end-line="28" selection-end-column="18" />
+            <state relative-caret-position="757">
+              <caret line="51" column="50" lean-forward="true" selection-start-line="51" selection-start-column="50" selection-end-line="51" selection-end-column="50" />
               <folding />
             </state>
           </provider>
@@ -94,6 +97,7 @@
       <find>[$aa]</find>
       <find>{$res_seq}</find>
       <find>residue</find>
+      <find>rename</find>
     </findStrings>
     <replaceStrings>
       <replace>#</replace>
@@ -117,8 +121,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/50_ucss_known_gene_to_bed.py" />
-        <option value="$PROJECT_DIR$/50_ucsc_known_gene_to_bed.py" />
         <option value="$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" />
         <option value="$PROJECT_DIR$/integrator_utils/xml2csv.py" />
         <option value="$PROJECT_DIR$/54_ccds_to_bed.py" />
@@ -168,14 +170,16 @@
         <option value="$PROJECT_DIR$/26_rare_diseases/01_screen_proficiency_table.sql" />
         <option value="$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl" />
         <option value="$PROJECT_DIR$/24_pdb/12_compile_model.py" />
+        <option value="$PROJECT_DIR$/28_conservation/01_exolocator_pep_alignmants.py" />
+        <option value="$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="362" />
-    <option name="y" value="180" />
-    <option name="width" value="3269" />
-    <option name="height" value="1905" />
+    <option name="x" value="276" />
+    <option name="y" value="119" />
+    <option name="width" value="3478" />
+    <option name="height" value="1933" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -214,46 +218,14 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="24_pdb" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="01_uniprot" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="01_uniprot" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator_utils" />
+              <option name="myItemId" value="28_conservation" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -262,16 +234,16 @@
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/24_pdb" />
-      <recent name="$PROJECT_DIR$" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/28_conservation" />
       <recent name="$PROJECT_DIR$/01_uniprot" />
       <recent name="$PROJECT_DIR$/22_ensembl" />
       <recent name="$PROJECT_DIR$/06_ucsc" />
       <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/integrator_utils" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/24_pdb" />
+      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -461,13 +433,12 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="362" y="180" width="3269" height="1905" extended-state="0" />
+    <frame x="276" y="119" width="3478" height="1933" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21872132" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15583669" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32739156" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3291741" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32979977" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -482,6 +453,7 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3291741" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
@@ -513,14 +485,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="10" />
+      <option name="time" value="15" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/16_pathways_from_reactome.py" />
-    <entry file="file://$PROJECT_DIR$/50_ucsc_ensgene_to_bed.py" />
-    <entry file="file://$PROJECT_DIR$/54_ccds_to_bed.py" />
     <entry file="file://$PROJECT_DIR$/40_exac_header_inspector.py" />
     <entry file="file://$PROJECT_DIR$/52_agilent_to_bed.py" />
     <entry file="file://$PROJECT_DIR$/43_find_3nt_expansions.py" />
@@ -724,23 +693,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/22_ensembl/02_ensembl_phenotypes_parser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="666">
-          <caret line="18" column="78" lean-forward="false" selection-start-line="18" selection-start-column="78" selection-end-line="18" selection-end-column="78" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/22_ensembl/02_ensembl_phenotypes_parser.py" />
     <entry file="file://$PROJECT_DIR$/22_ensembl/01_ensembl_phenotypes_table.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="481">
           <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -748,7 +708,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-176">
           <caret line="64" column="10" lean-forward="false" selection-start-line="59" selection-start-column="0" selection-end-line="64" selection-end-column="10" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -756,7 +715,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="481">
           <caret line="13" column="16" lean-forward="false" selection-start-line="13" selection-start-column="16" selection-end-line="13" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -764,9 +722,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3145">
           <caret line="89" column="0" lean-forward="true" selection-start-line="89" selection-start-column="0" selection-end-line="89" selection-end-column="0" />
-          <folding>
-            <element signature="n#!!doc" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -774,7 +729,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="111">
           <caret line="3" column="78" lean-forward="true" selection-start-line="3" selection-start-column="78" selection-end-line="3" selection-end-column="78" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -786,6 +740,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2997">
+          <caret line="81" column="22" lean-forward="false" selection-start-line="81" selection-start-column="22" selection-end-line="81" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/integrator_utils/mysql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3774">
+          <caret line="103" column="97" lean-forward="false" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="97" />
+          <folding>
+            <element signature="e#0#23#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="962">
@@ -794,22 +766,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/24_pdb/12_compile_model.py">
+    <entry file="file://$PROJECT_DIR$/28_conservation/01_exolocator_pep_alignmants.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1480">
-          <caret line="247" column="0" lean-forward="true" selection-start-line="247" selection-start-column="0" selection-end-line="247" selection-end-column="0" />
+        <state relative-caret-position="185">
+          <caret line="5" column="0" lean-forward="true" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
           <folding>
-            <element signature="e#18#54#0" expanded="true" />
-            <marker date="1496700289255" expanded="false" signature="14075:14130" ph="..." />
-            <marker date="1496700289255" expanded="false" signature="14225:14488" ph="..." />
+            <element signature="e#18#54#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl">
+    <entry file="file://$PROJECT_DIR$/24_pdb/12_compile_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1362">
-          <caret line="107" column="38" lean-forward="false" selection-start-line="107" selection-start-column="38" selection-end-line="107" selection-end-column="38" />
+        <state relative-caret-position="185">
+          <caret line="393" column="32" lean-forward="true" selection-start-line="393" selection-start-column="32" selection-end-line="393" selection-end-column="32" />
+          <folding>
+            <element signature="e#18#54#0" expanded="true" />
+            <element signature="e#1671#2021#0" expanded="false" />
+            <element signature="e#1671#1688#0" expanded="false" />
+            <element signature="e#2108#2566#0" expanded="false" />
+            <element signature="e#2671#3502#0" expanded="false" />
+            <element signature="e#3568#4036#0" expanded="false" />
+            <element signature="e#4111#4582#0" expanded="false" />
+            <element signature="e#4659#5345#0" expanded="false" />
+            <element signature="e#5433#6420#0" expanded="false" />
+            <element signature="e#6512#7225#0" expanded="false" />
+            <element signature="e#7357#8541#0" expanded="false" />
+            <element signature="e#10680#11866#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="757">
+          <caret line="51" column="50" lean-forward="true" selection-start-line="51" selection-start-column="50" selection-end-line="51" selection-end-column="50" />
           <folding />
         </state>
       </provider>
