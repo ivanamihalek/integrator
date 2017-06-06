@@ -53,15 +53,17 @@ def main():
 					print aln_path, "empty"
 					continue
 				# get rid of Z's, tfm to msf, get rid of gaps only, patch
+				# muscle and maft choke subprocess call - comething in off with python - move that piece to perl
+				uniprot_patched_afa = "{}.patched.afa".format(uniprot_id)
 				for cmd in ["sed 's/[\Z\*]/-/g' {} > tmp.afa".format(aln_path),
 							"{} tmp.afa > tmp.msf".format(afa2msf),
 							"{} tmp.msf > tmp2.msf".format(remove_gap_only),
-							"{} tmp2.msf tmp.afa 0.62 > /dev/null".format(patcher),
-				            "{} -profile -in1 {} -in2 tmp.afa > /dev/null".format(muscle, uniprot_fa)]:
+							"{} tmp2.msf {} 0.62 > /dev/null".format(patcher, uniprot_patched_afa),
+				            "rm tmp.* tmp2.*"]:
 					subprocess.call(cmd, shell=True)
-				# ad uniprot seq
-				# move to repository
-				exit()
+
+				os.rename(uniprot_fa, alignment_repository+"/"+uniprot_fa)
+				os.rename(uniprot_patched_afa, alignment_repository+"/"+uniprot_patched_afa)
 
 
 ########################################
