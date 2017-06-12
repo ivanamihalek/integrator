@@ -67,9 +67,16 @@ def main():
 					start = max(i-2,0)
 					end  = min(i+3,len(columns))
 					avg = reduce (lambda x,y: x+y, conservation[start:end])/len(conservation[start:end])
-					conservation_score.append( conservation[i] + 0.1*avg)
-					print columns[i], "%.4f"%conservation_score[i]
-				print "============================================"
+					conservation_score.append( "%d:%.3f" % (i, conservation[i] + 0.1*avg) )
+
+				cons_string = ",".join(conservation_score)
+				qry  = "update monogenic_development.uniprot_seqs "
+				qry += "set conservation_in_vertebrates='%s' " % cons_string
+				qry += "where uniprot_id='%s' " % uniprot_id
+				search_db(cursor, qry, verbose=True)
+
+
+
 
 ########################################
 if __name__ == '__main__':

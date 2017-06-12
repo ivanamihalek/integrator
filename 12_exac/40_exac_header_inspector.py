@@ -60,7 +60,7 @@ X:154931044-155260560
 
 =========================================================
 
-When stratifying the frequency info, it seems that the counts are already adjustes: it says "chromosome count"
+When stratifying the frequency info, it seems that the counts are already adjusted: it says "chromosome count"
 which seems to be the same as the adjusting above:
 
 ##INFO=<ID=AN_NFE,Number=1,Type=Integer,Description="Non-Finnish European Chromosome Count">

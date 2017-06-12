@@ -2,14 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/28_conservation/03_add_uniprot_and_restrict.pl.pm" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/28_conservation/04_conservation.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/28_conservation/P00439.fa" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/28_conservation/tmp.afa" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/28_conservation/tmp.msf" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/28_conservation/tmp2.msf" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py" afterPath="$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/12_exac/40_exac_header_inspector.py" afterPath="$PROJECT_DIR$/12_exac/40_exac_header_inspector.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/28_conservation/04_conservation.py" afterPath="$PROJECT_DIR$/28_conservation/04_conservation.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,43 +24,34 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
-      <file leaf-file-name="02_uniprot_table.sql" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
+      <file leaf-file-name="40_exac_header_inspector.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/12_exac/40_exac_header_inspector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="814">
-              <caret line="22" column="14" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+            <state relative-caret-position="2035">
+              <caret line="55" column="0" lean-forward="false" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="03_add_uniprot_and_restrict.pl.pm" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/28_conservation/03_add_uniprot_and_restrict.pl.pm">
+      <file leaf-file-name="01_sum_therrel_tables.pl.pm" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/30_incidence/01_sum_therrel_tables.pl.pm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1036">
-              <caret line="28" column="1" lean-forward="true" selection-start-line="28" selection-start-column="1" selection-end-line="28" selection-end-column="1" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="04_conservation.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/28_conservation/04_conservation.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1156">
-              <caret line="59" column="74" lean-forward="true" selection-start-line="59" selection-start-column="74" selection-end-line="59" selection-end-column="74" />
+            <state relative-caret-position="1472">
+              <caret line="63" column="65" lean-forward="true" selection-start-line="63" selection-start-column="65" selection-end-line="63" selection-end-column="65" />
               <folding>
-                <element signature="e#18#54#0" expanded="true" />
+                <element signature="e#59#131#0#Perl5" expanded="true" />
+                <element signature="e#1856#1944#0#Perl5" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="01_exolocator_pep_alignmants.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/28_conservation/01_exolocator_pep_alignmants.py">
+      <file leaf-file-name="42_exac_freq_store.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/12_exac/42_exac_freq_store.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1110">
-              <caret line="31" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
+            <state relative-caret-position="74">
+              <caret line="2" column="8" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -123,7 +109,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/54_ccds_to_bed.py" />
         <option value="$PROJECT_DIR$/integrator_utils/55_ensembl_phenotype_associated_to_bed.py" />
         <option value="$PROJECT_DIR$/55_ensembl_phenotype_associated_to_bed.py" />
         <option value="$PROJECT_DIR$/40_exac_header_inspector.py" />
@@ -149,7 +134,6 @@
         <option value="$PROJECT_DIR$/12_exac/46_find_hotspot_regions.py" />
         <option value="$PROJECT_DIR$/12_exac/48_map_exac_freq_to_hotspots_table.py" />
         <option value="$PROJECT_DIR$/12_exac/42_exac_variant_prob_distribution.py" />
-        <option value="$PROJECT_DIR$/12_exac/40_exac_header_inspector.py" />
         <option value="$PROJECT_DIR$/12_exac/42_exac_freq_store.py" />
         <option value="$PROJECT_DIR$/12_exac/41_exac_mysql_tables.py" />
         <option value="$PROJECT_DIR$/18_mesh/01_parse_mesh_ascii.pl" />
@@ -174,14 +158,16 @@
         <option value="$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py" />
         <option value="$PROJECT_DIR$/28_conservation/03_add_uniprot_and_restrict.pl.pm" />
         <option value="$PROJECT_DIR$/28_conservation/04_conservation.py" />
+        <option value="$PROJECT_DIR$/12_exac/40_exac_header_inspector.py" />
+        <option value="$PROJECT_DIR$/30_incidence/01_sum_therrel_tables.pl.pm" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="256" />
-    <option name="y" value="87" />
-    <option name="width" value="2921" />
-    <option name="height" value="1962" />
+    <option name="x" value="437" />
+    <option name="y" value="55" />
+    <option name="width" value="2952" />
+    <option name="height" value="2080" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -199,6 +185,7 @@
     </navigator>
     <panes>
       <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -211,23 +198,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="integrator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="28_conservation" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -236,16 +208,16 @@
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/24_pdb" />
-      <recent name="$PROJECT_DIR$" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/28_conservation" />
       <recent name="$PROJECT_DIR$/01_uniprot" />
       <recent name="$PROJECT_DIR$/22_ensembl" />
       <recent name="$PROJECT_DIR$/06_ucsc" />
       <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/24_pdb" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -435,10 +407,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="256" y="87" width="2921" height="1962" extended-state="0" />
+    <frame x="437" y="55" width="2952" height="2080" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1855529" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18360433" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32739156" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -499,7 +471,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/43_find_3nt_expansions.py" />
     <entry file="file://$PROJECT_DIR$/45_find_motif_modifications.py" />
     <entry file="file://$PROJECT_DIR$/42_exac_variant_prob_distribution.py" />
     <entry file="file://$PROJECT_DIR$/46_find_modified_regions.py" />
@@ -619,13 +590,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/12_exac/40_exac_header_inspector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2294">
-          <caret line="62" column="16" lean-forward="false" selection-start-line="62" selection-start-column="16" selection-end-line="62" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/12_exac/integrator_utils/mysql.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="814">
@@ -644,13 +608,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="296">
           <caret line="8" column="0" lean-forward="true" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/12_exac/42_exac_freq_store.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="74">
-          <caret line="2" column="8" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -739,14 +696,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="814">
-          <caret line="22" column="14" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/01_uniprot/integrator_utils/geom_epitope.pl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2997">
@@ -772,28 +721,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7289">
           <caret line="393" column="32" lean-forward="false" selection-start-line="393" selection-start-column="32" selection-end-line="393" selection-end-column="32" />
-          <folding>
-            <element signature="e#18#54#0" expanded="false" />
-            <element signature="e#1671#2021#0" expanded="false" />
-            <element signature="e#1671#1688#0" expanded="false" />
-            <element signature="e#2108#2566#0" expanded="false" />
-            <element signature="e#2671#3502#0" expanded="false" />
-            <element signature="e#3568#4036#0" expanded="false" />
-            <element signature="e#4111#4582#0" expanded="false" />
-            <element signature="e#4659#5345#0" expanded="false" />
-            <element signature="e#5433#6420#0" expanded="false" />
-            <element signature="e#6512#7225#0" expanded="false" />
-            <element signature="e#7357#8541#0" expanded="false" />
-            <element signature="e#10680#11866#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/28_conservation/01_exolocator_pep_alignmants.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1110">
-          <caret line="31" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
-          <folding />
+          <caret line="31" column="0" lean-forward="false" selection-start-line="30" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -801,24 +735,56 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="111">
           <caret line="4" column="64" lean-forward="true" selection-start-line="4" selection-start-column="23" selection-end-line="4" selection-end-column="64" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/28_conservation/04_conservation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="527">
+          <caret line="48" column="40" lean-forward="false" selection-start-line="48" selection-start-column="40" selection-end-line="48" selection-end-column="40" />
+          <folding>
+            <element signature="e#18#54#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/28_conservation/03_add_uniprot_and_restrict.pl.pm">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1036">
-          <caret line="28" column="1" lean-forward="true" selection-start-line="28" selection-start-column="1" selection-end-line="28" selection-end-column="1" />
+          <caret line="28" column="1" lean-forward="false" selection-start-line="28" selection-start-column="1" selection-end-line="28" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/02_uniprot_table.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="814">
+          <caret line="22" column="14" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/12_exac/42_exac_freq_store.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="74">
+          <caret line="2" column="8" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/28_conservation/04_conservation.py">
+    <entry file="file://$PROJECT_DIR$/12_exac/40_exac_header_inspector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1156">
-          <caret line="59" column="74" lean-forward="true" selection-start-line="59" selection-start-column="74" selection-end-line="59" selection-end-column="74" />
+        <state relative-caret-position="2035">
+          <caret line="55" column="0" lean-forward="false" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/30_incidence/01_sum_therrel_tables.pl.pm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1472">
+          <caret line="63" column="65" lean-forward="true" selection-start-line="63" selection-start-column="65" selection-end-line="63" selection-end-column="65" />
           <folding>
-            <element signature="e#18#54#0" expanded="true" />
+            <element signature="e#59#131#0#Perl5" expanded="true" />
+            <element signature="e#1856#1944#0#Perl5" expanded="true" />
           </folding>
         </state>
       </provider>
