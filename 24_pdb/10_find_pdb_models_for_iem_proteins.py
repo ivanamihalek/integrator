@@ -36,7 +36,8 @@ def main():
 
 	pdbmodels = parse_meta(swissmodel_meta_file)
 
-	qry = 'select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where inborn_error_of_metabolism=1'
+	#qry = 'select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where inborn_error_of_metabolism=1'
+	qry = "select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where approved_symbol='MUT'"
 	ret = search_db(cursor, qry)
 	print 'genes: ', len(ret)
 	uniprot_not_found = []
