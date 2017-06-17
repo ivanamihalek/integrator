@@ -58,6 +58,11 @@ sequences['O14841']['sequence'] = "MGSPEGRFHFAIDRGGTFTDVFAQCPGGHVRVLKLLSEDPANYAD
 sequences['O14841']['ensembl_transcript_id'] = 'ENST00000618853'
 sequences['O14841']['ensembl_protein_id']    = 'ENSP00000480476'
 
+#sequences['P40939'] = {}
+#sequences['P40939']['sequence']  = ""
+#sequences['P40939']['ensembl_transcript_id'] = "ENST00000380649"
+#sequences['P40939']['ensembl_protein_id'] = "ENSP00000370023"
+
 ###################################################
 def main():
 

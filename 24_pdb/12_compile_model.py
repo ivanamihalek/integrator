@@ -5,7 +5,8 @@ import os, shutil, subprocess
 swissmodel_dir = "/databases/swissmodel"
 scratch_dir    = "/home/ivana/scratch"
 struct         = "/home/ivana/projects/enzyme_modeling/code/struct/struct"
-pdb_affine     = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/pdb_affine_tfm.pl"
+pdb_affine     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_tfm.pl"
+extract_chain  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
 geom_epitope   = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_epitope.pl"
 compiled_model_repository = "/home/ivana/monogenic/public/pdb"
 cwd    = os.getcwd()
@@ -26,7 +27,9 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # * Ethanol or dioxane, which have the effect of poisoning the crystals and stopping too much nucleation
 # *Divalent cations like magnesium "EDO","EOH", "DIO
 # * A detergent such as beta-octyl-glucoside "SOG","HTG"
-crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL"]
+# NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
+# http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG","HEM"]
 physiological_ions =["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
 
 ##########################################
@@ -43,7 +46,7 @@ def parse_url(ur):
 	return pdbname
 
 ##########################################
-def pdb_to_dict_of_chars(path,filename):
+def pdb_to_sequence(path, filename):
 	sequence = {}
 	#open file
 	infile = open (path+"/"+filename, "r")
@@ -71,7 +74,7 @@ def check_res_numbers(cursor, swissmodel_dir, path, model):
 		exit()
 	uniprot_sequence = ['.']+list(ret[0][0]) # start index from 1
 	unilength = len(uniprot_sequence)
-	pdb_sequence    = pdb_to_dict_of_chars(path,model)
+	pdb_sequence    = pdb_to_sequence(path, model)
 	identical_count = {}
 	identical_pct = {}
 	for chain in pdb_sequence:
@@ -144,7 +147,7 @@ def find_model_clusters(model_info, path):
 	not_eligible_for_anchor = []
 	for model in next(os.walk(path))[2]:
 		# ignore junk in the directory
-		if "_pdb" not in model and "_swissmodel" not in model: continue
+		if "pdb" != model[-3:] or 'compiled' in model: continue
 		if model_info[model]['provider']!='swissmodel':
 			not_eligible_for_anchor.append(model)
 		else:
@@ -274,7 +277,7 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 
 #########################################
 def strip_and_glue (path, anchor, chains_in_anchor, compiled_ligand_file_path, ligand_list, scratch):
-	# the last filed in the name is the source (pdb or swissmodel) which we'll replace with "compiled"
+	# the last field in the name is the source (pdb or swissmodel) which we'll replace with "compiled"
 	compiled_model = "_".join(anchor.split("_")[:-1] + ["compiled.pdb"])
 	os.chdir(scratch)
 
@@ -288,8 +291,20 @@ def strip_and_glue (path, anchor, chains_in_anchor, compiled_ligand_file_path, l
 	infile.close()
 	outfile.close()
 
+	#concatenate protein and ligand files
+	cmd = "cat {} >> {}".format(compiled_ligand_file_path, compiled_model)
+	subprocess.call(cmd, shell=True)
+
+	#extract main chain into one file, and the rest in the other
+	# extract peptide only for chain chains_in_anchor[0]
+	cmd = "{} {} -p -c{} >> {}".format(extract_chain,compiled_model,chains_in_anchor[0], "mainchain.pdb")
+	subprocess.call(cmd, shell=True)
+	# extract everything  except mainchain (inverse; -i) for chain chains_in_anchor[0]
+	cmd = "{} {} -i -c{} >> {}".format(extract_chain,compiled_model,chains_in_anchor[0], "else.pdb")
+	subprocess.call(cmd, shell=True)
+
 	distances = [] # residues to any of the ligands
-	cmd = "{} {} {} 10.0".format(geom_epitope, path+"/"+anchor,compiled_ligand_file_path)
+	cmd = "{} {} {} 10.0".format(geom_epitope, "mainchain.pdb","else.pdb")
 	for line in subprocess.check_output(cmd, shell=True).split("\n"):
 		field = line.lstrip().rstrip().split()
 		if len(field)<2: continue
@@ -300,34 +315,29 @@ def strip_and_glue (path, anchor, chains_in_anchor, compiled_ligand_file_path, l
 			distances.append("%s:%.2f"%(resn,distance))
 	distance_string = ",".join(distances)
 
-	#concatenate protein and ligand files
-	cmd = "cat {} >> {}".format(compiled_ligand_file_path, compiled_model)
-	subprocess.call(cmd, shell=True)
 
 	return compiled_model, distance_string
 
 #########################################
 def compile_model (model_info, path, protein):
-	print "compiling model for", protein
 	# find the anchor models
 	# there can be multiple models if they are non-overlapping
 	# two models are non-overlapping if they overlap by less than 80%
 	# assign all other models to one of the anchors
 	cluster = find_model_clusters(model_info, path)
-	for anchor, anchored in cluster.iteritems():
-		print anchor, anchored
 	# aligns structurally all models to their anchor
 	compiled_ligands_for_model = {}
 	compiled_models = []
 	chains = {}
-	distance_string = ""
+	distance_strings = {}
 	for anchor, anchored in cluster.iteritems():
+		print anchor, anchored
 		os.chdir(cwd)
-		# lignads do no have a name that signs like a residue or modified residue
-		# ligand is not water and is not a crystallographic additive
 		scratch = scratch_dir + "/" + anchor.replace('.pdb','')
 		shutil.rmtree(scratch,ignore_errors=True)
 		os.makedirs(scratch)
+		# ligands do not have a name that sounds like a residue or modified residue
+		# ligand is not water and is not a crystallographic additive
 		anchor_ligands, anchor_ligand_file_path = extract_ligands(path, anchor, scratch)
 		compiled_ligand_list      = anchor_ligands
 		compiled_ligand_file_path = scratch + "/compiled_ligands.pdb"
@@ -339,17 +349,15 @@ def compile_model (model_info, path, protein):
 			ligand_file_tfmd_path = map_ligands_to_model (model_info, path, model, anchor, ligand_file_path, scratch)
 			if not ligand_file_tfmd_path: continue
 			# remove clashing ligands adn ligands far from the main chain
-			# add ligands which are not clashing with the exisitng ones
+			# add ligands which are not clashing with the existing ones
 			new_ligands = merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path, scratch)
-			# remove clashing ligands adn ligands far from the main chain
-			# add ligands which are not clashing with the exisitng ones
 			compiled_ligand_list += new_ligands
-		print anchor, compiled_ligand_list
+		compiled_ligand_list = list(set(compiled_ligand_list))
 		# strip anchor of all ligands
 		# put in the compiled ligand files - call the whole thing compiled_from_to
 		# move out of scratch
 		chns = sorted(model_info[anchor]['identical_pct'].keys())
-		compiled_model, distance_string = strip_and_glue (path, anchor, chns, compiled_ligand_file_path, compiled_ligand_list, scratch)
+		compiled_model, distance_strings[anchor] = strip_and_glue (path, anchor, chns, compiled_ligand_file_path, compiled_ligand_list, scratch)
 		chains[compiled_model] = chns
 		if compiled_model and len(compiled_model)>0:
 			compiled_models.append(compiled_model)
@@ -358,6 +366,9 @@ def compile_model (model_info, path, protein):
 
 		shutil.rmtree(scratch,ignore_errors=True)
 
+	distance_string =  ",".join(distance_strings.values())
+	print compiled_ligand_list
+	print distance_string
 	return compiled_models, chains, compiled_ligands_for_model, distance_string
 
 ##########################################
@@ -373,34 +384,36 @@ def store_ligands (cursor, approved_symbol, path, compiled_models, chains, compi
 		substrates = ",".join(list(set([x for x in compiled_ligands_for_model[model] if not x in physiological_ions])))
 		update_fields = {'chain': chain, 'other_chains': other_chains, 'ions': ions,
 		                 'substrates': substrates, 'distance_to_ligands':distance_string}
-		store_or_update (cursor, 'monogenic_development.structures', fixed_fields, update_fields)
+		store_or_update (cursor, 'monogenic_development.structures', fixed_fields, update_fields,verbose=False)
 
 	return
 
 ##########################################
 def main():
 
-	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine, geom_epitope, compiled_model_repository]:
+	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
+	                   geom_epitope, extract_chain, compiled_model_repository]:
 		if os.path.exists(dependency): continue
 		print dependency, " not found"
 		exit()
 
 	swissmodel_meta_file = swissmodel_dir+"/index_human.csv"
 	model_info = parse_meta(swissmodel_meta_file) # there are more files (proteins/genes) here than what we will be using
-	db, cursor = connect()
 
+	db, cursor = connect()
 	#switch_to_db(cursor, "monogenic_development")
 	qry = "select * from monogenic_development.diseases"
 	ret = search_db(cursor, qry)
 	for line in ret:
 		[id, name_short, name_long, omim_ids, description, prim, sec] = line
-		print "="*60
-		print name_short
+		#print "="*60
+		#print name_short
 		for omim_id in omim_ids.split(";"):
 			qry = "select approved_symbol from omim_genemaps where mim_number='%s'" % omim_id
 			ret2 = search_db(cursor, qry)
 			for line2 in ret2:
 				approved_symbol = line2[0]
+				if approved_symbol != 'CBS': continue
 				print "\t", approved_symbol
 				path = "/". join([swissmodel_dir,approved_symbol[0],approved_symbol])
 				if not os.path.exists(path):
@@ -408,16 +421,18 @@ def main():
 					continue
 				swissfound = False
 				for model in next(os.walk(path))[2]:
-					if 'swissmodel' in model:
-						swissfound = True
-						# the percentage of positions in each chain that is identical to the numberin the uniprot sequence
-						identical_pct = check_res_numbers(cursor, swissmodel_dir, path, model)
-						model_info[model]['identical_pct'] = identical_pct
+					if 'compiled' in model: continue
+					if 'swissmodel' in model: swissfound = True
+					# the percentage of positions in each chain that is identical to the number in the uniprot sequence
+					identical_pct = check_res_numbers(cursor, swissmodel_dir, path, model)
+					model_info[model]['identical_pct'] = identical_pct
 				if not swissfound:
 					print "\t", "\t", 'swissmodel not found'
 					continue #  sometimes the models is not found - not sure if it is an old index file
 
 				compiled_models, chains, compiled_ligands_for_model, distance_string = compile_model(model_info, path, approved_symbol)
+				#print compiled_models, chains, compiled_ligands_for_model
+				#print distance_string
 				# store compiled model in hte pdb directory of the monogenic server
 				# store the list  of the ligands to the database
 				store_ligands (cursor, approved_symbol, path, compiled_models, chains, compiled_ligands_for_model, distance_string)

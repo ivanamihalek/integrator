@@ -133,6 +133,7 @@ def main():
 	ret = search_db(cursor, qry)
 	for line in ret:
 		ensembl_gene_id = line[0]
+		if  ensembl_gene_id != 'ENSG00000114054': continue
 		find_coding_dna_sequence (cursor, blastextract,  cdsdb,cdnadb, ensembl_gene_id)
 
 

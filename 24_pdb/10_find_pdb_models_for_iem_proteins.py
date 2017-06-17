@@ -37,7 +37,7 @@ def main():
 	pdbmodels = parse_meta(swissmodel_meta_file)
 
 	#qry = 'select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where inborn_error_of_metabolism=1'
-	qry = "select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where approved_symbol='MUT'"
+	qry = "select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where approved_symbol='HMGCL'"
 	ret = search_db(cursor, qry)
 	print 'genes: ', len(ret)
 	uniprot_not_found = []
@@ -68,10 +68,12 @@ def main():
 					no_models.append(uniprot_id)
 					continue
 				uniprot_id = uniprot_id_found
+			print "uniprot_id", uniprot_id
 			# make folder if it does not exist
 			path = "/".join([swissmodel_dir,approved_symbol[0], approved_symbol])
 			if not os.path.exists(path): os.makedirs(path)
 			for model in pdbmodels[uniprot_id]:
+				print " 4 ", model
 				[coordinate_id, provider, start, end, template, qmean, qmean_norm,url] = model
 				fraction = float(int(end)-int(start)+1)/int(canonical_aa_length)>0.75
 				pdbname = parse_url(url)
