@@ -29,8 +29,9 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # * A detergent such as beta-octyl-glucoside "SOG","HTG"
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
-crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG","HEM"]
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "HEM","PE4","ACT","NA"]
 physiological_ions =["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
+physiological_ions = []
 
 ##########################################
 def parse_url(ur):
@@ -151,7 +152,12 @@ def find_model_clusters(model_info, path):
 		if model_info[model]['provider']!='swissmodel':
 			not_eligible_for_anchor.append(model)
 		else:
-			if  model_info[model]['identical_pct']['A'] < 80:
+			print '---------------------------'
+			print model
+			print model_info[model]
+			print model_info[model]['identical_pct']
+			first_chain = sorted(model_info[model]['identical_pct'].keys())[0]
+			if  model_info[model]['identical_pct'][first_chain] < 80:
 				not_eligible_for_anchor.append(model)
 				continue
 			covering = None
@@ -422,10 +428,12 @@ def main():
 				swissfound = False
 				for model in next(os.walk(path))[2]:
 					if 'compiled' in model: continue
-					if 'swissmodel' in model: swissfound = True
-					# the percentage of positions in each chain that is identical to the number in the uniprot sequence
-					identical_pct = check_res_numbers(cursor, swissmodel_dir, path, model)
-					model_info[model]['identical_pct'] = identical_pct
+					if 'swissmodel' in model:
+						swissfound = True
+						# the percentage of positions in each chain that is identical to the number in the uniprot sequence
+						identical_pct = check_res_numbers(cursor, swissmodel_dir, path, model)
+						model_info[model]['identical_pct'] = identical_pct
+						print " ***** ", model, identical_pct
 				if not swissfound:
 					print "\t", "\t", 'swissmodel not found'
 					continue #  sometimes the models is not found - not sure if it is an old index file

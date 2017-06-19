@@ -267,6 +267,18 @@ def check_column_exists (cursor, db_name, table_name, column_name):
         return False
 
 #########################################
+def check_or_make_column (cursor, db_name, table_name, column_name, column_type):
+
+    if check_column_exists (cursor, db_name, table_name, column_name):
+        return # we're ok
+
+    print "making column", column_name, " in uniprot_seqs"
+    qry = "alter table monogenic_development.uniprot_seqs "
+    qry += "add  %s %s" % (column_name, column_type)
+    search_db(cursor,qry, verbose=True)
+    return
+
+#########################################
 def check_table_exists (cursor, db_name, table_name):
     
     if  not switch_to_db (cursor, db_name):

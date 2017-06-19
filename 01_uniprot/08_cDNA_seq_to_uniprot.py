@@ -95,11 +95,11 @@ def find_coding_dna_sequence (cursor, blastextract,  cdsdb,cdnadb, ensembl_gene_
 					print "no cds translation for ", ensid
 				qry  = "update uniprot_seqs set ensembl_coding_sequence='%s'" % cds
 				qry += "where uniprot_id= '%s' " % uniprot_id
-				search_db(cursor,qry, verbose=True)
+				search_db(cursor,qry, verbose=False)
 				if  uniprot_sequence != cds_translation:
 					qry  = "update uniprot_seqs set ensembl_cds_translation='%s'" % cds_translation
 					qry += "where uniprot_id= '%s' " % uniprot_id
-					search_db(cursor,qry, verbose=True)
+					search_db(cursor,qry, verbose=False)
 	return
 
 ###################################################
@@ -116,24 +116,17 @@ def main():
 	db, cursor = connect()
 	# make sure that the uniprot_seqs table has cds columns
 	for col in  ['ensembl_coding_sequence', 'ensembl_cds_translation']:
-		qry = " select * from information_schema.columns where table_schema='monogenic_development' "
-		qry += "and table_name='uniprot_seqs' and column_name='%s'" % col
-		ret = search_db(cursor, qry)
-		if not ret:
-			print "making column", col, " in uniprot_seqs"
-			qry = "alter table monogenic_development.uniprot_seqs "
-			if 'coding' in col:
-				qry += "add  %s mediumtext" % col
-			else:
-				qry += "add  %s text" % col
-			search_db(cursor,qry, verbose=True)
+		if 'coding' in col:
+			coltype= "mediumtext"
+		else:
+			coltype= "text"
+		check_or_make_column (cursor, 'monogenic_development', 'uniprot_seqs', col, coltype)
 
 	# limit ourselves to iems related genes
 	qry = "select ensembl_gene_id from omim_genemaps where inborn_error_of_metabolism=1"
 	ret = search_db(cursor, qry)
 	for line in ret:
 		ensembl_gene_id = line[0]
-		if  ensembl_gene_id != 'ENSG00000114054': continue
 		find_coding_dna_sequence (cursor, blastextract,  cdsdb,cdnadb, ensembl_gene_id)
 
 

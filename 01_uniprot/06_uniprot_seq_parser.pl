@@ -2,7 +2,7 @@
 
 # store as uniprot_basic_infos.csv
 # and load with
-#  mysqlimport --local -u root -p blimps_development  uniprot_basic_infos.csv
+#  mysqlimport --local -u root -p monogenic_development  uniprot_seqs.csv
 use strict;
 use warnings;
 sub parse();
@@ -10,7 +10,7 @@ sub parse();
 
 my $filename = "/databases/uniprot/uniprot_sprot.dat";
 my $exon_coords_file = "/databases/ucsc/ensGene.txt";
-my $seqfile = "/databases/ensembl/hg19/pepseq/Homo_sapiens.GRCh37.75.pep.all.fa";
+my $seqfile = "/databases/uniprot/blast/uniprot_sprot.fasta";
 my $blastextract = "/usr/local/bin/blastdbcmd";
 foreach ($filename, $exon_coords_file, $seqfile, $blastextract) {
 	-e $_ || die "$_ not found\n";
@@ -66,6 +66,7 @@ sub parse() {
 	$uniprot_ids =~ s/\s//g;
 	my @aux = split (";", $uniprot_ids);
 	my $uniprot_id = shift @aux;
+
 	defined $manual_fix_for_ensembl{$uniprot_id} && ($ensembl_transcript_ids = $manual_fix_for_ensembl{$uniprot_id});
     foreach my $combo (split ";",$ensembl_transcript_ids) {
 		my ($enst, $ensp) = split ("=", $combo);
@@ -76,13 +77,15 @@ sub parse() {
 			($field[2],  $field[3] ,$field[6],  $field[7], $field[9],  $field[10]);
 		$exon_starts && $exon_starts ne"" || next;
 		$exon_ends && $exon_ends ne"" || next;
-		my $seq = `$blastextract -db $seqfile -entry $ensp | grep -v $ensp`;
+		my $seq = `$blastextract -db $seqfile -entry $uniprot_id | grep -v $uniprot_id`;
 		$seq eq ""  && next;
 		$seq =~ s/\n//g;
 		(substr $exon_starts, -1)eq',' && chop($exon_starts);
 		(substr $exon_ends, -1)eq',' && chop($exon_ends);
 		$chrom =~ s/chr//;
-		print join "\t", ($uniprot_id,  $enst,  $ensp, $chrom, $strand, $exon_starts, $exon_ends, $cds_start, $cds_end, $seq);
+
+		print join "\t", ($uniprot_id,  $enst,  $ensp, $chrom, $strand,
+				$exon_starts, $exon_ends, $cds_start, $cds_end, $seq,"","",""); # I have some extr fields in the database table
 		print "\n";
 	}
 

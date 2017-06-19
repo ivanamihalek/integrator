@@ -2,12 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/24_pdb/08_build_on_backbone.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/01_uniprot/09_align_uniprot_and_ensembl_pepseqs.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/07_uniprot_seq_patch_by_hand.py" afterPath="$PROJECT_DIR$/01_uniprot/07_uniprot_seq_patch_by_hand.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/06_uniprot_seq_parser.pl" afterPath="$PROJECT_DIR$/01_uniprot/06_uniprot_seq_parser.pl" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/01_uniprot/08_cDNA_seq_to_uniprot.py" afterPath="$PROJECT_DIR$/01_uniprot/08_cDNA_seq_to_uniprot.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py" afterPath="$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/24_pdb/12_compile_model.py" afterPath="$PROJECT_DIR$/24_pdb/12_compile_model.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/28_conservation/04_conservation.py" afterPath="$PROJECT_DIR$/28_conservation/04_conservation.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/integrator_utils/mysql.py" afterPath="$PROJECT_DIR$/integrator_utils/mysql.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,106 +27,7 @@
     <favorites_list name="integrator" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
-      <file leaf-file-name="10_find_pdb_models_for_iem_proteins.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1369">
-              <caret line="39" column="110" lean-forward="false" selection-start-line="39" selection-start-column="105" selection-end-line="39" selection-end-column="110" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="12_compile_model.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/24_pdb/12_compile_model.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="447">
-              <caret line="404" column="56" lean-forward="true" selection-start-line="404" selection-start-column="56" selection-end-line="404" selection-end-column="56" />
-              <folding>
-                <element signature="e#718#1011#0" expanded="false" />
-                <element signature="e#1012#1083#0" expanded="false" />
-                <element signature="e#1902#2252#0" expanded="false" />
-                <element signature="e#1902#1919#0" expanded="false" />
-                <element signature="e#2172#2217#0" expanded="false" />
-                <element signature="e#2335#2793#0" expanded="false" />
-                <element signature="e#2898#3725#0" expanded="false" />
-                <element signature="e#3084#3146#0" expanded="false" />
-                <element signature="e#3365#3703#0" expanded="false" />
-                <element signature="e#3456#3552#0" expanded="false" />
-                <element signature="e#3791#4259#0" expanded="false" />
-                <element signature="e#3834#3965#0" expanded="false" />
-                <element signature="e#4334#4805#0" expanded="false" />
-                <element signature="e#4407#4786#0" expanded="false" />
-                <element signature="e#4650#4786#0" expanded="false" />
-                <element signature="e#4882#5568#0" expanded="false" />
-                <element signature="e#5202#5235#0" expanded="false" />
-                <element signature="e#5392#5403#0" expanded="false" />
-                <element signature="e#5454#5506#0" expanded="false" />
-                <element signature="e#5656#6635#0" expanded="false" />
-                <element signature="e#5739#6382#0" expanded="false" />
-                <element signature="e#5930#6382#0" expanded="false" />
-                <element signature="e#5984#6034#0" expanded="false" />
-                <element signature="e#6091#6168#0" expanded="false" />
-                <element signature="e#6286#6382#0" expanded="false" />
-                <element signature="e#6424#6619#0" expanded="false" />
-                <element signature="e#6457#6619#0" expanded="false" />
-                <element signature="e#6580#6619#0" expanded="false" />
-                <element signature="e#6727#7440#0" expanded="false" />
-                <element signature="e#6917#7377#0" expanded="false" />
-                <element signature="e#6979#7067#0" expanded="false" />
-                <element signature="e#7572#8756#0" expanded="false" />
-                <element signature="e#8893#10748#0" expanded="false" />
-                <element signature="e#8912#8950#0" expanded="false" />
-                <element signature="e#9222#9313#0" expanded="false" />
-                <element signature="e#9488#9579#0" expanded="false" />
-                <element signature="e#9888#10034#0" expanded="false" />
-                <element signature="e#10186#10640#0" expanded="false" />
-                <element signature="e#10420#10554#0" expanded="false" />
-                <element signature="e#11181#11392#0" expanded="false" />
-                <element signature="e#11229#11370#0" expanded="false" />
-                <element signature="e#12233#12456#0" expanded="false" />
-                <element signature="e#12358#12456#0" expanded="false" />
-                <element signature="e#12629#15151#0" expanded="false" />
-                <element signature="e#12629#12653#0" expanded="false" />
-                <element signature="e#13068#14966#0" expanded="false" />
-                <element signature="e#13234#13309#0" expanded="false" />
-                <element signature="e#13658#14287#0" expanded="false" />
-                <element signature="e#14020#14081#0" expanded="false" />
-                <element signature="e#14347#14376#0" expanded="false" />
-                <element signature="e#14759#14921#0" expanded="false" />
-                <element signature="e#16316#16397#0" expanded="false" />
-                <element signature="e#17253#17302#0" expanded="false" />
-                <element signature="e#17372#17690#0" expanded="false" />
-                <element signature="e#17719#17848#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="pdb_extract_chain.pl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/24_pdb/integrator_utils/pdb_extract_chain.pl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1073">
-              <caret line="29" column="42" lean-forward="false" selection-start-line="29" selection-start-column="42" selection-end-line="29" selection-end-column="42" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="08_build_on_backbone.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/24_pdb/08_build_on_backbone.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1073">
-              <caret line="30" column="15" lean-forward="false" selection-start-line="30" selection-start-column="15" selection-end-line="30" selection-end-column="15" />
-              <folding>
-                <element signature="e#18#54#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="600" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -159,6 +61,7 @@
       <find>scratch</find>
       <find>&gt;&gt;</find>
       <find>lll</find>
+      <find>mus</find>
     </findStrings>
     <replaceStrings>
       <replace>#</replace>
@@ -182,8 +85,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/43_find_3nt_expansions.py" />
-        <option value="$PROJECT_DIR$/45_find_motif_modifications.py" />
         <option value="$PROJECT_DIR$/46_find_modified_regions.py" />
         <option value="$PROJECT_DIR$/06_ucsc/15_ucsc_ensgene_to_regions.py" />
         <option value="$PROJECT_DIR$/12_exac/62_annotate_exac_variants.pl" />
@@ -222,25 +123,27 @@
         <option value="$PROJECT_DIR$/28_conservation/01_exolocator_pep_alignmants.py" />
         <option value="$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py" />
         <option value="$PROJECT_DIR$/28_conservation/03_add_uniprot_and_restrict.pl.pm" />
-        <option value="$PROJECT_DIR$/28_conservation/04_conservation.py" />
         <option value="$PROJECT_DIR$/12_exac/40_exac_header_inspector.py" />
         <option value="$PROJECT_DIR$/30_incidence/01_sum_therrel_tables.pl.pm" />
-        <option value="$PROJECT_DIR$/01_uniprot/06_uniprot_seq_parser.pl" />
         <option value="$PROJECT_DIR$/01_uniprot/07_uniprot_seq_patch_by_hand.py" />
-        <option value="$PROJECT_DIR$/01_uniprot/08_cDNA_seq_to_uniprot.py" />
         <option value="$PROJECT_DIR$/24_pdb/integrator_utils/pdb2seq.pl" />
         <option value="$PROJECT_DIR$/24_pdb/08_build_on_backbone.py" />
         <option value="$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py" />
         <option value="$PROJECT_DIR$/24_pdb/integrator_utils/pdb_extract_chain.pl" />
+        <option value="$PROJECT_DIR$/28_conservation/04_conservation.py" />
+        <option value="$PROJECT_DIR$/01_uniprot/06_uniprot_seq_parser.pl" />
         <option value="$PROJECT_DIR$/24_pdb/12_compile_model.py" />
+        <option value="$PROJECT_DIR$/integrator_utils/mysql.py" />
+        <option value="$PROJECT_DIR$/01_uniprot/08_cDNA_seq_to_uniprot.py" />
+        <option value="$PROJECT_DIR$/01_uniprot/09_align_uniprot_and_ensembl_pepseqs.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="241" />
-    <option name="y" value="176" />
-    <option name="width" value="3282" />
-    <option name="height" value="1755" />
+    <option name="x" value="491" />
+    <option name="y" value="174" />
+    <option name="width" value="3302" />
+    <option name="height" value="1978" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -257,8 +160,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -268,6 +171,34 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator_utils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="01_uniprot" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -480,9 +411,9 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="241" y="176" width="3282" height="1755" extended-state="0" />
+    <frame x="491" y="174" width="3302" height="1978" extended-state="0" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21724558" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21592975" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3271081" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -531,25 +462,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/28_conservation/04_conservation.py</url>
-          <line>1</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-      </breakpoints>
       <option name="time" value="21" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/06_ucsc/13_get_gene_regions_from_ucsc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/14_capture_regions/50_ucsc_ensgene_to_bed.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2808">
@@ -778,32 +695,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/28_conservation/04_conservation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1147">
-          <caret line="2" column="29" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/28_conservation/01_exolocator_pep_alignmants.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="259">
           <caret line="8" column="0" lean-forward="true" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-111">
-          <caret line="4" column="64" lean-forward="true" selection-start-line="4" selection-start-column="23" selection-end-line="4" selection-end-column="64" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/06_uniprot_seq_parser.pl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="56" column="29" lean-forward="true" selection-start-line="56" selection-start-column="29" selection-end-line="56" selection-end-column="29" />
         </state>
       </provider>
     </entry>
@@ -814,31 +709,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3774">
-          <caret line="103" column="96" lean-forward="false" selection-start-line="103" selection-start-column="80" selection-end-line="103" selection-end-column="96" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/20_omim/10_mark_inherited_metabolic_disorders.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1332">
           <caret line="99" column="0" lean-forward="true" selection-start-line="99" selection-start-column="0" selection-end-line="99" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/08_cDNA_seq_to_uniprot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1177">
-          <caret line="135" column="47" lean-forward="false" selection-start-line="135" selection-start-column="47" selection-end-line="135" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/01_uniprot/07_uniprot_seq_patch_by_hand.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1369">
-          <caret line="67" column="0" lean-forward="true" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -853,17 +727,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1073">
           <caret line="30" column="15" lean-forward="false" selection-start-line="30" selection-start-column="15" selection-end-line="30" selection-end-column="15" />
-          <folding>
-            <element signature="e#18#54#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1369">
-          <caret line="39" column="110" lean-forward="false" selection-start-line="39" selection-start-column="105" selection-end-line="39" selection-end-column="110" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -871,70 +734,122 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1073">
           <caret line="29" column="42" lean-forward="false" selection-start-line="29" selection-start-column="42" selection-end-line="29" selection-end-column="42" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="37">
+          <caret line="39" column="110" lean-forward="false" selection-start-line="39" selection-start-column="105" selection-end-line="39" selection-end-column="110" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/28_conservation/04_conservation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="592">
+          <caret line="58" column="54" lean-forward="true" selection-start-line="58" selection-start-column="54" selection-end-line="58" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/06_uniprot_seq_parser.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="4" column="73" lean-forward="true" selection-start-line="4" selection-start-column="34" selection-end-line="4" selection-end-column="73" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/07_uniprot_seq_patch_by_hand.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="333">
+          <caret line="18" column="0" lean-forward="true" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/24_pdb/12_compile_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="447">
-          <caret line="404" column="56" lean-forward="true" selection-start-line="404" selection-start-column="56" selection-end-line="404" selection-end-column="56" />
+        <state relative-caret-position="-962">
+          <caret line="31" column="114" lean-forward="false" selection-start-line="31" selection-start-column="114" selection-end-line="31" selection-end-column="114" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/28_conservation/02_alignment_cleanup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1004">
+          <caret line="50" column="28" lean-forward="false" selection-start-line="50" selection-start-column="28" selection-end-line="50" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/09_align_uniprot_and_ensembl_pepseqs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1147">
+          <caret line="52" column="0" lean-forward="true" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
           <folding>
-            <element signature="e#718#1011#0" expanded="false" />
-            <element signature="e#1012#1083#0" expanded="false" />
-            <element signature="e#1902#2252#0" expanded="false" />
-            <element signature="e#1902#1919#0" expanded="false" />
-            <element signature="e#2172#2217#0" expanded="false" />
-            <element signature="e#2335#2793#0" expanded="false" />
-            <element signature="e#2898#3725#0" expanded="false" />
-            <element signature="e#3084#3146#0" expanded="false" />
-            <element signature="e#3365#3703#0" expanded="false" />
-            <element signature="e#3456#3552#0" expanded="false" />
-            <element signature="e#3791#4259#0" expanded="false" />
-            <element signature="e#3834#3965#0" expanded="false" />
-            <element signature="e#4334#4805#0" expanded="false" />
-            <element signature="e#4407#4786#0" expanded="false" />
-            <element signature="e#4650#4786#0" expanded="false" />
-            <element signature="e#4882#5568#0" expanded="false" />
-            <element signature="e#5202#5235#0" expanded="false" />
-            <element signature="e#5392#5403#0" expanded="false" />
-            <element signature="e#5454#5506#0" expanded="false" />
-            <element signature="e#5656#6635#0" expanded="false" />
-            <element signature="e#5739#6382#0" expanded="false" />
-            <element signature="e#5930#6382#0" expanded="false" />
-            <element signature="e#5984#6034#0" expanded="false" />
-            <element signature="e#6091#6168#0" expanded="false" />
-            <element signature="e#6286#6382#0" expanded="false" />
-            <element signature="e#6424#6619#0" expanded="false" />
-            <element signature="e#6457#6619#0" expanded="false" />
-            <element signature="e#6580#6619#0" expanded="false" />
-            <element signature="e#6727#7440#0" expanded="false" />
-            <element signature="e#6917#7377#0" expanded="false" />
-            <element signature="e#6979#7067#0" expanded="false" />
-            <element signature="e#7572#8756#0" expanded="false" />
-            <element signature="e#8893#10748#0" expanded="false" />
-            <element signature="e#8912#8950#0" expanded="false" />
-            <element signature="e#9222#9313#0" expanded="false" />
-            <element signature="e#9488#9579#0" expanded="false" />
-            <element signature="e#9888#10034#0" expanded="false" />
-            <element signature="e#10186#10640#0" expanded="false" />
-            <element signature="e#10420#10554#0" expanded="false" />
-            <element signature="e#11181#11392#0" expanded="false" />
-            <element signature="e#11229#11370#0" expanded="false" />
-            <element signature="e#12233#12456#0" expanded="false" />
-            <element signature="e#12358#12456#0" expanded="false" />
-            <element signature="e#12629#15151#0" expanded="false" />
-            <element signature="e#12629#12653#0" expanded="false" />
-            <element signature="e#13068#14966#0" expanded="false" />
-            <element signature="e#13234#13309#0" expanded="false" />
-            <element signature="e#13658#14287#0" expanded="false" />
-            <element signature="e#14020#14081#0" expanded="false" />
-            <element signature="e#14347#14376#0" expanded="false" />
-            <element signature="e#14759#14921#0" expanded="false" />
-            <element signature="e#16316#16397#0" expanded="false" />
-            <element signature="e#17253#17302#0" expanded="false" />
-            <element signature="e#17372#17690#0" expanded="false" />
-            <element signature="e#17719#17848#0" expanded="false" />
+            <element signature="e#19#55#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/integrator_utils/mysql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="775">
+          <caret line="266" column="20" lean-forward="false" selection-start-line="266" selection-start-column="20" selection-end-line="266" selection-end-column="20" />
+          <folding>
+            <element signature="e#56#57#0" expanded="false" />
+            <element signature="e#927#1523#0" expanded="false" />
+            <element signature="e#1567#1700#0" expanded="false" />
+            <element signature="e#1752#1897#0" expanded="false" />
+            <element signature="e#1850#1881#0" expanded="false" />
+            <element signature="e#1978#2933#0" expanded="false" />
+            <element signature="e#2127#2209#0" expanded="false" />
+            <element signature="e#2367#2668#0" expanded="false" />
+            <element signature="e#2747#2805#0" expanded="false" />
+            <element signature="e#2830#2916#0" expanded="false" />
+            <element signature="e#3048#5856#0" expanded="false" />
+            <element signature="e#3153#3457#0" expanded="false" />
+            <element signature="e#3718#3792#0" expanded="false" />
+            <element signature="e#3890#4395#0" expanded="false" />
+            <element signature="e#4052#4354#0" expanded="false" />
+            <element signature="e#4440#5393#0" expanded="false" />
+            <element signature="e#4690#4784#0" expanded="false" />
+            <element signature="e#5002#5374#0" expanded="false" />
+            <element signature="e#5162#5288#0" expanded="false" />
+            <element signature="e#5474#5532#0" expanded="false" />
+            <element signature="e#5604#5690#0" expanded="false" />
+            <element signature="e#5969#6682#0" expanded="false" />
+            <element signature="e#6233#6263#0" expanded="false" />
+            <element signature="e#6458#6541#0" expanded="false" />
+            <element signature="e#6631#6662#0" expanded="false" />
+            <element signature="e#6783#7159#0" expanded="false" />
+            <element signature="e#6961#7126#0" expanded="false" />
+            <element signature="e#6999#7068#0" expanded="false" />
+            <element signature="e#8159#8463#0" expanded="false" />
+            <element signature="e#8341#8429#0" expanded="false" />
+            <element signature="e#8567#8923#0" expanded="false" />
+            <element signature="e#8829#8884#0" expanded="false" />
+            <element signature="e#8980#9547#0" expanded="false" />
+            <element signature="e#9050#9189#0" expanded="false" />
+            <element signature="e#9271#9409#0" expanded="false" />
+            <element signature="e#9448#9530#0" expanded="false" />
+            <element signature="e#9647#10670#0" expanded="false" />
+            <element signature="e#9733#10136#0" expanded="false" />
+            <element signature="e#9780#9849#0" expanded="false" />
+            <element signature="e#10025#10102#0" expanded="false" />
+            <element signature="e#10168#10668#0" expanded="false" />
+            <element signature="e#10185#10497#0" expanded="false" />
+            <element signature="e#10557#10634#0" expanded="false" />
+            <element signature="e#10737#11054#0" expanded="false" />
+            <element signature="e#10750#10913#0" expanded="false" />
+            <element signature="e#10952#11039#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_uniprot/08_cDNA_seq_to_uniprot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="831">
+          <caret line="122" column="92" lean-forward="false" selection-start-line="122" selection-start-column="8" selection-end-line="122" selection-end-column="92" />
+          <folding>
+            <element signature="e#102#138#0" expanded="true" />
           </folding>
         </state>
       </provider>

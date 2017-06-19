@@ -59,22 +59,22 @@ def main():
 				for name, sequence in seq.iteritems():
 					for i in range(len(sequence)): columns[i]+=sequence[i]
 				conservation = []
-				for i in range(len(columns)):
-					column = columns[i]
+				for column in columns:
 					conservation.append(1-column_entropy(column))
 				conservation_score = []
 				for i in range(len(columns)):
+					column = columns[i]
 					start = max(i-2,0)
 					end  = min(i+3,len(columns))
 					avg = reduce (lambda x,y: x+y, conservation[start:end])/len(conservation[start:end])
-					conservation_score.append( "%d:%.3f" % (i, conservation[i] + 0.1*avg) )
+					aa_types_present = "".join(set(list(column.replace("-",""))))
+					conservation_score.append( "%d:%s:%.3f" % (i+1, aa_types_present, conservation[i] + 0.1*avg) )
 
 				cons_string = ",".join(conservation_score)
 				qry  = "update monogenic_development.uniprot_seqs "
 				qry += "set conservation_in_vertebrates='%s' " % cons_string
 				qry += "where uniprot_id='%s' " % uniprot_id
-				search_db(cursor, qry, verbose=True)
-
+				search_db(cursor, qry, verbose=False)
 
 
 
