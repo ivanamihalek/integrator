@@ -73,7 +73,6 @@ def main():
 			path = "/".join([swissmodel_dir,approved_symbol[0], approved_symbol])
 			if not os.path.exists(path): os.makedirs(path)
 			for model in pdbmodels[uniprot_id]:
-				print " 4 ", model
 				[coordinate_id, provider, start, end, template, qmean, qmean_norm,url] = model
 				fraction = float(int(end)-int(start)+1)/int(canonical_aa_length)>0.75
 				pdbname = parse_url(url)

@@ -63,7 +63,7 @@ def pdb_to_sequence(path, filename):
 	return sequence
 
 ########################################
-def check_res_numbers(cursor, swissmodel_dir, path, model):
+def check_res_numbers(cursor, path, model):
 
 	field = model.split("_")
 	uniprot = field[0]
@@ -431,7 +431,7 @@ def main():
 					if 'swissmodel' in model:
 						swissfound = True
 						# the percentage of positions in each chain that is identical to the number in the uniprot sequence
-						identical_pct = check_res_numbers(cursor, swissmodel_dir, path, model)
+						identical_pct = check_res_numbers(cursor, path, model)
 						model_info[model]['identical_pct'] = identical_pct
 						print " ***** ", model, identical_pct
 				if not swissfound:
