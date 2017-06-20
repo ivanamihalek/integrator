@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/24_pdb/14_compile_model_from_scratch.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/24_pdb/12_compile_model.py" afterPath="$PROJECT_DIR$/24_pdb/12_compile_model_from_swissmodel.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py" afterPath="$PROJECT_DIR$/24_pdb/10_find_pdb_models_for_iem_proteins.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/24_pdb/14_compile_model_from_scratch.py" afterPath="$PROJECT_DIR$/24_pdb/14_compile_model_from_scratch.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -109,8 +107,8 @@
       <file leaf-file-name="14_compile_model_from_scratch.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/24_pdb/14_compile_model_from_scratch.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1312">
-              <caret line="157" column="16" lean-forward="false" selection-start-line="157" selection-start-column="16" selection-end-line="157" selection-end-column="16" />
+            <state relative-caret-position="1275">
+              <caret line="158" column="69" lean-forward="false" selection-start-line="158" selection-start-column="69" selection-end-line="158" selection-end-column="69" />
               <folding>
                 <element signature="e#155#191#0" expanded="true" />
               </folding>
@@ -231,8 +229,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="292" />
-    <option name="y" value="125" />
+    <option name="x" value="406" />
+    <option name="y" value="72" />
     <option name="width" value="3302" />
     <option name="height" value="1978" />
   </component>
@@ -516,7 +514,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="292" y="125" width="3302" height="1978" extended-state="0" />
+    <frame x="406" y="72" width="3302" height="1978" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21592975" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
@@ -926,7 +924,7 @@
         <state relative-caret-position="794">
           <caret line="75" column="0" lean-forward="false" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
           <folding>
-            <element signature="e#19#55#0" expanded="true" />
+            <element signature="e#19#55#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1002,8 +1000,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/24_pdb/14_compile_model_from_scratch.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1312">
-          <caret line="157" column="16" lean-forward="false" selection-start-line="157" selection-start-column="16" selection-end-line="157" selection-end-column="16" />
+        <state relative-caret-position="1275">
+          <caret line="158" column="69" lean-forward="false" selection-start-line="158" selection-start-column="69" selection-end-line="158" selection-end-column="69" />
           <folding>
             <element signature="e#155#191#0" expanded="true" />
           </folding>

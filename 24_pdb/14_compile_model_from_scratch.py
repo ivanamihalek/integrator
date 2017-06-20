@@ -123,6 +123,44 @@ def check_res_numbers(cursor, path, model):
 	return identical_pct
 
 ##########################################
+def substrate_smiles_from_metacyc(cursor, ec_number):
+	switch_to_db(cursor,'blimps_development')
+	# search by gene may fail because metacyc does not have human version described
+	#qry = "select unique_id from metacyc_genes where common_name='%s'" % gene_symbol
+	qry  = "select enzymatic_reaction, rxn_left, rxn_right from metacyc_reactions "
+	qry += "where ec_number = 'EC-%s'" % ec_number
+	ret = search_db(cursor,qry)
+	if not ret:
+		print "\t failed finding %s in metacyc_reactions "  % ec_number
+		return None
+
+	cofactors = []
+	alternative_cofactors = []
+	alternative_substrates = []
+	substrates = []
+	for line in ret:
+		enzymatic_reaction, rxn_left, rxn_right = line
+		for substrate in rxn_left.replace(" ","").split(";") + rxn_right.replace(" ","").split(";"):
+
+			if substrate!='' and '|' not in substrate and substrate not in substrates: substrates.append(substrate)
+		for er in enzymatic_reaction.split (";"):
+			qry  = "select cofactors, alternative_cofactors, alternative_substrates "
+			qry += "from metacyc_enzrxns where unique_id='%s' " % er.replace(" ","")
+			ret2 = search_db(cursor,qry)
+			for line2 in ret2:
+				cofs, alt_cofs, alt_subs = line2
+				# list is reserved word, so lets call this array
+				for element, array in [[cofs,cofactors], [alt_cofs, alternative_cofactors], [alt_subs, alternative_substrates]]:
+					if element!='' and 'EV-EXP' not in element and element not in array: array.append(element)
+	for name, array in [['substrates', substrates], ['cofactors',cofactors],
+	                    ['alt_cofs', alternative_cofactors], ['alt_subs', alternative_substrates]]:
+		if len(array) == 0: continue
+		print "\t\t\t", name, array
+	############  >>> convert to smiles nd return - metacyc_compounds
+
+	return None
+
+##########################################
 def main():
 	swissmodel_dir = "/databases/swissmodel"
 	db, cursor = connect()
@@ -137,7 +175,6 @@ def main():
 	for disease in nbs_genes:
 		print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number] in nbs_genes[disease]:
-			if gene_symbol!='MUT': continue
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number
 			# check swiss model structure exists, is nonempty, and is indeed pdb
 			swissmodel = check_pdb_exists(swissmodel_dir, gene_symbol)
@@ -146,18 +183,18 @@ def main():
 			# is the residue numbering correct?
 			identical_pct = check_res_numbers(cursor, "/".join([swissmodel_dir, gene_symbol[0], gene_symbol]), swissmodel)
 			mismatch = False
-			for chain,pct in identical_pct.iterites():
+			for chain,pct in identical_pct.iteritems():
 				if pct<90:
-					print "\t structure seq mismatch? pct ideticap positions:",  pct
+					print "\t structure seq mismatch? chain", chain, "pct identical positions:",  pct
 					mismatch = True
 					break
 			if mismatch: continue
 			# what is the biological assembly for this protein? - lets take for now that swissprot is right
 			# is this an enzyme?
 			if ec_number: # if yes, find substrates and cofactors (ions?)
-				
-			# get substrates as smiles strings
-			# find all other pdb files with similar sequence and ligand
+				# get substrates as smiles strings
+				substrate_smiles_from_metacyc(cursor,ec_number)
+			# find all other pdb files with similar sequence and ligands
 			# fid smiles for the ligand - is it similar to the substrate? if not, drop the whole pdb
 			# store separately distances to lignds, ions, and interfaces
 	cursor.close()
