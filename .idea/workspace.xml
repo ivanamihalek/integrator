@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11385476-47d1-4005-9db7-2065d4b379ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/24_pdb/18_model_elements_table.sql" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/24_pdb/20_compile_model.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/24_pdb/16_compile_model_from_scratch.py" afterPath="$PROJECT_DIR$/24_pdb/16_compile_model_elements.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/24_pdb/20_compile_model.py" afterPath="$PROJECT_DIR$/24_pdb/20_compile_model.py" />
     </list>
     <ignored path="integrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -159,15 +156,16 @@
       <file leaf-file-name="20_compile_model.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/24_pdb/20_compile_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1270">
-              <caret line="271" column="35" lean-forward="true" selection-start-line="271" selection-start-column="35" selection-end-line="271" selection-end-column="35" />
+            <state relative-caret-position="1068">
+              <caret line="340" column="28" lean-forward="false" selection-start-line="340" selection-start-column="28" selection-end-line="340" selection-end-column="28" />
               <folding>
                 <element signature="e#18#54#0" expanded="true" />
-                <element signature="e#2127#2588#0" expanded="false" />
-                <element signature="e#4517#6501#0" expanded="false" />
-                <element signature="e#6634#8414#0" expanded="false" />
-                <element signature="e#8507#8856#0" expanded="false" />
-                <element signature="e#12188#12924#0" expanded="false" />
+                <element signature="e#2243#2704#0" expanded="false" />
+                <element signature="e#2870#4922#0" expanded="false" />
+                <element signature="e#5061#7597#0" expanded="false" />
+                <element signature="e#7730#9510#0" expanded="false" />
+                <element signature="e#9610#10122#0" expanded="false" />
+                <element signature="e#13273#14009#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -237,7 +235,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/12_exac/tests/find_chainable_test.py" />
         <option value="$PROJECT_DIR$/integrator_utils/periodic_mods.py" />
         <option value="$PROJECT_DIR$/12_exac/integrator_utils/mysql.py" />
         <option value="$PROJECT_DIR$/12_exac/tests/46_find_hotspot_regions_version_with_clustering.py" />
@@ -287,15 +284,16 @@
         <option value="$PROJECT_DIR$/24_pdb/18_model_elements_table.sql" />
         <option value="$PROJECT_DIR$/24_pdb/16_compile_model_elements.py" />
         <option value="$PROJECT_DIR$/integrator_utils/pdbdownload.pl" />
+        <option value="$PROJECT_DIR$/integrator_utils/pdb_chain_rename.pl" />
         <option value="$PROJECT_DIR$/24_pdb/20_compile_model.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="338" />
-    <option name="y" value="405" />
-    <option name="width" value="3261" />
-    <option name="height" value="1723" />
+    <option name="x" value="537" />
+    <option name="y" value="82" />
+    <option name="width" value="3131" />
+    <option name="height" value="2067" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -312,7 +310,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -325,9 +322,24 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integrator_utils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -535,12 +547,13 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="338" y="405" width="3261" height="1723" extended-state="0" />
+    <frame x="537" y="82" width="3131" height="2067" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13094144" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13637815" sideWeight="0.49786976" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297943" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3271081" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283342" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32979977" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -555,7 +568,6 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32845894" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
@@ -593,13 +605,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/integrator_utils/periodic_mods.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3348">
-          <caret line="93" column="0" lean-forward="false" selection-start-line="93" selection-start-column="0" selection-end-line="93" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/12_exac/tests/find_chainable_test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1152">
@@ -1050,17 +1055,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/integrator_utils/pdb_chain_rename.pl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="999">
+          <caret line="27" column="0" lean-forward="true" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/24_pdb/20_compile_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1270">
-          <caret line="271" column="35" lean-forward="true" selection-start-line="271" selection-start-column="35" selection-end-line="271" selection-end-column="35" />
+        <state relative-caret-position="1068">
+          <caret line="340" column="28" lean-forward="false" selection-start-line="340" selection-start-column="28" selection-end-line="340" selection-end-column="28" />
           <folding>
             <element signature="e#18#54#0" expanded="true" />
-            <element signature="e#2127#2588#0" expanded="false" />
-            <element signature="e#4517#6501#0" expanded="false" />
-            <element signature="e#6634#8414#0" expanded="false" />
-            <element signature="e#8507#8856#0" expanded="false" />
-            <element signature="e#12188#12924#0" expanded="false" />
+            <element signature="e#2243#2704#0" expanded="false" />
+            <element signature="e#2870#4922#0" expanded="false" />
+            <element signature="e#5061#7597#0" expanded="false" />
+            <element signature="e#7730#9510#0" expanded="false" />
+            <element signature="e#9610#10122#0" expanded="false" />
+            <element signature="e#13273#14009#0" expanded="false" />
           </folding>
         </state>
       </provider>
