@@ -312,7 +312,7 @@ def main():
 	for disease in nbs_genes:
 		print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number] in nbs_genes[disease]:
-			#if gene_symbol !='FAH': continue
+			if gene_symbol !='HADHA': continue
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number
 			qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
 			ret = search_db(cursor,qry)
