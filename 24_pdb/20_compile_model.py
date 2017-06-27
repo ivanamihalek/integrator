@@ -267,7 +267,7 @@ def epitope2dist_string(pdb1, pdb2):
 	return distances
 
 #########################################
-def split_into_compoounds(compound_file):
+def split_into_compounds(compound_file):
 	infile = open (compound_file, "r")
 	outfile = {}
 	for line in infile:
@@ -315,7 +315,7 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 	subprocess.call(cmd, shell=True)
 
 	distances= {} # the dictionary will contain distances to each of the remarakable points - if to other chains, ligands
-	for ligand_filename in split_into_compoounds(compiled_ligand_file_path):
+	for ligand_filename in split_into_compounds(compiled_ligand_file_path):
 		compound_key = ligand_filename.split(".")[-2]
 		distances[compound_key] = epitope2dist_string("mainchain.pdb",ligand_filename)
 
