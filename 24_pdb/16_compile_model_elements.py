@@ -365,6 +365,8 @@ def main():
 			# is this an enzyme?
 			if ec_number: # if yes, find substrates and cofactors (ions?)
 				# get substrates as smiles strings
+				subsmiles = substrate_smiles_from_metacyc(cursor,ec_number)
+				if not subsmiles: continue
 				subs_smiles, cofactors_smiles = substrate_smiles_from_metacyc(cursor,ec_number)
 				# find all other pdb files with similar sequence and ligands
 				pdb_pct_similarity = find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch)
