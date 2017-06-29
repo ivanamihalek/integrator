@@ -1,0 +1,14 @@
+No return for query select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='ENSG00000143627'
+no uniprot info found for ENSG00000143627
+No return for query select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='ENSG00000023228'
+no uniprot info found for ENSG00000023228
+No return for query select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='ENSG00000130414'
+no uniprot info found for ENSG00000130414
+No return for query select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='ENSG00000204386'
+no uniprot info found for ENSG00000204386
+No return for query select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='ENSG00000182372'
+no uniprot info found for ENSG00000182372
+No return for query select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='ENSG00000148290'
+no uniprot info found for ENSG00000148290
+No return for query select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='ENSG00000256269'
+no uniprot info found for ENSG00000256269

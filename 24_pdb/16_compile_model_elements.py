@@ -42,7 +42,7 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
 crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "HEM","PE4","ACT","NA"]
-physiological_ions =["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
+physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
 
 ##########################################
 def newborn_screening_genes(cursor):
@@ -68,20 +68,23 @@ def all_iem_related_genes(cursor):
 	iem_genes = {}
 	qry  = "select mim_number, approved_symbol, ensembl_gene_id, phenotypes "
 	qry += "from blimps_development.omim_genemaps "
-	qry += "where inborn_error_of_metabolism==1"
-	ret = search_db(cursor,qry, verbose=True)
+	qry += "where inborn_error_of_metabolism=1"
+	ret = search_db(cursor,qry, verbose=False)
 	if not ret:
 		print "no iems ?!"
 		exit()
-	for row in search_db(cursor, qry):
+	for row in ret:
 		[mim_number, approved_symbol, ensembl_gene_id, phenotypes] = row
 		qry  = "select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='%s'" % ensembl_gene_id
-		ret = search_db(cursor,qry, verbose=True)
+		ret = search_db(cursor,qry, verbose=False)
 		if not ret:
 			print "no uniprot info found for", ensembl_gene_id
-			exit()
-			uniprot_id, ec_number = ret[0]
-		print mim_number, approved_symbol, ensembl_gene_id, uniprot_id, ec_number, phenotypes
+			continue
+			#exit()
+		uniprot_id, ec_number = ret[0]
+		#print mim_number, approved_symbol, ensembl_gene_id, uniprot_id, ec_number, phenotypes
+		if not iem_genes.has_key(phenotypes): iem_genes[phenotypes] = []
+		iem_genes[phenotypes].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number])
 	return iem_genes
 
 ##########################################
@@ -223,7 +226,7 @@ def download_and_store_ligands_from_pdb(cursor, pdb_id):
 	return
 
 ##########################################
-def  get_pdb_ligand_info(cursor, pdb_id):
+def get_pdb_ligand_info(cursor, pdb_id):
 	pdb_id = pdb_id.lower()[:4]
 	qry = "select  chemical_id, smiles from monogenic_development.pdb_ligands where pdb_id='%s'" % pdb_id
 	ret = search_db(cursor,qry)
@@ -317,7 +320,6 @@ def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, known_ligand_smiles):
 
 	return usable_pdbs
 
-
 ##########################################
 def main():
 	swissmodel_dir = "/databases/swissmodel"
@@ -331,15 +333,16 @@ def main():
 	# first lets focus on the proteins from the newborn screening
 	# genes = newborn_screening_genes(cursor)
 	genes = all_iem_related_genes(cursor)
-	exit()
-	for disease in genes:
+	for disease in genes.keys():
 		print disease
-		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number] in nbs_genes[disease]:
-			if gene_symbol !='HADHA': continue
+		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number] in genes[disease]:
+			#if gene_symbol !='HADHA': continue
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number
 			qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
 			ret = search_db(cursor,qry)
-			if ret: continue
+			if ret:
+				print "model elements found"
+				continue
 			# check swiss model structure exists, is nonempty, and is indeed pdb
 			swissmodel = check_pdb_exists(swissmodel_dir, gene_symbol)
 			if not swissmodel: continue
