@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # the only way I coyuld istall rdkit was with conda, so run with
-# source /home/ivana/miniconda2/bin/activate rdkit-env; ./17_rdkit_smiles_comparison.py ; source  /home/ivana/miniconda2/bin/deactivate rdkit-env;
+# source /home/ivana/miniconda2/bin/activate rdkit-env; ./15_rdkit_smiles_comparison.py ; source  /home/ivana/miniconda2/bin/deactivate rdkit-env;
 
 # (I could not move thow whole thing to conda either, because I could not get it to talk with mysql
 

@@ -19,7 +19,7 @@ compiled_model_repository = "/home/ivana/monogenic/public/pdb"
 
 conda          = "/home/ivana/miniconda2/bin"
 rdkitenv       = "rdkit-env"
-rdkit_runner   = "/home/ivana/pypeworks/integrator/24_pdb/17_rdkit_smiles_comparison.py"
+rdkit_runner   = "/home/ivana/pypeworks/integrator/24_pdb/15_rdkit_smiles_comparison.py"
 
 
 cwd    = os.getcwd()
@@ -45,7 +45,7 @@ crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO",
 physiological_ions =["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
 
 ##########################################
-def newborn_screening_genees(cursor):
+def newborn_screening_genes(cursor):
 	nbs_genes = {}
 	switch_to_db(cursor,'monogenic_development')
 	qry = "select name_short, omim_ids from diseases"
@@ -62,6 +62,27 @@ def newborn_screening_genees(cursor):
 			uniprot_id, ec_number = ret[0]
 			nbs_genes[name_short].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number])
 	return nbs_genes
+
+##########################################
+def all_iem_related_genes(cursor):
+	iem_genes = {}
+	qry  = "select mim_number, approved_symbol, ensembl_gene_id, phenotypes "
+	qry += "from blimps_development.omim_genemaps "
+	qry += "where inborn_error_of_metabolism==1"
+	ret = search_db(cursor,qry, verbose=True)
+	if not ret:
+		print "no iems ?!"
+		exit()
+	for row in search_db(cursor, qry):
+		[mim_number, approved_symbol, ensembl_gene_id, phenotypes] = row
+		qry  = "select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='%s'" % ensembl_gene_id
+		ret = search_db(cursor,qry, verbose=True)
+		if not ret:
+			print "no uniprot info found for", ensembl_gene_id
+			exit()
+			uniprot_id, ec_number = ret[0]
+		print mim_number, approved_symbol, ensembl_gene_id, uniprot_id, ec_number, phenotypes
+	return iem_genes
 
 ##########################################
 def check_pdb_exists(swissmodel_dir, gene_symbol):
@@ -308,8 +329,10 @@ def main():
 		print dependency, " not found"
 		exit()
 	# first lets focus on the proteins from the newborn screening
-	nbs_genes = newborn_screening_genees(cursor)
-	for disease in nbs_genes:
+	# genes = newborn_screening_genes(cursor)
+	genes = all_iem_related_genes(cursor)
+	exit()
+	for disease in genes:
 		print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number] in nbs_genes[disease]:
 			if gene_symbol !='HADHA': continue

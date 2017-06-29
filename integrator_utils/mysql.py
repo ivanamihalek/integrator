@@ -22,7 +22,7 @@ from socket import gethostname
 #
 ##########################################
 def connect():
-    development = gethostname()=='pegasus'
+    development = gethostname() in ['pegasus','bison']
     if development:
         db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
     else:

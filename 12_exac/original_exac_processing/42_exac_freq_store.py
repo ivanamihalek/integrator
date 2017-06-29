@@ -28,7 +28,6 @@ def process_line(line):
 	return_list += [info["AC_Adj"],  info["AN_Adj"]]
 	return_list += [info["AC_AFR"],  info["AN_AFR"]]
 	return_list += [info["AC_AMR"],  info["AN_AMR"]]
-	return_list += [info["AC_ASJ"],  info["AN_ASJ"]]
 	return_list += [info["AC_EAS"],  info["AN_EAS"]]
 	return_list += [info["AC_FIN"],  info["AN_FIN"]]
 	return_list += [info["AC_NFE"],  info["AN_NFE"]]
@@ -40,7 +39,7 @@ def process_line(line):
 
 ##########################################
 def main():
-	infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
+	infile = open("/databases/exac/ExAC_nonTCGA.r1.sites.vep.vcf")
 
 	db, cursor = connect()
 
@@ -52,7 +51,7 @@ def main():
 		ret = process_line(line)
 		if not ret: continue
 		[chrom, addr, ref, variants, ac, an, ac_afr, an_afr,
-		 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
+		 ac_amr, an_amr, ac_eas, an_eas, ac_fin, an_fin,
 		 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
 		table = "exac_freqs_chr_" + chrom
 		fixed_fields  = {'position':int(addr)}
@@ -61,8 +60,6 @@ def main():
 		update_fields['afr_tot_count'] = an_afr
 		update_fields['amr_counts'] = ac_amr
 		update_fields['amr_tot_count'] = an_amr
-		update_fields['asj_counts'] = ac_asj
-		update_fields['asj_tot_count'] = an_asj
 		update_fields['eas_counts'] = ac_eas
 		update_fields['eas_tot_count'] = an_eas
 		update_fields['fin_counts'] = ac_fin
