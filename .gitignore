@@ -26,8 +26,6 @@ struct
 # Logs and databases #
 ######################
 *.log
-*.sql
-*.sqlite
 *~
 *.fa
 *.afa
