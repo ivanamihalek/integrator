@@ -4,12 +4,13 @@ import os, shutil, subprocess
 from math import log
 from Bio.Align.Applications import MuscleCommandline
 
-scratch      = "/home/ivana/scratch/conservation"
-blastp       = "/usr/local/bin/blastp"
-blastextract = "/usr/local/bin/blastdbcmd"
-afa2msf      = "/home/ivana/pypeworks/integrator/integrator_utils/afa2msf.pl"
-restrict     = "/home/ivana/pypeworks/integrator/integrator_utils/restrict_msf_to_query.pl"
-msf2afa      = "/home/ivana/pypeworks/integrator/integrator_utils/msf2afa.pl"
+scratch        = "/home/ivana/scratch/conservation"
+blastp         = "/usr/local/bin/blastp"
+blastextract   = "/usr/local/bin/blastdbcmd"
+afa2msf        = "/home/ivana/pypeworks/integrator/integrator_utils/afa2msf.pl"
+restrict       = "/home/ivana/pypeworks/integrator/integrator_utils/restrict_msf_to_query.pl"
+msf2afa        = "/home/ivana/pypeworks/integrator/integrator_utils/msf2afa.pl"
+names_shorten  = "/home/ivana/pypeworks/integrator/integrator_utils/fasta_names_shorten.pl"
 structure_repo = "/home/ivana/monogenic/public/pdb"
 
 if gethostname()=='brontosaurus':
@@ -75,9 +76,15 @@ def blastsearch(sequence,uniprot_id):
 		subprocess.call(cmd, shell=True)
 		cmd = "{} -db {} -entry_batch {} -out {}".format(blastextract, uniprotdb, idfile, fastafile)
 		subprocess.call(cmd, shell=True)
+		# blast handles nems inconsistently
+		subprocess.call("mv {} {}.bkp".format(fastafile,fastafile), shell=True)
+		subprocess.call(" {} < {}.bkp > {} ".format(names_shorten,fastafile,fastafile), shell=True)
+		subprocess.call("rm {}.bkp ".format(fastafile), shell=True)
+
 		# prepend query sequence - moreutils must be installed
 		cmd = "cat {} {} | sponge {}".format(queryfile, fastafile, fastafile)
 		subprocess.call(cmd, shell=True)
+
 	return fastafile, lowest_e
 
 ##########################################
