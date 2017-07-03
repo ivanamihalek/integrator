@@ -45,7 +45,7 @@ def	drop_short(blastoutfile,qry_length):
 		field = line.split()
 		qry_start = int(field[-6])
 		qry_end   = int(field[-5])
-		if (float(qry_end-qry_start+1)/qry_length<0.5): continue
+		if (float(qry_end-qry_start+1)/qry_length<0.8): continue
 		outf.write(line)
 	inf.close()
 	outf.close()
@@ -79,11 +79,12 @@ def blastsearch(sequence,uniprot_id):
 	#blast search against uniprot
 	outfile =  "{}/{}.blastout".format(scratch,uniprot_id)
 	if not os.path.exists(outfile) or os.stat(outfile).st_size == 0:
-		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  -outfmt 6 -max_target_seqs 5000 -num_threads 4"
+		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  "
+		cmd_format += "-outfmt 6 -max_target_seqs 5000 -num_threads 4 -qcov_hsp_perc 80"
 		cmd = cmd_format.format(blastp, uniprotdb, queryfile, outfile)
 		subprocess.call(cmd, shell=True)
 	# drop short seqs
-	drop_short(outfile,len(sequence))
+	# drop_short(outfile,len(sequence))
 	# if number of sequences is greater than, say 200, then sample 200 seqs
 	make_sampler(outfile)
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]
