@@ -15,6 +15,13 @@ restrict     = "/home/ivana/pypeworks/integrator/integrator_utils/restrict_msf_t
 msf2afa      = "/home/ivana/pypeworks/integrator/integrator_utils/msf2afa.pl"
 structure_repo = "/home/ivana/monogenic/public/pdb"
 
+if gethostname()=='brontosaurus':
+	mono_db   = "monogenic_production"
+	blimps_db = "blimps_production"
+else:
+	mono_db   = "monogenic_development"
+	blimps_db = "blimps_development"
+
 ##########################################
 def column_entropy(string):
 	bin = {}
@@ -124,7 +131,7 @@ def main():
 					exit()
 				uniprot_id = ret3[0][0]
 				print uniprot_id
-				qry = "select sequence from monogenic_development.uniprot_seqs where uniprot_id='%s'" % uniprot_id
+				qry = "select sequence from %s.uniprot_seqs where uniprot_id='%s'" % (mono_db,uniprot_id)
 				ret3 = search_db(cursor, qry)
 				if not ret3:
 					print "sequence  not found"
