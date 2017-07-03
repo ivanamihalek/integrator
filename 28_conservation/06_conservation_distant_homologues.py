@@ -35,17 +35,17 @@ def column_entropy(string):
 
 ##########################################
 def	make_sampler(blastoutfile):
-	line_ct = int(subprocess.check_output("wc -l %s"%blastoutfile, shell=True).split()[0])
+	line_ct   = int(subprocess.check_output("wc -l %s"%blastoutfile, shell=True).split()[0])
 	step_size = int("%.0f"%(line_ct/200.00))
 	if step_size <2: return
 	bkp = blastoutfile+".full"
-	subprocess.call('mv blastoutfile bkp', shell=True)
+	subprocess.call("mv {} {}".format(blastoutfile,bkp), shell=True)
 	inf  = open(bkp,"r")
 	outf = open(blastoutfile,"w")
 	ct  = 0
 	for line in inf:
 		ct += 1
-		if ct%step_size==0: outf.write(line)
+		if ct%step_size==0 or ct>line_ct-10: outf.write(line)
 	inf.close()
 	outf.close()
 	return
