@@ -4,7 +4,7 @@ import os, shutil, subprocess
 from math import log
 from Bio.Align.Applications import MuscleCommandline
 
-scratch      = "/home/ivana/scratch"
+scratch      = "/home/ivana/scratch/conservation"
 blastp       = "/usr/local/bin/blastp"
 blastextract = "/usr/local/bin/blastdbcmd"
 afa2msf      = "/home/ivana/pypeworks/integrator/integrator_utils/afa2msf.pl"
