@@ -115,6 +115,9 @@ def main():
 	ret = search_db(cursor, qry)
 	plotdata = ""
 	for line in ret:
+		print qry
+		print ret
+		exit()
 		[id, name_short, name_long, omim_ids, description, prim, sec] = line
 		print "="*60
 		print name_short
