@@ -143,16 +143,11 @@ def check_res_numbers(cursor, path, model):
 	identical_pct = {}
 	for chain in pdb_sequence:
 		identical_count[chain] = 0
-		#print chain
-		#print pdb_sequence[chain]
 		for resnumber, restype in pdb_sequence[chain].iteritems():
 			if resnumber<unilength and restype==uniprot_sequence[resnumber]:
 				identical_count[chain] += 1
 		identical_pct[chain] = float(identical_count[chain])/min(unilength, len(pdb_sequence[chain]))
 		identical_pct[chain] = int(100*identical_pct[chain])
-		#print identical_pct[chain]
-		#print uniprot_sequence
-		#exit()
 	return identical_pct
 
 ##########################################

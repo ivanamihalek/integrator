@@ -55,7 +55,7 @@ def	drop_short(blastoutfile,qry_length):
 ##########################################
 def	make_sampler(blastoutfile):
 	line_ct   = int(subprocess.check_output("wc -l %s"%blastoutfile, shell=True).split()[0])
-	step_size = int("%.0f"%(line_ct/200.00))
+	step_size = int("%.0f"%(line_ct/500.00))
 	if step_size <2: return
 	bkp = blastoutfile+".full"
 	subprocess.call("mv {} {}".format(blastoutfile,bkp), shell=True)
@@ -84,7 +84,7 @@ def blastsearch(sequence,uniprot_id):
 		cmd = cmd_format.format(blastp, uniprotdb, queryfile, outfile)
 		subprocess.call(cmd, shell=True)
 	# drop short seqs
-	# drop_short(outfile,len(sequence))
+	drop_short(outfile,len(sequence))
 	# if number of sequences is greater than, say 200, then sample 200 seqs
 	make_sampler(outfile)
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]

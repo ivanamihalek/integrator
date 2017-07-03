@@ -224,9 +224,10 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 	outfile = open ("tmp_ligand.pdb","w")
 
 	# write the old file, find the last res number
-	infile = open(compiled_ligand_file_path,"r")
+	infile = open(path+"/"+anchor,"r")
 	max_resnumber = -1
 	for line in infile:
+		if line[:4] != "ATOM" and line[:6]!="HETATM": continue
 		resnumber = int(line[res_number_pos:res_number_pos+res_number_length])
 		outfile.write(line)
 		if max_resnumber<resnumber: max_resnumber=resnumber
@@ -314,7 +315,7 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 	cmd = "{} {} -p -c{} >> {}".format(extract_chain,compiled_model,chains_in_main_model[0], "mainchain.pdb")
 	subprocess.call(cmd, shell=True)
 
-	distances= {} # the dictionary will contain distances to each of the remarakable points - if to other chains, ligands
+	distances = {} # the dictionary will contain distances to each of the remarakable points - if to other chains, ligands
 	for ligand_filename in split_into_compounds(compiled_ligand_file_path):
 		compound_key = ligand_filename.split(".")[-2]
 		distances[compound_key] = epitope2dist_string("mainchain.pdb",ligand_filename)
@@ -340,6 +341,7 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 	for line in inf:
 		if line[:6]=='HETATM' and line[chain_pos]=="_": continue # strip swissmodel ligands
 		if line[:4]=='ATOM': chains.add(line[chain_pos])
+		if line[:3]=='END': continue # we are going to glue the ligands at the bottom of the file
 		outf.write(line)
 	inf.close()
 	outf.close()
@@ -443,7 +445,7 @@ def main():
 
 	for line in ret:
 		gene_symbol = line[0]
-		#if gene_symbol!='PAH': continue
+		if gene_symbol!='PAH': continue
 		print gene_symbol
 		os.chdir(cwd)
 		scratch = scratch_dir + "/" + gene_symbol
