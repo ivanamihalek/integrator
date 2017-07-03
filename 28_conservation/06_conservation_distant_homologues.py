@@ -49,7 +49,7 @@ def	drop_short(blastoutfile,qry_length):
 		outf.write(line)
 	inf.close()
 	outf.close()
-	subprocess.call("rm {}".format(bkp), shell=True)
+	#subprocess.call("rm {}".format(bkp), shell=True)
 	return
 
 ##########################################
