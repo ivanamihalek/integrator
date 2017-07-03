@@ -111,14 +111,14 @@ def main():
 		print dependency, " not found"
 		exit()
 	db, cursor = connect()
-	qry = "select * from %s.diseases" % mono_db
+	qry = "select name_short,omim_ids from %s.diseases" % mono_db
 	ret = search_db(cursor, qry)
 	plotdata = ""
 	for line in ret:
 		print qry
 		print ret
 		exit()
-		[id, name_short, name_long, omim_ids, description, prim, sec] = line
+		[name_short, omim_ids] = line
 		print "="*60
 		print name_short
 		for omim_id in omim_ids.split(";"):
