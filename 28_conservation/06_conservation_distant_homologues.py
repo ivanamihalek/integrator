@@ -6,9 +6,6 @@ from Bio.Align.Applications import MuscleCommandline
 
 scratch      = "/home/ivana/scratch"
 blastp       = "/usr/local/bin/blastp"
-#uniprotdb    = "/databases/uniprot/blast/uniprot_sprot.fasta"
-# run on bronto to use trembl
-uniprotdb    = "/databases/uniprot/blast/uniprot_trembl.fasta"
 blastextract = "/usr/local/bin/blastdbcmd"
 afa2msf      = "/home/ivana/pypeworks/integrator/integrator_utils/afa2msf.pl"
 restrict     = "/home/ivana/pypeworks/integrator/integrator_utils/restrict_msf_to_query.pl"
@@ -18,10 +15,11 @@ structure_repo = "/home/ivana/monogenic/public/pdb"
 if gethostname()=='brontosaurus':
 	mono_db   = "monogenic_production"
 	blimps_db = "blimps_production"
+	uniprotdb = "/databases/uniprot/blast/uniprot_trembl.fasta"
 else:
 	mono_db   = "monogenic_development"
 	blimps_db = "blimps_development"
-
+	uniprotdb = "/databases/uniprot/blast/uniprot_sprot.fasta"
 ##########################################
 def column_entropy(string):
 	bin = {}
@@ -36,6 +34,23 @@ def column_entropy(string):
 	return entropy/log(20)
 
 ##########################################
+def	make_sampler(blastoutfile):
+	line_ct = int(subprocess.check_output("wc -l %s"%blastoutfile, shell=True).split()[0])
+	step_size = int("%.0f"%(line_ct/200.00))
+	if step_size <2: return
+	bkp = blastoutfile+".full"
+	subprocess.call('mv blastoutfile bkp', shell=True)
+	inf  = open(bkp,"r")
+	outf = open(blastoutfile,"w")
+	ct  = 0
+	for line in inf:
+		ct += 1
+		if ct%step_size==0: outf.write(line)
+	inf.close()
+	outf.close()
+	return
+
+##########################################
 def blastsearch(sequence,uniprot_id):
 
 	queryfile = "{}/{}.qry.fasta".format(scratch,uniprot_id)
@@ -45,9 +60,12 @@ def blastsearch(sequence,uniprot_id):
 	#blast search against uniprot
 	outfile =  "{}/{}.blastout".format(scratch,uniprot_id)
 	if not os.path.exists(outfile) or os.stat(outfile).st_size == 0:
-		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  -outfmt 6 -max_target_seqs 1000 -num_threads 4"
+		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  -outfmt 6 -max_target_seqs 5000 -num_threads 4"
 		cmd = cmd_format.format(blastp, uniprotdb, queryfile, outfile)
 		subprocess.call(cmd, shell=True)
+	# if number of sequences is greater than, say 200, then sample 200 seqs
+	make_sampler(outfile)
+
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]
 	# find the corresponding seqs
 	fastafile = "{}/{}.fasta".format(scratch,uniprot_id)
