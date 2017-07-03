@@ -45,7 +45,7 @@ def blastsearch(sequence,uniprot_id):
 	#blast search against uniprot
 	outfile =  "{}/{}.blastout".format(scratch,uniprot_id)
 	if not os.path.exists(outfile) or os.stat(outfile).st_size == 0:
-		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  -outfmt 6 -max_target_seqs 1000 -a 4"
+		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  -outfmt 6 -max_target_seqs 1000 -num_threads 4"
 		cmd = cmd_format.format(blastp, uniprotdb, queryfile, outfile)
 		subprocess.call(cmd, shell=True)
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]
