@@ -85,6 +85,8 @@ def blastsearch(sequence,uniprot_id):
 		subprocess.call(cmd, shell=True)
 	# drop short seqs
 	drop_short(outfile,len(sequence))
+	print "dropped short"
+	exit()
 	# if number of sequences is greater than, say 200, then sample 200 seqs
 	make_sampler(outfile)
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]
