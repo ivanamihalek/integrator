@@ -6,7 +6,9 @@ from Bio.Align.Applications import MuscleCommandline
 
 scratch      = "/home/ivana/scratch"
 blastp       = "/usr/local/bin/blastp"
-uniprotdb    = "/databases/uniprot/blast/uniprot_sprot.fasta"
+#uniprotdb    = "/databases/uniprot/blast/uniprot_sprot.fasta"
+# run on bronto to use trembl
+uniprotdb    = "/databases/uniprot/blast/uniprot_trembl.fasta"
 blastextract = "/usr/local/bin/blastdbcmd"
 afa2msf      = "/home/ivana/pypeworks/integrator/integrator_utils/afa2msf.pl"
 restrict     = "/home/ivana/pypeworks/integrator/integrator_utils/restrict_msf_to_query.pl"
