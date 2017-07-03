@@ -5,8 +5,6 @@ from integrator_utils.mysql import *
 
 ##########################################
 def main():
-	print "this script will drop exac tables - uncomment if it is the desired behavior"
-	exit()
 	db, cursor = connect()
 	for chrom in [str(i) for i in range(1,23)] + ['X','Y']:
 		table = "exac_freqs_chr_" + chrom
@@ -18,7 +16,6 @@ def main():
 		qry += " variant_counts text, total_count int, "
 		qry += " afr_counts text, afr_tot_count int, "
 		qry += " amr_counts text, amr_tot_count int, "
-		qry += " asj_counts text, asj_tot_count int, "
 		qry += " eas_counts text, eas_tot_count int, "
 		qry += " fin_counts text, fin_tot_count int, "
 		qry += " nfe_counts text, nfe_tot_count int, "
@@ -26,7 +23,7 @@ def main():
 		qry += " sas_counts text, sas_tot_count int, "
 		qry += " hotspot_id int, "
 		qry += " PRIMARY KEY (position) )" # the default engine is InnoDB
-		search_db(cursor, qry, verbose=True)
+		#search_db(cursor, qry, verbose=True)
 	cursor.close()
 	db.close()
 	return True
