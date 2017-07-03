@@ -115,10 +115,9 @@ def main():
 	ret = search_db(cursor, qry)
 	plotdata = ""
 	for line in ret:
-		print qry
-		print ret
-		exit()
 		[id, name_short, name_long, omim_ids, description, prim, sec] = line
+		print "="*60
+		print name_short
 		for omim_id in omim_ids.split(";"):
 			qry = "select approved_symbol, ensembl_gene_id from omim_genemaps where mim_number='%s'" % omim_id
 			ret2 = search_db(cursor, qry)
