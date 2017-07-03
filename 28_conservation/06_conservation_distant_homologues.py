@@ -21,6 +21,7 @@ else:
 	mono_db   = "monogenic_development"
 	blimps_db = "blimps_development"
 	uniprotdb = "/databases/uniprot/blast/uniprot_sprot.fasta"
+
 ##########################################
 def column_entropy(string):
 	bin = {}
@@ -33,6 +34,23 @@ def column_entropy(string):
 		if count>0:
 			entropy -= freq*log(freq)
 	return entropy/log(20)
+
+##########################################
+def	drop_short(blastoutfile,qry_length):
+	bkp = blastoutfile+".bkp"
+	subprocess.call("mv {} {}".format(blastoutfile,bkp), shell=True)
+	inf  = open(bkp,"r")
+	outf = open(blastoutfile,"w")
+	for line in inf:
+		field = line.split()
+		qry_start = int(field[-6])
+		qry_end   = int(field[-5])
+		if (float(qry_end-qry_start+1)/qry_length<0.5): continue
+		outf.write(line)
+	inf.close()
+	outf.close()
+	subprocess.call("rm {}".format(bkp), shell=True)
+	return
 
 ##########################################
 def	make_sampler(blastoutfile):
@@ -64,9 +82,10 @@ def blastsearch(sequence,uniprot_id):
 		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  -outfmt 6 -max_target_seqs 5000 -num_threads 4"
 		cmd = cmd_format.format(blastp, uniprotdb, queryfile, outfile)
 		subprocess.call(cmd, shell=True)
+	# drop short seqs
+	drop_short(outfile,len(sequence))
 	# if number of sequences is greater than, say 200, then sample 200 seqs
 	make_sampler(outfile)
-
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]
 	# find the corresponding seqs
 	fastafile = "{}/{}.fasta".format(scratch,uniprot_id)
