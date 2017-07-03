@@ -111,7 +111,7 @@ def main():
 		print dependency, " not found"
 		exit()
 	db, cursor = connect()
-	qry = "select * from monogenic_development.diseases"
+	qry = "select * from %s.diseases" % mono_db
 	ret = search_db(cursor, qry)
 	plotdata = ""
 	for line in ret:
