@@ -36,15 +36,15 @@ def column_entropy(string):
 	return entropy/log(20)
 
 ##########################################
-def	drop_short(blastoutfile,qry_length):
+def	drop_short(blastoutfile):
 	bkp = blastoutfile+".bkp"
 	subprocess.call("mv {} {}".format(blastoutfile,bkp), shell=True)
 	inf  = open(bkp,"r")
 	outf = open(blastoutfile,"w")
 	for line in inf:
 		field = line.split()
-		alignment_length = field[3]
-		if (float(alignment_length)/qry_length<0.8): continue
+		pct_qry_cvg = field[-1]
+		if (pct_qry_cvg<0.8): continue
 		outf.write(line)
 	inf.close()
 	outf.close()
@@ -79,11 +79,13 @@ def blastsearch(sequence,uniprot_id):
 	outfile =  "{}/{}.blastout".format(scratch,uniprot_id)
 	if not os.path.exists(outfile) or os.stat(outfile).st_size == 0:
 		cmd_format = "{} -db {} -query {} -out {} -evalue 1.0e-20  "
-		cmd_format += "-outfmt 6 -max_target_seqs 5000 -num_threads 4 -qcov_hsp_perc 80"
+		# qcovs should be pctg coverage of the query
+		cmd_format += "-outfmt \"6 sseqid  evalue qcovs\" -max_target_seqs "
+		cmd_format += "5000 -num_threads 4 -qcov_hsp_perc 80 "
 		cmd = cmd_format.format(blastp, uniprotdb, queryfile, outfile)
 		subprocess.call(cmd, shell=True)
 	# drop short seqs
-	drop_short(outfile,len(sequence))
+	drop_short(outfile)
 	# if number of sequences is greater than, say 200, then sample 200 seqs
 	make_sampler(outfile)
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]
@@ -91,7 +93,7 @@ def blastsearch(sequence,uniprot_id):
 	fastafile = "{}/{}.fasta".format(scratch,uniprot_id)
 	if not os.path.exists(fastafile) or os.stat(fastafile).st_size == 0:
 		idfile    = "{}/{}.ids".format(scratch,uniprot_id)
-		cmd = "awk '{print $2}' %s > %s" %(outfile,idfile)
+		cmd = "awk '{print $1}' %s > %s" %(outfile,idfile)
 		subprocess.call(cmd, shell=True)
 		cmd = "{} -db {} -entry_batch {} -out {}".format(blastextract, uniprotdb, idfile, fastafile)
 		subprocess.call(cmd, shell=True)
@@ -189,7 +191,6 @@ def main():
 				#structure_file = ret3[0][0]
 				#blas search
 				fastafile, lowest_e  = blastsearch(sequence,uniprot_id)
-				exit()
 				afafile   = align(fastafile,uniprot_id)
 				# afa2ms
 				msffile = afafile.replace("afa","msf")
@@ -202,6 +203,7 @@ def main():
 				# cluster?
 				restricted_afa = afafile.replace("afa","restr.afa")
 				subprocess.call("{} {} > {}".format(msf2afa,restricted_msf,restricted_afa), shell=True)
+				exit()
 
 				position_conservation = conserved_columns(restricted_afa, uniprot_id)
 				conserved_positions = []
