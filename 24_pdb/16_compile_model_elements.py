@@ -42,7 +42,7 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
 crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "HEM","PE4","ACT","NA"]
-physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
+physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA","K"]
 
 ##########################################
 def newborn_screening_genes(cursor):
@@ -57,10 +57,10 @@ def newborn_screening_genes(cursor):
 			qry += "where mim_number='%s'" % omim_id
 			ret = search_db(cursor,qry, verbose=True)
 			approved_symbol, ensembl_gene_id = ret[0]
-			qry  = "select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='%s'" % ensembl_gene_id
+			qry  = "select uniprot_id, ec_number, cofactors from blimps_development.uniprot_basic_infos where ensembl_gene_id='%s'" % ensembl_gene_id
 			ret = search_db(cursor,qry, verbose=True)
-			uniprot_id, ec_number = ret[0]
-			nbs_genes[name_short].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number])
+			uniprot_id, ec_number,uniprot_cofactors = ret[0]
+			nbs_genes[name_short].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors])
 	return nbs_genes
 
 ##########################################
@@ -75,16 +75,16 @@ def all_iem_related_genes(cursor):
 		exit()
 	for row in ret:
 		[mim_number, approved_symbol, ensembl_gene_id, phenotypes] = row
-		qry  = "select uniprot_id, ec_number from blimps_development.uniprot_basic_infos where ensembl_gene_id='%s'" % ensembl_gene_id
+		qry  = "select uniprot_id, ec_number, cofactors from blimps_development.uniprot_basic_infos where ensembl_gene_id='%s'" % ensembl_gene_id
 		ret = search_db(cursor,qry, verbose=False)
 		if not ret:
 			print "no uniprot info found for", ensembl_gene_id
 			continue
 			#exit()
-		uniprot_id, ec_number = ret[0]
+		uniprot_id, ec_number, cofactors = ret[0]
 		#print mim_number, approved_symbol, ensembl_gene_id, uniprot_id, ec_number, phenotypes
 		if not iem_genes.has_key(phenotypes): iem_genes[phenotypes] = []
-		iem_genes[phenotypes].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number])
+		iem_genes[phenotypes].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number, cofactors])
 	return iem_genes
 
 ##########################################
@@ -172,7 +172,8 @@ def substrate_smiles_from_metacyc(cursor, ec_number):
 			if substrate in ['WATER', 'NA','CL','PROTON']: continue
 			if substrate!='' and '|' not in substrate and substrate not in substrates: substrates.append(substrate)
 
-		for er in enzymatic_reaction.split (";"):
+		for er in enzymatic_reaction.replace(" ","").split(";"):
+			if len(er)==0: continue
 			qry  = "select cofactors, alternative_cofactors, alternative_substrates "
 			qry += "from metacyc_enzrxns where unique_id='%s' " % er.replace(" ","")
 			ret2 = search_db(cursor,qry)
@@ -201,7 +202,6 @@ def substrate_smiles_from_metacyc(cursor, ec_number):
 			else:
 				for line in ret2:
 					smiles_list.append([compound_id, line[0]])
-
 	return subs_smiles, cofactors_smiles
 
 ##########################################
@@ -289,23 +289,28 @@ def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, known_ligand_smiles):
 
 	usable_pdbs = {}
 	for pdb_id in pdb_id_list:
+		print "\t\t", pdb_id
+		print "\t\t known ligands", known_ligand_smiles
+		exit()
 		# check whether we already have this pdb in the database - if not download
 		smiles = get_pdb_ligand_info(cursor, pdb_id)
 		if not smiles: continue
 		ligand_similarities = []
 		for pdb_compound_id, smiles_string in smiles.iteritems():
 			for [known_ligand_id, known_smiles] in known_ligand_smiles:
-				# are the two strings trivally equal by any chance?
+				print "\t\tcomparing",  pdb_compound_id, known_ligand_id,
+				# are the two strings trivially equal by any chance?
 				similarity=0
 				if pdb_compound_id in physiological_ions:
 					# pdb people can be lax with the ion charge
-					if (pdb_compound_id.replace("2",""))==(known_ligand_id.replace("2","")):
+					if (pdb_compound_id.translate(None,"+-123"))==(known_ligand_id.translate(None,"+-123")):
 						similarity=1.0
 				elif known_smiles and smiles_string:
 					if known_smiles.upper()==smiles_string.upper():
 						similarity=1.0
 					else:
 						similarity = rdkit_compare(known_smiles, smiles_string)
+				print "\t\tsimilarity:", similarity
 				if similarity>0.5:
 					ligand_similarities.append([pdb_compound_id, known_ligand_id, "%.2f"%similarity])
 			# pdb ids should already be sorted by similarity to the model chain
@@ -326,31 +331,35 @@ def main():
 		print dependency, " not found"
 		exit()
 	# first lets focus on the proteins from the newborn screening
-	# genes = newborn_screening_genes(cursor)
-	genes = all_iem_related_genes(cursor)
+	genes = newborn_screening_genes(cursor)
+	#genes = all_iem_related_genes(cursor)
 	for disease in genes.keys():
-		print disease
-		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number] in genes[disease]:
-			#if gene_symbol !='HADHA': continue
-			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number
-			qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
-			ret = search_db(cursor,qry)
-			if ret:
-				print "model elements found"
-				continue
+		#print disease
+		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
+			if gene_symbol !='PAH': continue
+			print disease
+			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
+			#qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
+			#ret = search_db(cursor,qry)
+			#if ret:
+			#	print "model elements found"
+			#	continue
 			# check swiss model structure exists, is nonempty, and is indeed pdb
 			swissmodel = check_pdb_exists(swissmodel_dir, gene_symbol)
 			if not swissmodel: continue
-			print "\t", swissmodel
+			print "\tfound swissmodel:", swissmodel
 			# is the residue numbering correct?
+			print "\tchecking the numbering in the pdb file ..."
 			identical_pct = check_res_numbers(cursor, "/".join([swissmodel_dir, gene_symbol[0], gene_symbol]), swissmodel)
 			mismatch = False
 			for chain,pct in identical_pct.iteritems():
+				print "\t", chain, "pct identitiy", pct
 				if pct<90:
 					print "\t structure seq mismatch? chain", chain, "pct identical positions:",  pct
 					mismatch = True
 					break
 			if mismatch: continue
+			print "\tsequence ok; creating scratch directory\n"
 			# if we got ot here, we might need some scratch space
 			scratch = "/".join([scratch_dir,uniprot_id])
 			shutil.rmtree(scratch,ignore_errors=True)
@@ -360,20 +369,25 @@ def main():
 			# is this an enzyme?
 			if ec_number: # if yes, find substrates and cofactors (ions?)
 				# get substrates as smiles strings
-				subsmiles = substrate_smiles_from_metacyc(cursor,ec_number)
-				if not subsmiles: continue
-				subs_smiles, cofactors_smiles = substrate_smiles_from_metacyc(cursor,ec_number)
+				subs_smiles, cofactors_smiles  = substrate_smiles_from_metacyc(cursor,ec_number)
+				if not subs_smiles: continue
+				print "\tsubstrate smiles from metacyc:", subs_smiles
+				print "\tcofactor smiles from metacyc:", cofactors_smiles
 				# find all other pdb files with similar sequence and ligands
+				print "\tsearching pdb by sequence ..."
 				pdb_pct_similarity = find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch)
 				# fid smiles for the ligand - is it similar to the substrate? if not, drop the whole pdb
 				# find ligands that are similar to substrates/cofactors, that are not already present in the model
 				# pdb_pct_similarity declared as OrderedDict
+				print "\tsearching for pdbs with ligands similar to one of the substrates from metacyc"
 				usable_pdbs= select_pdbs_with_relevant_ligands(cursor, pdb_pct_similarity.keys(),subs_smiles+ cofactors_smiles)
 				if not usable_pdbs: continue
 				for usable_pdb_id, sims in usable_pdbs.iteritems():
 					print "\t\t", usable_pdb_id, pdb_pct_similarity[usable_pdb_id], sims
 					for sim in sims:
 						[pdb_ligand_name, metcyc_ligand_name, tanimoto] = sim
+						print pdb_ligand_name, metcyc_ligand_name, tanimoto
+						continue
 						fixed_fields  = {'gene_symbol':gene_symbol, 'pdb_chain':usable_pdb_id, 'pdb_ligand':pdb_ligand_name}
 						update_fields = {'ensembl_gene_id':ensembl_gene_id,'uniprot_id':uniprot_id,
 						                 'ec_number':ec_number,'main_model':swissmodel,

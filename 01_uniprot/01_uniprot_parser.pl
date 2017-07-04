@@ -41,6 +41,8 @@ sub parse() {
 	my ($uniprot_ids, $full_name,$gene_name, $tissue, $fn, $ec_number, $ensembl_id,$aa_lengths) =
 		("", "", "", "", "", "", "", "");
 	my $reading_function  = 0;
+	my $reading_cofactors  = 0;
+	my @cofs = ();
 	foreach (split "\n", $entry) {
 		if  (/^ID/) {
 		} elsif (/^AC/) {
@@ -82,7 +84,10 @@ sub parse() {
 					$reading_function  = 0;
 				}
 
-				if (/FUNCTION/) {
+				if (/COFACTOR/) {
+					$reading_cofactors  = 1;
+					@cofs = ();
+				} elsif (/FUNCTION/) {
 					$reading_function  = 1;
 					$_ =~ s/CC   -!- FUNCTION: //;
 					$fn .= $_." ";
@@ -90,6 +95,10 @@ sub parse() {
 			} elsif ( $reading_function )  {
 				$_ =~ s/CC      //;
 				$fn .= $_." ";
+			} elsif ( $reading_cofactors )  {
+				/Name\=(\S+?)\;/;
+				defined $1 && push @cofs, $1;
+				$reading_cofactors = 0; # one at a time
 			}
 		} elsif (/^SQ\s+SEQUENCE\s+(\d+)\s*AA/) {
 			#$aa_lengths && ($aa_lengths.=";");
@@ -101,8 +110,11 @@ sub parse() {
 	my @aux = split (";", $uniprot_ids);
 	my $uniprot_id = shift @aux;
 	defined $manual_fix_for_ensembl{$uniprot_id} && ($ensembl_id = $manual_fix_for_ensembl{$uniprot_id});
-	my $old_uniprot_ids = join ";", @aux;
-	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$aa_lengths\t$full_name\t$tissue\t";
+	my $old_uniprot_ids  = join ";", @aux;
+	my $cofactors = "";
+	@cofs && ($cofactors = join ";", @cofs);
+	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$cofactors\t$aa_lengths\t$full_name\t$tissue\t";
 	print "$fn\t$old_uniprot_ids\n";
+
 
 }
