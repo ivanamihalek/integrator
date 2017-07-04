@@ -203,8 +203,6 @@ def main():
 				# cluster?
 				restricted_afa = afafile.replace("afa","restr.afa")
 				subprocess.call("{} {} > {}".format(msf2afa,restricted_msf,restricted_afa), shell=True)
-				exit()
-
 				position_conservation = conserved_columns(restricted_afa, uniprot_id)
 				conserved_positions = []
 				for i in range(len(position_conservation)):
