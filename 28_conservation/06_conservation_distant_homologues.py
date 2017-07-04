@@ -187,8 +187,9 @@ def main():
 				#	print "structure  not found"
 				#	continue
 				#structure_file = ret3[0][0]
-				#blasr
+				#blas search
 				fastafile, lowest_e  = blastsearch(sequence,uniprot_id)
+				exit()
 				afafile   = align(fastafile,uniprot_id)
 				# afa2ms
 				msffile = afafile.replace("afa","msf")
