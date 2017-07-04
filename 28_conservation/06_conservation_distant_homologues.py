@@ -43,9 +43,8 @@ def	drop_short(blastoutfile,qry_length):
 	outf = open(blastoutfile,"w")
 	for line in inf:
 		field = line.split()
-		qry_start = int(field[-6])
-		qry_end   = int(field[-5])
-		if (float(qry_end-qry_start+1)/qry_length<0.8): continue
+		alignment_length = field[3]
+		if (float(alignment_length)/qry_length<0.8): continue
 		outf.write(line)
 	inf.close()
 	outf.close()
@@ -85,8 +84,6 @@ def blastsearch(sequence,uniprot_id):
 		subprocess.call(cmd, shell=True)
 	# drop short seqs
 	drop_short(outfile,len(sequence))
-	print "dropped short", len(sequence)
-	exit()
 	# if number of sequences is greater than, say 200, then sample 200 seqs
 	make_sampler(outfile)
 	lowest_e = subprocess.check_output("tail -n 1 {}".format(outfile), shell=True).split()[-2]
