@@ -44,7 +44,7 @@ def	drop_short(blastoutfile):
 	for line in inf:
 		field = line.split()
 		pct_qry_cvg = field[-1]
-		if (pct_qry_cvg<0.8): continue
+		if (pct_qry_cvg<80): continue
 		outf.write(line)
 	inf.close()
 	outf.close()
