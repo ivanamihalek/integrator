@@ -151,6 +151,16 @@ def check_res_numbers(cursor, path, model):
 	return identical_pct
 
 ##########################################
+def get_regulators(cursor, reg_by):
+	regulators = []
+	for reg_id in reg_by.split(";"):
+		qry  = "select  regulator from metacyc_regulations where unique_id='%s'" % reg_id
+		ret = search_db(cursor,qry)
+		if not ret: continue
+		regulators.append(ret[0][0])
+	return  ";".join(regulators)
+
+##########################################
 def substrate_smiles_from_metacyc(cursor, ec_number):
 	switch_to_db(cursor,'blimps_development')
 	# search by gene may fail because metacyc does not have human version described
@@ -165,6 +175,7 @@ def substrate_smiles_from_metacyc(cursor, ec_number):
 	cofactors = []
 	alternative_cofactors = []
 	alternative_substrates = []
+	regulators = []
 	substrates = []
 	for line in ret:
 		enzymatic_reaction, rxn_left, rxn_right = line
@@ -174,13 +185,17 @@ def substrate_smiles_from_metacyc(cursor, ec_number):
 
 		for er in enzymatic_reaction.replace(" ","").split(";"):
 			if len(er)==0: continue
-			qry  = "select cofactors, alternative_cofactors, alternative_substrates "
+			qry  = "select cofactors, alternative_cofactors, alternative_substrates, regulated_by "
 			qry += "from metacyc_enzrxns where unique_id='%s' " % er.replace(" ","")
 			ret2 = search_db(cursor,qry)
 			for line2 in ret2:
-				cofs, alt_cofs, alt_subs = line2
+				cofs, alt_cofs, alt_subs, reg_by = line2
+				# regulators need an extra resolution step
+				regs = get_regulators(cursor, reg_by)
 				# list is reserved word, so lets call this array
-				for element, array in [[cofs,cofactors], [alt_cofs, alternative_cofactors], [alt_subs, alternative_substrates]]:
+				for element, array in [[cofs,cofactors], [alt_cofs, alternative_cofactors],
+				                       [alt_subs, alternative_substrates], [regs, regulators]]:
+
 					if element in ['WATER', 'NA','CL','PROTON']: continue
 					if element!='' and 'EV-EXP' not in element and element not in array: array.append(element)
 	subs_smiles = []
