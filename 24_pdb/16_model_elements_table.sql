@@ -13,6 +13,7 @@ CREATE TABLE `model_elements` (
     `pdb_ligand`        varchar(3)  NOT NULL,
     `metacyc_ligand`   varchar(100) DEFAULT NULL,
     `ligand_tanimoto`  float DEFAULT NULL,
+    `ligand_function`  varchar(100) DEFAULT NULL,
       PRIMARY KEY (`id`),
       KEY `gene_symbol_idx` (`gene_symbol`)
 ) ENGINE=MyISAM;

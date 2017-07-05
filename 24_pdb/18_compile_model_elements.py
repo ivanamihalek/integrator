@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 swissmodel_dir = "/databases/swissmodel"
 scratch_dir    = "/home/ivana/scratch"
-struct         = "/home/ivana/projects/enzyme_modeling/code/struct/struct"
+struct         = "/home/ivana/code/struct/struct"
 pdb_affine     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_tfm.pl"
 extract_chain  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
 geom_epitope   = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_epitope.pl"
@@ -19,7 +19,7 @@ compiled_model_repository = "/home/ivana/monogenic/public/pdb"
 
 conda          = "/home/ivana/miniconda2/bin"
 rdkitenv       = "rdkit-env"
-rdkit_runner   = "/home/ivana/pypeworks/integrator/24_pdb/15_rdkit_smiles_comparison.py"
+rdkit_runner   = "/home/ivana/pypeworks/integrator/24_pdb/17_rdkit_smiles_comparison.py"
 
 
 cwd    = os.getcwd()
@@ -177,6 +177,7 @@ def substrate_smiles_from_metacyc(cursor, ec_number):
 	alternative_substrates = []
 	regulators = []
 	substrates = []
+
 	for line in ret:
 		enzymatic_reaction, rxn_left, rxn_right = line
 		for substrate in rxn_left.replace(" ","").split(";") + rxn_right.replace(" ","").split(";"):
@@ -200,24 +201,39 @@ def substrate_smiles_from_metacyc(cursor, ec_number):
 					if element!='' and 'EV-EXP' not in element and element not in array: array.append(element)
 	subs_smiles = []
 	cofactors_smiles = []
-	for name, array in [['substrates', substrates], ['cofactors',cofactors],
-	                    ['alt_cofs', alternative_cofactors], ['alt_subs', alternative_substrates]]:
+	regs_smiles = []
+	smiles_list = {'substrates': subs_smiles,'alt_subs': subs_smiles,
+	               'cofactors': cofactors_smiles,'alt_cofs': cofactors_smiles, 'regulators': regs_smiles}
+	for name, array in [['substrates', substrates], ['cofactors',cofactors],['alt_cofs', alternative_cofactors],
+	                    ['alt_subs', alternative_substrates], ['regulators', regulators]]:
 		if len(array) == 0: continue
-		if 'subs' in name:
-			smiles_list = subs_smiles
-		else:
-			smiles_list = cofactors_smiles
 		for compound_id in array:
-			qry = "select smiles from metacyc_compounds where unique_id='%s'" % compound_id
+			qry  = "select smiles from metacyc_compounds where unique_id='%s'" % compound_id
 			ret2 = search_db(cursor,qry)
 			if not ret2:
 				for comp_id in compound_id.split(";"):
 					comp_id = comp_id.replace(" ","").replace("+","").upper()
-					smiles_list.append([comp_id, None]) # single atoms or ions may not have the smiles string
+					smiles_list[name].append([comp_id, None]) # single atoms or ions may not have the smiles string
 			else:
 				for line in ret2:
-					smiles_list.append([compound_id, line[0]])
-	return subs_smiles, cofactors_smiles
+					smiles_list[name].append([compound_id, line[0]])
+
+	del smiles_list['alt_subs']
+	del smiles_list['alt_cofs']
+	return smiles_list
+
+##########################################
+def parse_ions(uniprot_cofactors, metacyc_cofactors):
+	for cof in uniprot_cofactors.split(";"):
+		cof =  cof[:2].upper()
+		# TODO: could it be that i have some cofactors here other than ions, which are not present in metacyc?
+		if cof not in physiological_ions: continue
+		seen_in_metacyc = False
+		for [compound, smiles] in metacyc_cofactors:
+			if cof==compound[:2].upper():
+				seen_in_metacyc = True
+				break
+		if not seen_in_metacyc: metacyc_cofactors.append([cof,cof])
 
 ##########################################
 def download_and_store_ligands_from_pdb(cursor, pdb_id):
@@ -288,52 +304,74 @@ def rdkit_compare(smiles1, smiles2):
 	return similarity
 
 ##########################################
-def check_and_store (usable_pdbs, pdb_id, ligand_similarities):
-	if len(ligand_similarities)==0: return
-	new_sims_set = set(["_".join(x) for x in ligand_similarities])
-	seen_already = False
-	for seen_pdb_id, seen_ligand_sims in usable_pdbs.iteritems():
-		seen_sims_set = set(["_".join(x) for x in seen_ligand_sims])
-		if seen_sims_set==new_sims_set:seen_already=True
-	if not seen_already:
-		usable_pdbs[pdb_id] = ligand_similarities
-	return
+def reorganize_ligands(smiles_dict):
+	# some ligands might have multiple roles
+	# in particular they might be a substrate and a regulator (witness PHE in PAH)
+	# on the other hand, there might be some notational confusion regarding what is
+	# a substrate and wht is a cofactor
+	ligands_reorganized = {}
+	for [ligand, smiles] in smiles_dict['substrates']:
+		ligands_reorganized[ligand] = [smiles, 'substrate']
+
+	for [ligand, smiles] in smiles_dict['regulators']:
+		if ligands_reorganized.has_key(ligand):
+			ligands_reorganized[ligand] = [smiles, 'substrate;regulator']
+		else:
+			ligands_reorganized[ligand] = [smiles, 'regulator']
+
+	for [ligand, smiles] in smiles_dict['cofactors']:
+		if ligands_reorganized.has_key(ligand):
+			[smiles0, function0] = ligands_reorganized[ligand]
+			if function0=='substrate': continue
+			ligands_reorganized[ligand] = [smiles, 'cofactor;regulator']
+		ligands_reorganized[ligand] = [smiles, 'cofactor']
+
+	return ligands_reorganized
 
 ##########################################
-def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, known_ligand_smiles):
+def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, smiles_dict):
 
+	ligands_reorganized = reorganize_ligands(smiles_dict)
 	usable_pdbs = {}
 	for pdb_id in pdb_id_list:
 		print "\t\t", pdb_id
-		print "\t\t known ligands", known_ligand_smiles
-		exit()
-		# check whether we already have this pdb in the database - if not download
+		# check whether we already have this pdb in the database - if not, download
 		smiles = get_pdb_ligand_info(cursor, pdb_id)
 		if not smiles: continue
 		ligand_similarities = []
 		for pdb_compound_id, smiles_string in smiles.iteritems():
-			for [known_ligand_id, known_smiles] in known_ligand_smiles:
-				print "\t\tcomparing",  pdb_compound_id, known_ligand_id,
+			# function: substrate, cofactor, regulator
+			for known_ligand_id, [known_smiles, known_ligand_function] in ligands_reorganized.iteritems():
 				# are the two strings trivially equal by any chance?
 				similarity=0
 				if pdb_compound_id in physiological_ions:
+					if not known_ligand_id in physiological_ions: continue
 					# pdb people can be lax with the ion charge
 					if (pdb_compound_id.translate(None,"+-123"))==(known_ligand_id.translate(None,"+-123")):
 						similarity=1.0
-				elif known_smiles and smiles_string:
-					if known_smiles.upper()==smiles_string.upper():
-						similarity=1.0
-					else:
-						similarity = rdkit_compare(known_smiles, smiles_string)
-				print "\t\tsimilarity:", similarity
+				else:
+					if known_ligand_id in physiological_ions: continue
+					if known_smiles and smiles_string:
+						if known_smiles.upper()==smiles_string.upper():
+							similarity=1.0
+						else:
+							similarity = rdkit_compare(known_smiles, smiles_string)
 				if similarity>0.5:
-					ligand_similarities.append([pdb_compound_id, known_ligand_id, "%.2f"%similarity])
-			# pdb ids should already be sorted by similarity to the model chain
-			# now check if we already have an exact same set of ligands in one of the chains,
-			# and drop if that is the case
-		check_and_store (usable_pdbs, pdb_id, ligand_similarities)
+					# get rid of the plural s in in the known function
+					ligand_similarities.append([pdb_compound_id, known_ligand_id, known_ligand_function, "%.2f"%similarity])
+					print "\t\t", pdb_compound_id, known_ligand_id, known_ligand_function, "%.2f"%similarity
+			# there can be ligands with the same chemical structure at multiple places in the  sturcture - sort this out when
+			# mapping on the model structure
+		if len(ligand_similarities)>0:
+			usable_pdbs[pdb_id]=ligand_similarities
 
 	return usable_pdbs
+
+##########################################
+def print_smiles (name, smiles):
+	print "\t%s smiles from metacyc:" %name
+
+	print "\t"+"\n\t".join(map(lambda x: "%s  %s"%(x[0],x[1]),smiles))+"\n"
 
 ##########################################
 def main():
@@ -384,10 +422,11 @@ def main():
 			# is this an enzyme?
 			if ec_number: # if yes, find substrates and cofactors (ions?)
 				# get substrates as smiles strings
-				subs_smiles, cofactors_smiles  = substrate_smiles_from_metacyc(cursor,ec_number)
-				if not subs_smiles: continue
-				print "\tsubstrate smiles from metacyc:", subs_smiles
-				print "\tcofactor smiles from metacyc:", cofactors_smiles
+				smiles_dict = substrate_smiles_from_metacyc(cursor,ec_number)
+				parse_ions(uniprot_cofactors,smiles_dict['cofactors'])
+				if not smiles_dict: continue
+				for name, smiles in smiles_dict.iteritems():
+					print_smiles(name,smiles)
 				# find all other pdb files with similar sequence and ligands
 				print "\tsearching pdb by sequence ..."
 				pdb_pct_similarity = find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch)
@@ -395,19 +434,20 @@ def main():
 				# find ligands that are similar to substrates/cofactors, that are not already present in the model
 				# pdb_pct_similarity declared as OrderedDict
 				print "\tsearching for pdbs with ligands similar to one of the substrates from metacyc"
-				usable_pdbs= select_pdbs_with_relevant_ligands(cursor, pdb_pct_similarity.keys(),subs_smiles+ cofactors_smiles)
+				usable_pdbs = select_pdbs_with_relevant_ligands(cursor, pdb_pct_similarity.keys(), smiles_dict)
 				if not usable_pdbs: continue
 				for usable_pdb_id, sims in usable_pdbs.iteritems():
 					print "\t\t", usable_pdb_id, pdb_pct_similarity[usable_pdb_id], sims
 					for sim in sims:
-						[pdb_ligand_name, metcyc_ligand_name, tanimoto] = sim
+						[pdb_ligand_name, metcyc_ligand_name, ligand_function, tanimoto] = sim
 						print pdb_ligand_name, metcyc_ligand_name, tanimoto
-						continue
-						fixed_fields  = {'gene_symbol':gene_symbol, 'pdb_chain':usable_pdb_id, 'pdb_ligand':pdb_ligand_name}
+						fixed_fields  = {'gene_symbol':gene_symbol, 'pdb_chain':usable_pdb_id,
+						                 'pdb_ligand':pdb_ligand_name, 'metacyc_ligand':metcyc_ligand_name}
 						update_fields = {'ensembl_gene_id':ensembl_gene_id,'uniprot_id':uniprot_id,
 						                 'ec_number':ec_number,'main_model':swissmodel,
 						                 'pdb_pct_identical_to_uniprot': pdb_pct_similarity[usable_pdb_id],
-						                 'metacyc_ligand':metcyc_ligand_name, 'ligand_tanimoto':tanimoto}
+						                 'ligand_function':ligand_function,
+						                 'ligand_tanimoto':tanimoto}
 						# just store in the database and continue in the next pipe in the pipeline
 						store_or_update(cursor, 'monogenic_development.model_elements', fixed_fields, update_fields, verbose=False)
 
