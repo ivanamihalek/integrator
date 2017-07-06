@@ -6,11 +6,12 @@ import json
 swissmodel_dir    = "/databases/swissmodel"
 pdb_path          = "/databases/pdb/structures"
 scratch_dir       = "/home/ivana/scratch"
-struct            = "/home/ivana/projects/enzyme_modeling/code/struct/struct"
+struct            = "/home/ivana/code/struct/struct"
 pdb_affine        = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_tfm.pl"
 pdbdown           = "/home/ivana/pypeworks/integrator/integrator_utils/pdbdownload.pl"
 pdb_chain_rename  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_chain_rename.pl"
 extract_chain     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
+geom_overlap      = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_overlap.pl"
 geom_epitope      = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_epitope.pl"
 compiled_model_repository = "/home/ivana/monogenic/public/pdb"
 cwd    = os.getcwd()
@@ -129,7 +130,7 @@ def extract_ligand(path, scratch, filename, chain, ligand_resn):
 	# otherwise we failed - for example ligand is not associated with the chain we were told to use
 	ligands, chains = extract_ligands(infile_path, scratch,  ligand_resn)
 	# say we return the first one
-	if len(chains,): return ligands[0], chains[0]
+	if len(chains): return ligands[0], chains[0]
 	exit()
 	# still other possibility: ligand has no chainname, ever
 	extract_ligand_without_chain_name(path, scratch, filename, chain, ligand_resn)
@@ -149,7 +150,7 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 	[path, main_model, main_model_chains] = main_model_info
 	for main_model_chain in main_model_chains:
 		# do we have the tfm already by any chance
-		tfm_key = "{}_{}_{}".format(main_model, main_model_chain,ligand_containing_structure)
+		tfm_key = "{}_{}_{}_{}".format(main_model, main_model_chain,ligand_containing_structure, ligand_chain)
 		if transform.has_key(tfm_key):
 			outf = open("tmp.tfm","w")
 			outf.write(transform[tfm_key])
@@ -185,54 +186,57 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 	return ligand_file_tfmd_paths
 
 #########################################
+def find_last_res_number(pdb_file_path):
+	resnumber_atom   = -1
+	resnumber_hetatm = -1
+	cmd = "awk '$1==\"ATOM\"' {} | tail -n1".format(pdb_file_path)
+	ret = subprocess.check_output(cmd, shell=True)
+	if ret and len(ret)>res_number_pos+res_number_length: resnumber_atom = int(ret[res_number_pos:res_number_pos+res_number_length])
+	cmd = "awk '$1==\"HETATM\"' {} | tail -n1".format(pdb_file_path)
+	ret = subprocess.check_output(cmd, shell=True)
+	if ret and len(ret)>res_number_pos+res_number_length: resnumber_hetatm = int(ret[res_number_pos:res_number_pos+res_number_length])
+
+	max_resnumber = max(resnumber_atom,resnumber_hetatm)
+	return max_resnumber
+
+#########################################
 def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_paths, scratch):
 
 	compiled_ligands_exists = os.path.exists(compiled_ligand_file_path) and os.path.getsize(compiled_ligand_file_path)>0
-
+	print ligand_file_tfmd_paths
 	os.chdir(scratch)
 	# do I have anything closer than1 1 A?
-	#note that I am taking the footprint on the ligand, to remove clashing molecules
+	# note that I am taking the footprint on the ligand, to remove clashing molecules
 	if compiled_ligands_exists:
 		clashing_ligands = []
 		for ligand_file_tfmd_path in ligand_file_tfmd_paths:
-			cmd = "{} {} {} 0.5".format(geom_epitope, ligand_file_tfmd_path, compiled_ligand_file_path)
-			ret = subprocess.check_output(cmd, shell=True)
-			if len( filter(lambda x: len(x.replace(" ",""))>0, ret.split("\n")))> 0:
-				clashing_ligands.append(ligand_file_tfmd_path)
+			cmd = "{} {} {}".format(geom_overlap, ligand_file_tfmd_path, compiled_ligand_file_path)
+			ret = subprocess.check_output(cmd, shell=True).rstrip()
+			if float(ret.rstrip())> 0: clashing_ligands.append(ligand_file_tfmd_path)
 		ok_ligands = list(set(ligand_file_tfmd_paths)-set(clashing_ligands))
+		if len(ok_ligands)==0: return None
+		max_resnumber = find_last_res_number(compiled_ligand_file_path)
+		if len(clashing_ligands): print "clashing:", clashing_ligands
 	else:
-		ok_ligands = ligand_file_tfmd_paths
+		print "not exist?"
+		ok_ligands    = ligand_file_tfmd_paths
+		if len(ok_ligands)==0: return None
+		max_resnumber = find_last_res_number(path+"/"+anchor)
 
-	if len(ok_ligands)==0: return None
+	print "ok ligands:", ok_ligands
 
+	# clashing with the main chain?
 	clashing_ligands = []
 	for ligand_file_tfmd_path in ok_ligands:
-		cmd = "{} {} {} 0.5".format(geom_epitope, ligand_file_tfmd_path, path+"/"+anchor)
+		cmd = "{} {} {}".format(geom_overlap, ligand_file_tfmd_path, path+"/"+anchor)
 		ret = subprocess.check_output(cmd, shell=True)
-		if len(filter(lambda x: len(x.replace(" ", "")) > 0, ret.split("\n"))) > 0:
-			clashing_ligands.append(ligand_file_tfmd_path)
+		if float(ret.rstrip())> 0: clashing_ligands.append(ligand_file_tfmd_path)
 
 	remaining_ligands = sorted(list(set(ok_ligands) - set(clashing_ligands)))
 	if len(remaining_ligands)==0: return None
 
-	if not compiled_ligands_exists:
-		shutil.copy(remaining_ligands[0],compiled_ligand_file_path)
-		remaining_ligands =remaining_ligands[1:]
-
-
 	# compile what we have so far; renumber
-	outfile = open ("tmp_ligand.pdb","w")
-
-	# write the old file, find the last res number
-	infile = open(path+"/"+anchor,"r")
-	max_resnumber = -1
-	for line in infile:
-		if line[:4] != "ATOM" and line[:6]!="HETATM": continue
-		resnumber = int(line[res_number_pos:res_number_pos+res_number_length])
-		outfile.write(line)
-		if max_resnumber<resnumber: max_resnumber=resnumber
-	infile.close()
-
+	outfile = open (compiled_ligand_file_path,"a")
 	new_ligands = []
 	for ligand_file_tfmd_path in remaining_ligands:
 		infile = open(ligand_file_tfmd_path,"r")
@@ -248,10 +252,12 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 				new_ligands.append(line[res_name_pos:res_name_pos+res_name_length].replace(" ",""))
 			outfile.write(line[:res_number_pos] + "%4d"%output_resno + line[res_number_pos+4:])
 		infile.close()
-
 	outfile.close()
-	os.rename("tmp_ligand.pdb",compiled_ligand_file_path)
+
 	new_ligands = list(set(new_ligands))
+
+	print "new_ligans", new_ligands
+
 	return new_ligands
 
 #########################################
@@ -315,7 +321,7 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 	cmd = "{} {} -p -c{} >> {}".format(extract_chain,compiled_model,chains_in_main_model[0], "mainchain.pdb")
 	subprocess.call(cmd, shell=True)
 
-	distances = {} # the dictionary will contain distances to each of the remarakable points - if to other chains, ligands
+	distances = {} # the dictionary will contain distances to each of the remarkable points - interface to other chains, ligands
 	for ligand_filename in split_into_compounds(compiled_ligand_file_path):
 		compound_key = ligand_filename.split(".")[-2]
 		distances[compound_key] = epitope2dist_string("mainchain.pdb",ligand_filename)
@@ -364,21 +370,16 @@ def compile_model(cursor, gene_symbol,scratch):
 	main_model      = main_model_info[1]
 	print main_model_info
 
-	qry = "select  id, metacyc_ligand, ligand_tanimoto from model_elements where gene_symbol='%s'" % gene_symbol
-	max_tanimoto = {}
-	max_id       = {}
-	for line in  search_db(cursor,qry):
-		[id, metacyc_ligand, ligand_tanimoto] = line
-		if not max_tanimoto.has_key(metacyc_ligand) or ligand_tanimoto > max_tanimoto[metacyc_ligand]:
-			max_tanimoto[metacyc_ligand] = ligand_tanimoto
-			max_id[metacyc_ligand]       = id
-
+	qry  = "select  pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot from model_elements"
+	qry += " where gene_symbol='%s' order by pdb_pct_identical_to_uniprot desc"  % gene_symbol
+	ret = search_db (cursor,qry)
 	compiled_ligands_file_path = scratch + "/compiled_ligands.pdb"
 	compiled_ligand_list = []
-	for metacyc_ligand, id_with_the_highest_tanimoto_score in max_id.iteritems():
-		qry = "select  pdb_chain, pdb_ligand from model_elements where id=%d"  % id_with_the_highest_tanimoto_score
-		ret  = search_db(cursor,qry)
-		pdb_chain, pdb_ligand  = ret[0]
+	ligand_functions = {}
+	for line in ret:
+		pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot = line
+		if not ligand_functions.has_key(pdb_chain): ligand_functions[pdb_chain]= {}
+		ligand_functions[pdb_chain][pdb_ligand] = ligand_function
 		cmd = "{} {}".format(pdbdown, pdb_chain[:-1]) # this will check if it already exists
 		subprocess.call(cmd, shell=True)
 		ligand_file_path, new_chain = extract_ligand(pdb_path, scratch, pdb_chain[:-1]+".pdb", pdb_chain[-1], pdb_ligand)
@@ -393,13 +394,18 @@ def compile_model(cursor, gene_symbol,scratch):
 		# remove clashing ligands adn ligands far from the main chain
 		# add ligands which are not clashing with the existing ones
 		new_ligands = merge_ligands(main_model_path, main_model, compiled_ligands_file_path, ligand_file_tfmd_paths, scratch)
-		if not new_ligands: new_ligands=[pdb_ligand]
-		compiled_ligand_list += new_ligands
-		compiled_ligand_list  = list(set(compiled_ligand_list))
+		if new_ligands:
+			compiled_ligand_list += new_ligands
+			compiled_ligand_list  = list(set(compiled_ligand_list))
+
+		print compiled_ligand_list
+
+	exit()
 
 	if os.path.exists(compiled_ligands_file_path) and os.path.getsize(compiled_ligands_file_path)>0:
 		chains = main_model_info[2]
-		compiled_model, distance_strings[main_model] = strip_and_glue(main_model_info, compiled_ligands_file_path, compiled_ligand_list, scratch)
+		compiled_model, distance_strings[main_model] = strip_and_glue(main_model_info, compiled_ligands_file_path,
+		                                                              compiled_ligand_list, scratch)
 		# move out of struct_scratch
 		if compiled_model and len(compiled_model)>0:
 			os.rename(compiled_model,  main_model_path+"/"+compiled_model)
@@ -409,7 +415,7 @@ def compile_model(cursor, gene_symbol,scratch):
 	distance_string =  ",".join(distance_strings.values())
 	#print compiled_ligand_list
 	#print distance_string
-	return main_model_path, compiled_model, chains, compiled_ligand_list, distance_string
+	return main_model_path, compiled_model, chains, compiled_ligand_list, distance_string, ligand_functions
 
 ##########################################
 def store_ligands(cursor, approved_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string):
@@ -432,7 +438,7 @@ def store_ligands(cursor, approved_symbol, model_path, compiled_model, chains, c
 def main():
 
 	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
-	                   geom_epitope, extract_chain, compiled_model_repository,
+	                   geom_overlap, extract_chain, compiled_model_repository,
 	                   pdb_path, pdbdown, pdb_chain_rename]:
 		if os.path.exists(dependency): continue
 		print dependency, " not found"
@@ -451,14 +457,14 @@ def main():
 		scratch = scratch_dir + "/" + gene_symbol
 		shutil.rmtree(scratch, ignore_errors=True)
 		os.makedirs(scratch)
-		model_path, compiled_model, chains, compiled_ligands, distance_string = compile_model(cursor,gene_symbol,scratch)
+		model_path, compiled_model, chains, compiled_ligands, distance_string, ligand_functions = compile_model(cursor,gene_symbol,scratch)
 		if not compiled_model: continue
 		print compiled_model, chains, compiled_ligands
 		print distance_string
-
+		exit()
 		# store compiled model in hte pdb directory of the monogenic server
 		# store the list  of the ligands to the database
-		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string)
+		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string,ligand_functions)
 		shutil.rmtree(scratch, ignore_errors=True)
 
 

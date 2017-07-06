@@ -1,0 +1,205 @@
+#!/usr/bin/python
+from integrator_utils.mysql import *
+import os, shutil, subprocess
+import json
+
+swissmodel_dir    = "/databases/swissmodel"
+pdb_path          = "/databases/pdb/structures"
+scratch_dir       = "/home/ivana/scratch"
+struct            = "/home/ivana/code/struct/struct"
+pdb_affine        = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_tfm.pl"
+pdbdown           = "/home/ivana/pypeworks/integrator/integrator_utils/pdbdownload.pl"
+pdb_chain_rename  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_chain_rename.pl"
+extract_chain     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
+geom_overlap      = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_overlap.pl"
+geom_epitope      = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_epitope.pl"
+compiled_model_repository = "/home/ivana/monogenic/public/pdb"
+cwd    = os.getcwd()
+
+#########################################
+chain_pos      = 21  #length 1
+res_name_pos   = 17
+res_name_length = 3
+res_number_pos = 22
+res_number_length = 4
+aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
+                  'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N',
+                  'GLY': 'G', 'HIS': 'H', 'LEU': 'L', 'ARG': 'R', 'TRP': 'W',
+                  'ALA': 'A', 'VAL': 'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M'}
+#########################################
+transform = {}
+
+#########################################
+def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_file_path, scratch):
+
+	ligand_file_tfmd_paths = []
+
+	struct_scratch = scratch + "/" + "struct_scratch"
+	shutil.rmtree(struct_scratch,ignore_errors=True)
+	os.makedirs(struct_scratch)
+	os.chdir(struct_scratch)
+
+	# find the  first chain in anchor
+	[path, main_model, main_model_chains] = main_model_info
+	for main_model_chain in main_model_chains:
+		# do we have the tfm already by any chance
+		tfm_key = "{}_{}_{}_{}".format(main_model, main_model_chain,ligand_containing_structure, ligand_chain)
+		print tfm_key
+		if transform.has_key(tfm_key):
+			print transform[tfm_key]
+			outf = open("tmp.tfm","w")
+			outf.write(transform[tfm_key])
+			outf.close()
+		else:
+			from_structure_path = pdb_path+"/"+ligand_containing_structure
+			to_structure_path   = path+"/"+main_model
+			cmd = "%s -from %s -c1 %s -to %s -c2 %s" % (struct, from_structure_path, ligand_chain, to_structure_path, main_model_chain)
+			subprocess.call(cmd, shell=True)
+			almt_file = "{}{}_to_{}{}.0.aln"\
+				.format(ligand_containing_structure.replace('.pdb',''), ligand_chain, main_model.replace('.pdb',''),main_model_chain)
+			if not os.path.exists(almt_file) or os.stat(almt_file).st_size == 0: return None
+			cmd = "grep tfm {} -A 3 | tail -n 3 | sed 's/{}//g' > tmp.tfm".format(almt_file,"%")
+			subprocess.call(cmd, shell=True)
+			if not os.path.exists('tmp.tfm') or os.stat('tmp.tfm').st_size == 0: return None
+			inf = open("tmp.tfm","r")
+			transform[tfm_key] = inf.read()
+			inf.close()
+
+		ligand_file_tmp_path = ligand_file_path.replace('.pdb','') + ".tmp.pdb"
+		cmd = "{} {} tmp.tfm > {}".format(pdb_affine, ligand_file_path, ligand_file_tmp_path)
+		subprocess.call(cmd, shell=True)
+		# rename chain to match  chain we mapped is to
+		ligand_file_tfmd_path = ligand_file_path.replace('.pdb','') + ".tfmd.{}.pdb".format(main_model_chain)
+		cmd = "{} {} {} {} > {}".format(pdb_chain_rename, ligand_file_tmp_path, ligand_chain, main_model_chain, ligand_file_tfmd_path)
+		subprocess.call(cmd, shell=True)
+
+		ligand_file_tfmd_paths.append(ligand_file_tfmd_path)
+
+	os.chdir(scratch)
+	#shutil.rmtree(struct_scratch,ignore_errors=True)
+
+	return ligand_file_tfmd_paths
+
+
+##########################################
+
+##########################################
+def extract_trivial(infile_path, scratch, chain, ligand_resn):
+	infile = open (infile_path, "r")
+	outstring = ""
+	for line in infile:
+		if line[:6] != 'HETATM': continue
+		if line[chain_pos] != chain:
+			continue
+		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
+		if resname != ligand_resn: continue
+		outstring += line
+	infile.close()
+
+	if len(outstring)==0:
+		return None
+	filename = infile_path.split("/").pop()
+	outfilename = "/".join([scratch, filename.replace('.pdb','')+".{}.{}.pdb".format(chain,ligand_resn)])
+	outfile = open(outfilename,"w")
+	outfile.write(outstring)
+	outfile.close()
+	return outfilename
+
+#########################################
+def extract_peptide (infile_path, chain, chainfile):
+	infile = open (infile_path, "r")
+	outf   = open (chainfile,"w")
+	for line in infile:
+		if line[:4]=='ATOM' and line[chain_pos]==chain:
+			outf.write(line)
+	outf.close()
+	infile.close()
+
+
+#########################################
+def extract_ligand_without_chain_name(path, scratch, filename, chain, ligand_resn):
+	print "extracting nonames"
+	exit()
+	# extract all chains
+	infile_path = path+"/"+filename
+	# extract all ligands
+	ligands = extract_ligands(infile_path, chain, ligand_resn)
+	print ligands
+	exit()
+	# extract all chains
+	infile  = open (infile_path, "r")
+	chains = set()
+	for line in infile:
+		if line[:4]=='ATOM': chains.add(line[chain_pos])
+	infile.close()
+	chains = sorted(list(chains))
+	for chain in chains:
+		chainfile =  "/".join([scratch,"tmp"+chain+".pdb"])
+		extract_peptide(infile_path, chain, chainfile)
+	# extract ligands
+	# assign  ligand to the chain where it leaves the largest footprint
+	exit()
+
+#########################################
+def extract_ligands(infile_path, scratch,  ligand_resn):
+	infile = open (infile_path, "r")
+	outfile = {}
+	chains = []
+	for line in infile:
+		if line[:6]!='HETATM': continue
+		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
+		if resname!=ligand_resn: continue
+		res_number = line[res_number_pos:res_number_pos+res_number_length].replace(' ','')
+		if not outfile.has_key(res_number):
+			filename = infile_path.split("/").pop()
+			chain = line[chain_pos]
+			if chain != ' ':
+				outf_name= "/".join([scratch, filename.replace('.pdb','')+".{}.{}.pdb".format(res_number,chain)])
+				chains.append(chain)
+			else:
+				outf_name= "/".join([scratch, filename.replace('.pdb','')+".{}.pdb".format(res_number)])
+			print outf_name
+			outfile[res_number] = open(outf_name,"w")
+		outfile[res_number].write(line)
+
+	for outf in outfile.values():outf.close()
+	infile.close()
+
+	return [outf.name for outf in outfile.values()],chains
+
+#########################################
+def extract_ligand(path, scratch, filename, chain, ligand_resn):
+	infile_path = path+"/"+filename
+	outfilename = extract_trivial(infile_path, scratch, chain, ligand_resn)
+	if outfilename: return outfilename, None
+	# otherwise we failed - for example ligand is not associated with the chain we were told to use
+	ligands, chains = extract_ligands(infile_path, scratch,  ligand_resn)
+	# say we return the first one
+	if len(chains): return ligands[0], chains[0]
+	exit()
+	# still other possibility: ligand has no chainname, ever
+	extract_ligand_without_chain_name(path, scratch, filename, chain, ligand_resn)
+	return outfilename
+########################################
+def main():
+
+	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
+	                   geom_overlap, extract_chain, compiled_model_repository,
+	                   pdb_path, pdbdown, pdb_chain_rename]:
+		if os.path.exists(dependency): continue
+		print dependency, " not found"
+		exit()
+
+	scratch = scratch_dir + "/PAH"
+	ligand_containing_structure = "5fii.pdb"
+	ligand_chain = "A"
+	ligand_path, something =  extract_ligand(pdb_path, scratch, ligand_containing_structure, ligand_chain, 'PHE')
+	print ligand_path
+
+	# [path, main_model, main_model_chains]
+	main_model_info = [scratch,"P00439_20_450_5fgj.1.A_peptide.pdb", ['A','B','C','D']]
+	map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_path, scratch)
+  # map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_file_path, scratch):
+########################################
+if __name__ == '__main__':
+	main()

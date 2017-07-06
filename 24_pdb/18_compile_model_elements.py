@@ -12,7 +12,6 @@ scratch_dir    = "/home/ivana/scratch"
 struct         = "/home/ivana/code/struct/struct"
 pdb_affine     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_tfm.pl"
 extract_chain  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
-geom_epitope   = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_epitope.pl"
 blastp         = "/usr/local/bin/blastp"
 pdb_blast_db   = "/databases/pdb/blast/pdb_seqres.fasta" # expected to be formatted using makeblastdb
 compiled_model_repository = "/home/ivana/monogenic/public/pdb"
@@ -378,7 +377,7 @@ def main():
 	swissmodel_dir = "/databases/swissmodel"
 	db, cursor = connect()
 	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
-	                   geom_epitope, extract_chain, compiled_model_repository,
+	                   extract_chain, compiled_model_repository,
 					   blastp, pdb_blast_db, conda, rdkit_runner]:
 		if os.path.exists(dependency): continue
 		print dependency, " not found"

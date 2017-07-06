@@ -54,7 +54,7 @@ while ( <PDBFILE1> ) {
     $atom_1{$res_label}[$ctr][1] = $x;
     $atom_1{$res_label}[$ctr][2] = $y;
     $atom_1{$res_label}[$ctr][3] = $z;
-    $res_name_1[$res_seq] = substr $_,  17, 3; $res_name_1 [$res_seq]=~ s/\s//g;
+    $res_name_1[$res_seq] = substr $_,  17, 3; $res_name_1[$res_seq]=~ s/\s//g;
     $ctr++;
 }
 if ($prev_res_label) {
