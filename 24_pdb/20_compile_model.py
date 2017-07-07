@@ -450,7 +450,7 @@ def main():
 
 	for line in ret:
 		gene_symbol = line[0]
-		if gene_symbol!='PCCB': continue
+		if gene_symbol!='ACAT1': continue
 		print gene_symbol
 		os.chdir(cwd)
 		scratch = scratch_dir + "/" + gene_symbol
@@ -463,7 +463,7 @@ def main():
 		# store compiled model in hte pdb directory of the monogenic server
 		# store the list  of the ligands to the database
 		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string)
-		shutil.rmtree(scratch, ignore_errors=True)
+		#shutil.rmtree(scratch, ignore_errors=True)
 
 
 

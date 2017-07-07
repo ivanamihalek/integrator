@@ -98,8 +98,8 @@ def check_pdb_exists(swissmodel_dir, gene_symbol):
 	swiss = None
 	ivana = None
 	for model in next(os.walk(directory))[2]:
-		if 'swissmodel' in model:  swiss =  model
-		if 'ivana' in model:  ivana =  model
+		if 'swissmodel' in model:  swiss = model
+		if 'ivana' in model:  ivana = model
 	if not ivana and not swiss:
 		print "\t swissmodel not found"
 		return False
@@ -284,6 +284,7 @@ def find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch):
 	target_pct_idtty = OrderedDict()
 	cmd = "{} -db {} -query {} -outfmt 6".format(blastp, pdb_blast_db, queryfile)
 	for line in subprocess.check_output(cmd, shell=True).split("\n"):
+		print line
 		field = line.split()
 		if len(field)==0 or field[0] != uniprot_id:  continue # this is not the result line
 		pct_identity = field[2]
@@ -341,6 +342,7 @@ def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, smiles_dict):
 		if not smiles: continue
 		ligand_similarities = []
 		for pdb_compound_id, smiles_string in smiles.iteritems():
+			if pdb_compound_id in crystallographic_additives: continue
 			# function: substrate, cofactor, regulator
 			for known_ligand_id, [known_smiles, known_ligand_function] in ligands_reorganized.iteritems():
 				# are the two strings trivially equal by any chance?
@@ -390,7 +392,7 @@ def main():
 	for disease in genes.keys():
 		#print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
-			if gene_symbol !='PCCB': continue
+			if gene_symbol!='BTD': continue
 			print disease
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
 			#qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
