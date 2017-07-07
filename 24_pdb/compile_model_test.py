@@ -28,6 +28,7 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
                   'ALA': 'A', 'VAL': 'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M'}
 #########################################
 transform = {}
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "HEM","PE4","ACT","NA"]
 
 #########################################
 def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_file_path, scratch):
@@ -180,6 +181,93 @@ def extract_ligand(path, scratch, filename, chain, ligand_resn):
 	# still other possibility: ligand has no chainname, ever
 	extract_ligand_without_chain_name(path, scratch, filename, chain, ligand_resn)
 	return outfilename
+
+#########################################
+def epitope2dist_string(pdb1, pdb2):
+	cmd = "{} {} {} 10.0".format(geom_epitope, pdb1,pdb2)
+	distances = {}
+	for line in subprocess.check_output(cmd, shell=True).split("\n"):
+		field = line.lstrip().rstrip().split()
+		if len(field)<2: continue
+		#chain = field[0][0] # not using that info
+		resn  = field[0][1:4]
+		distance = float(field[1])
+		distances[resn] = distance
+	return distances
+
+#########################################
+def split_into_compounds(compound_file):
+	infile = open (compound_file, "r")
+	outfile = {}
+	for line in infile:
+		if line[:6]!='HETATM': continue
+		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
+		res_number = line[res_number_pos:res_number_pos+res_number_length].replace(' ','')
+		chain = line[chain_pos]
+		res_key = "_".join([resname,res_number,chain])
+		if not outfile.has_key(res_key):
+			outf_name= compound_file.replace('.pdb','')+".{}.pdb".format(res_key)
+			outfile[res_key] = open(outf_name,"w")
+		outfile[res_key].write(line)
+
+	for outf in outfile.values():outf.close()
+	infile.close()
+
+	return [outf.name for outf in outfile.values()]
+
+#########################################
+def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scratch):
+
+	main_model_path, main_model, chains_in_main_model = main_model_info
+	# the last field in the name is the source (pdb or swissmodel) which we'll replace with "compiled"
+	compiled_model = None
+	for label in ['peptide','swissmodel','ivana']:
+		if label in main_model:
+			compiled_model = main_model.replace(label,"compiled")
+	if not compiled_model:
+		print "name convention changed?"
+		exit()
+	os.chdir(scratch)
+
+	outfile = open(compiled_model,"w")
+	infile  = open(main_model_path+"/"+main_model, "r")
+	for line in infile:
+		if line[:4]=='ATOM' or line[:6] == 'HETATM':
+			resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
+			if resname in crystallographic_additives + ligand_list: continue
+		outfile.write(line)
+	infile.close()
+	outfile.close()
+
+	print "scratch", scratch
+	print "main model", main_model_path+"/"+main_model
+	print "compiled", compiled_model
+
+	#concatenate protein and ligand files
+	cmd = "cat {} >> {}".format(compiled_ligand_file_path, compiled_model)
+	subprocess.call(cmd, shell=True)
+
+	#extract main chain into one file, and the rest in the other
+	# extract peptide only for chain chains_in_main_model[0]
+	cmd = "{} {} -p -c{} >> {}".format(extract_chain,compiled_model,chains_in_main_model[0], "mainchain.pdb")
+	subprocess.call(cmd, shell=True)
+
+	distances = {} # the dictionary will contain distances to each of the remarkable points - interface to other chains, ligands
+	for ligand_filename in split_into_compounds(compiled_ligand_file_path):
+		compound_key = ligand_filename.split(".")[-2]
+		distances[compound_key] = epitope2dist_string("mainchain.pdb",ligand_filename)
+
+	for chain in chains_in_main_model[1:]:
+		chain_pdb = "chain{}.pdb".format(chain)
+		cmd = "{} {} -p -c{} >> {}".format(extract_chain,compiled_model,chain,chain_pdb)
+		subprocess.call(cmd, shell=True)
+		distances["chain"+chain] = epitope2dist_string("mainchain.pdb",chain_pdb)
+
+	distance_string = json.dumps(distances)
+	return compiled_model, distance_string
+
+
+
 ########################################
 def main():
 
@@ -193,13 +281,24 @@ def main():
 	scratch = scratch_dir + "/PAH"
 	ligand_containing_structure = "5fii.pdb"
 	ligand_chain = "A"
-	ligand_path, something =  extract_ligand(pdb_path, scratch, ligand_containing_structure, ligand_chain, 'PHE')
-	print ligand_path
+	main_model_info = [scratch,"P00439_20_450_5fgj.1.A_ivana.pdb", ['A','B','C','D']]
 
-	# [path, main_model, main_model_chains]
-	main_model_info = [scratch,"P00439_20_450_5fgj.1.A_peptide.pdb", ['A','B','C','D']]
-	map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_path, scratch)
-  # map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_file_path, scratch):
+	if False:
+		ligand_path, something =  extract_ligand(pdb_path, scratch, ligand_containing_structure, ligand_chain, 'PHE')
+		print ligand_path
+
+		# [path, main_model, main_model_chains]
+		map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_path, scratch)
+	    # map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_file_path, scratch):
+
+	compiled_ligand_list = ['H4B', 'DAH', 'PHE', 'LNR', 'FE2', 'FE', 'TIH', 'TRS']
+	chains = main_model_info[2]
+	compiled_ligands_file_path = scratch + "/compiled_ligands.pdb"
+	compiled_model, distance_strings = strip_and_glue(main_model_info, compiled_ligands_file_path,
+		                                                              compiled_ligand_list, scratch)
+	print compiled_model
+	print distance_strings
+
 ########################################
 if __name__ == '__main__':
 	main()

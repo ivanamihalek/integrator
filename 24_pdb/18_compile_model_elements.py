@@ -96,12 +96,14 @@ def check_pdb_exists(swissmodel_dir, gene_symbol):
 		print "\t",directory," not directory"
 		return False
 	swiss = None
+	ivana = None
 	for model in next(os.walk(directory))[2]:
-		if not 'swissmodel' in model: continue
-		swiss =  model
-	if not swiss:
+		if 'swissmodel' in model:  swiss =  model
+		if 'ivana' in model:  ivana =  model
+	if not ivana and not swiss:
 		print "\t swissmodel not found"
 		return False
+	if ivana: swiss = ivana # use model made by hand if available
 	cmd = "head -n1 {}".format("/".join([directory,swiss]))
 	first_field = subprocess.check_output(cmd, shell=True).split()[0]
 	if first_field in ['ATOM','TITLE', 'HEADER','HETATM']:
@@ -388,7 +390,7 @@ def main():
 	for disease in genes.keys():
 		#print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
-			if gene_symbol !='PAH': continue
+			if gene_symbol !='PCCB': continue
 			print disease
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
 			#qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol

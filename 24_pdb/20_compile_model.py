@@ -203,7 +203,6 @@ def find_last_res_number(pdb_file_path):
 def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_paths, scratch):
 
 	compiled_ligands_exists = os.path.exists(compiled_ligand_file_path) and os.path.getsize(compiled_ligand_file_path)>0
-	print ligand_file_tfmd_paths
 	os.chdir(scratch)
 	# do I have anything closer than1 1 A?
 	# note that I am taking the footprint on the ligand, to remove clashing molecules
@@ -222,8 +221,6 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 		ok_ligands    = ligand_file_tfmd_paths
 		if len(ok_ligands)==0: return None
 		max_resnumber = find_last_res_number(path+"/"+anchor)
-
-	print "ok ligands:", ok_ligands
 
 	# clashing with the main chain?
 	clashing_ligands = []
@@ -255,8 +252,6 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 	outfile.close()
 
 	new_ligands = list(set(new_ligands))
-
-	print "new_ligans", new_ligands
 
 	return new_ligands
 
@@ -293,13 +288,18 @@ def split_into_compounds(compound_file):
 
 	return [outf.name for outf in outfile.values()]
 
-
 #########################################
 def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scratch):
 
 	main_model_path, main_model, chains_in_main_model = main_model_info
 	# the last field in the name is the source (pdb or swissmodel) which we'll replace with "compiled"
-	compiled_model = main_model.replace("peptide","compiled")
+	compiled_model = None
+	for label in ['peptide','swissmodel','ivana']:
+		if label in main_model:
+			compiled_model = main_model.replace(label,"compiled")
+	if not compiled_model:
+		print "name convention changed?"
+		exit()
 	os.chdir(scratch)
 
 	outfile = open(compiled_model,"w")
@@ -368,7 +368,6 @@ def compile_model(cursor, gene_symbol,scratch):
 	main_model_info = prepare_main_model(swissmodel_dir, ret[0][0], scratch)
 	main_model_path = main_model_info[0]
 	main_model      = main_model_info[1]
-	print main_model_info
 
 	qry  = "select  pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot from model_elements"
 	qry += " where gene_symbol='%s' order by pdb_pct_identical_to_uniprot desc"  % gene_symbol
@@ -398,9 +397,8 @@ def compile_model(cursor, gene_symbol,scratch):
 			compiled_ligand_list += new_ligands
 			compiled_ligand_list  = list(set(compiled_ligand_list))
 
-		print compiled_ligand_list
+	print compiled_ligand_list
 
-	exit()
 
 	if os.path.exists(compiled_ligands_file_path) and os.path.getsize(compiled_ligands_file_path)>0:
 		chains = main_model_info[2]
@@ -422,6 +420,7 @@ def store_ligands(cursor, approved_symbol, model_path, compiled_model, chains, c
 
 	final_compiled_name = approved_symbol+"_"+compiled_model
 	shutil.copy(model_path +"/" + compiled_model, compiled_model_repository + "/" + final_compiled_name)
+	print "copied {}  to {}".format(model_path +"/" + compiled_model, compiled_model_repository + "/" + final_compiled_name)
 	fixed_fields  = {'gene_symbol':approved_symbol, 'structure_file': final_compiled_name}
 	chain = chains[0]
 	other_chains = ",".join(chains[1:])
@@ -451,7 +450,7 @@ def main():
 
 	for line in ret:
 		gene_symbol = line[0]
-		if gene_symbol!='PAH': continue
+		if gene_symbol!='PCCB': continue
 		print gene_symbol
 		os.chdir(cwd)
 		scratch = scratch_dir + "/" + gene_symbol
@@ -461,10 +460,9 @@ def main():
 		if not compiled_model: continue
 		print compiled_model, chains, compiled_ligands
 		print distance_string
-		exit()
 		# store compiled model in hte pdb directory of the monogenic server
 		# store the list  of the ligands to the database
-		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string,ligand_functions)
+		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string)
 		shutil.rmtree(scratch, ignore_errors=True)
 
 

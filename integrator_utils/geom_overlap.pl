@@ -114,6 +114,12 @@ foreach my $aa1 (@labels_1) {
                 $max[$i] = $atom_2{$aa2}[$ctr2][$i + 1] > $max[$i] ? $atom_2{$aa2}[$ctr2][$i + 1] : $max[$i];
             }
         }
+        for (my $i = 0; $i < 3; $i++) {
+            if ($max[$i]-$min[$i] < 0.5) {
+                $min[$i] -= 1.5;
+                $max[$i] += 1.5;
+            }
+        }
         my $inside = 1;
         for (my $i=0; $i<3; $i++) {
             if ( $geom_ctr_1{$aa1}[$i]< $min[$i] || $geom_ctr_1{$aa1}[$i]> $max[$i]) {
