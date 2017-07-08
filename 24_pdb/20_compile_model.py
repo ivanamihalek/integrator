@@ -449,7 +449,7 @@ def main():
 
 	for line in ret:
 		gene_symbol = line[0]
-		if gene_symbol!='BTD': continue
+		if gene_symbol!='PAH': continue
 		print gene_symbol
 		os.chdir(cwd)
 		scratch = scratch_dir + "/" + gene_symbol

@@ -42,5 +42,5 @@ def ec_cofactors_from_uniprot(uniprot_id):
 	cofactors = []
 	for cof in soup.find_all('comment',type="cofactor"):
 		for c in  cof.findChildren():
-			if c.name=='name': str(cofactors.append(c.text))
+			if c.name=='name': cofactors.append(str(c.text))
 	return ec_numbers, ";".join(cofactors)
