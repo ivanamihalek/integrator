@@ -11,8 +11,8 @@ pdb_affine        = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affin
 pdbdown           = "/home/ivana/pypeworks/integrator/integrator_utils/pdbdownload.pl"
 pdb_chain_rename  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_chain_rename.pl"
 extract_chain     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
-geom_overlap      = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_overlap.pl"
-geom_epitope      = "/home/ivana/pypeworks/integrator/24_pdb/integrator_utils/geom_epitope.pl"
+geom_overlap      = "/home/ivana/pypeworks/integrator/integrator_utils/geom_overlap.pl"
+geom_epitope      = "/home/ivana/pypeworks/integrator/integrator_utils/geom_epitope.pl"
 compiled_model_repository = "/home/ivana/monogenic/public/pdb"
 cwd    = os.getcwd()
 

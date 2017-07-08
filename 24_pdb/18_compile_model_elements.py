@@ -245,10 +245,10 @@ def download_and_store_ligands_from_pdb(cursor, pdb_id):
 	switch_to_db(cursor, 'monogenic_development')
 	for ligand_info in return_list:
 		fixed_fields['chemical_id'] = ligand_info['chemical_id']
-		update_fields = {'ligand_type': ligand_info['type']}
+		update_fields = {'ligand_type': ligand_info['ligand_type']}
 		update_fields['chemical_name'] = ligand_info['chemical_name']
-		update_fields['smiles'] = ligand_info['chemical_name']
-		store_or_update(cursor, 'pdb_ligands', fixed_fields, update_fields, verbose=True)
+		update_fields['smiles'] = ligand_info['smiles']
+		store_or_update(cursor, 'pdb_ligands', fixed_fields, update_fields, verbose=False)
 	return
 
 ##########################################
@@ -330,7 +330,7 @@ def reorganize_ligands(smiles_dict):
 ##########################################
 def get_ec_from_pdb(cursor, pdb_chain_id):
 	switch_to_db(cursor,'monogenic_development')
-	qry = "select * from pdb_uniprot_ec_maps where pdb_chain='%s'" % pdb_chain_id
+	qry = "select  uniprot_id, ec_numbers, cofactors from pdb_uniprot_ec_maps where pdb_chain='%s'" % pdb_chain_id
 	ret = search_db(cursor,qry)
 	if ret: return ret[0] # uniprot, ec numbers, cofactors
 	# fetch uniprot id from PDB's das service
@@ -348,6 +348,7 @@ def get_native_ligands(cursor, pdb_chain_id):
 	# if not present, fetch from PDB and uniprot
 	uniprot_id, ec_numbers, uniprot_cofactors = get_ec_from_pdb(cursor, pdb_chain_id)
 	smiles_dict = substrate_smiles_from_metacyc(cursor,ec_numbers)
+	if not smiles_dict: smiles_dict = {'cofactors':""}
 	parse_ions(uniprot_cofactors,smiles_dict['cofactors'])
 	if not smiles_dict: return
 	native_ligands_smiles = reorganize_ligands(smiles_dict)
@@ -370,25 +371,25 @@ def select_pdbs_with_relevant_ligands(cursor, pdb_id_list):
 		for pdb_compound_id, smiles_string in pdb_ligand_smiles.iteritems():
 			if pdb_compound_id in crystallographic_additives: continue
 			# function: substrate, cofactor, regulator
-			for known_ligand_id, [known_smiles, known_ligand_function] in native_ligands_smiles.iteritems():
+			for native_ligand_id, [native_smiles, native_ligand_function] in native_ligands_smiles.iteritems():
 				# are the two strings trivially equal by any chance?
 				similarity=0
 				if pdb_compound_id in physiological_ions:
-					if not known_ligand_id in physiological_ions: continue
+					if not native_ligand_id in physiological_ions: continue
 					# pdb people can be lax with the ion charge
-					if (pdb_compound_id.translate(None,"+-123"))==(known_ligand_id.translate(None,"+-123")):
+					if (pdb_compound_id.translate(None,"+-123"))==(native_ligand_id.translate(None,"+-123")):
 						similarity=1.0
 				else:
-					if known_ligand_id in physiological_ions: continue
-					if known_smiles and smiles_string:
-						if known_smiles.upper()==smiles_string.upper():
+					if native_ligand_id in physiological_ions: continue
+					if native_smiles and smiles_string:
+						if native_smiles.upper()==smiles_string.upper():
 							similarity=1.0
 						else:
-							similarity = rdkit_compare(known_smiles, smiles_string)
+							similarity = rdkit_compare(native_smiles, smiles_string)
 				if similarity>0.5:
-					# get rid of the plural s in in the known function
-					ligand_similarities.append([pdb_compound_id, known_ligand_id, known_ligand_function, "%.2f"%similarity])
-				print "\t\t", pdb_compound_id, known_ligand_id, known_ligand_function, "%.2f"%similarity
+					# get rid of the plural s in in the native function
+					ligand_similarities.append([pdb_compound_id, native_ligand_id, native_ligand_function, "%.2f"%similarity])
+				print "\t\t", pdb_compound_id, native_ligand_id, native_ligand_function, "%.2f"%similarity
 			# there can be ligands with the same chemical structure at multiple places in the  sturcture - sort this out when
 			# mapping on the model structure
 		if len(ligand_similarities)>0:
@@ -442,7 +443,7 @@ def main():
 	for disease in genes.keys():
 		#print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
-			if gene_symbol!='PAH': continue
+			#if gene_symbol!='PAH': continue
 			print disease
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
 			#qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
