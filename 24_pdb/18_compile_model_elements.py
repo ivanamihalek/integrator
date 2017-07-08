@@ -443,7 +443,7 @@ def main():
 	for disease in genes.keys():
 		#print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
-			#if gene_symbol!='PAH': continue
+			if gene_symbol!='PAH': continue
 			print disease
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
 			#qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
