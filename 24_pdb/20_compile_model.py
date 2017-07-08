@@ -358,7 +358,7 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 def compile_model(cursor, gene_symbol,scratch):
 
 	chains = {}
-	distance_strings = {}
+	distance_string = ""
 
 	qry = "select  distinct(main_model) from model_elements where gene_symbol='%s'" % gene_symbol
 	ret = search_db(cursor,qry)
@@ -402,7 +402,7 @@ def compile_model(cursor, gene_symbol,scratch):
 
 	if os.path.exists(compiled_ligands_file_path) and os.path.getsize(compiled_ligands_file_path)>0:
 		chains = main_model_info[2]
-		compiled_model, distance_strings[main_model] = strip_and_glue(main_model_info, compiled_ligands_file_path,
+		compiled_model, distance_string = strip_and_glue(main_model_info, compiled_ligands_file_path,
 		                                                              compiled_ligand_list, scratch)
 		# move out of struct_scratch
 		if compiled_model and len(compiled_model)>0:
@@ -410,7 +410,6 @@ def compile_model(cursor, gene_symbol,scratch):
 	else:
 		compiled_model = None
 
-	distance_string =  ",".join(distance_strings.values())
 	#print compiled_ligand_list
 	#print distance_string
 	return main_model_path, compiled_model, chains, compiled_ligand_list, distance_string, ligand_functions
@@ -450,7 +449,7 @@ def main():
 
 	for line in ret:
 		gene_symbol = line[0]
-		if gene_symbol!='ACAT1': continue
+		if gene_symbol!='BTD': continue
 		print gene_symbol
 		os.chdir(cwd)
 		scratch = scratch_dir + "/" + gene_symbol
