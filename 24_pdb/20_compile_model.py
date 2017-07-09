@@ -374,6 +374,7 @@ def compile_model(cursor, gene_symbol,scratch):
 	compiled_ligand_list = []
 	ligand_functions = {}
 	for line in ret:
+		print " **** ", line
 		pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot = line
 		if not ligand_functions.has_key(pdb_chain): ligand_functions[pdb_chain]= {}
 		ligand_functions[pdb_chain][pdb_ligand] = ligand_function
