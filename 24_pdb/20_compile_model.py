@@ -212,12 +212,12 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 			cmd = "{} {} {}".format(geom_overlap, ligand_file_tfmd_path, compiled_ligand_file_path)
 			ret = subprocess.check_output(cmd, shell=True).rstrip()
 			if float(ret.rstrip())> 0: clashing_ligands.append(ligand_file_tfmd_path)
-		ok_ligands = list(set(ligand_file_tfmd_paths)-set(clashing_ligands))
+		ok_ligands = filter(lambda l: l not in clashing_ligands, ligand_file_tfmd_paths)
 		if len(ok_ligands)==0: return None
 		max_resnumber = find_last_res_number(compiled_ligand_file_path)
 		if len(clashing_ligands): print "clashing:", clashing_ligands
 	else:
-		print "not exist?"
+		print "compiled ligand file does not exist (?)"
 		ok_ligands    = ligand_file_tfmd_paths
 		if len(ok_ligands)==0: return None
 		max_resnumber = find_last_res_number(path+"/"+anchor)
@@ -229,7 +229,7 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 		ret = subprocess.check_output(cmd, shell=True)
 		if float(ret.rstrip())> 0: clashing_ligands.append(ligand_file_tfmd_path)
 
-	remaining_ligands = sorted(list(set(ok_ligands) - set(clashing_ligands)))
+	remaining_ligands = filter(lambda l: l not in clashing_ligands, ok_ligands)
 	if len(remaining_ligands)==0: return None
 
 	# compile what we have so far; renumber
@@ -250,8 +250,6 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 			outfile.write(line[:res_number_pos] + "%4d"%output_resno + line[res_number_pos+4:])
 		infile.close()
 	outfile.close()
-
-	new_ligands = list(set(new_ligands))
 
 	return new_ligands
 
@@ -394,8 +392,9 @@ def compile_model(cursor, gene_symbol,scratch):
 		# add ligands which are not clashing with the existing ones
 		new_ligands = merge_ligands(main_model_path, main_model, compiled_ligands_file_path, ligand_file_tfmd_paths, scratch)
 		if new_ligands:
-			compiled_ligand_list += new_ligands
-			compiled_ligand_list  = list(set(compiled_ligand_list))
+			for ligand in new_ligands:
+				if not ligand in compiled_ligand_list: compiled_ligand_list.append(ligand)
+
 
 	print compiled_ligand_list
 
