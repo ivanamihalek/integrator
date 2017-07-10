@@ -1,9 +1,13 @@
 #!/usr/bin/python
 from integrator_utils.mysql import *
 from integrator_utils.generic_utils import *
+from integrator_utils.threading import *
 
 import os, shutil, subprocess
 import json
+
+no_threads = 1
+
 
 swissmodel_dir    = "/databases/swissmodel"
 pdb_path          = "/databases/pdb/structures"
@@ -36,35 +40,39 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # * A detergent such as beta-octyl-glucoside "SOG","HTG"
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
-crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "HEM","PE4","ACT","NA"]
-physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "PE4","ACT","NA"]
+physiological_ions         = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
 
 transform = {}
 
 #########################################
 def extract_trivial(infile_path, scratch, chain, ligand_resn):
 	infile = open (infile_path, "r")
+	# TWO CASES - have res but no chain, hanve chain but no res
 	outstring = ""
+	chain_found = False
 	for line in infile:
 		if line[:6] != 'HETATM': continue
 		if line[chain_pos] != chain:
 			continue
+		chain_found = True
 		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
+		#print chain, line[chain_pos], ligand_resn, resname
 		if resname != ligand_resn: continue
 		outstring += line
 	infile.close()
 
 	if len(outstring)==0:
-		return None
+		return None, chain_found
 	filename = infile_path.split("/").pop()
 	outfilename = "/".join([scratch, filename.replace('.pdb','')+".{}.{}.pdb".format(chain,ligand_resn)])
 	outfile = open(outfilename,"w")
 	outfile.write(outstring)
 	outfile.close()
-	return outfilename
+	return outfilename, chain_found
 
 #########################################
-def extract_peptide (infile_path, chain, chainfile):
+def extract_peptide(infile_path, chain, chainfile):
 	infile = open (infile_path, "r")
 	outf   = open (chainfile,"w")
 	for line in infile:
@@ -74,17 +82,18 @@ def extract_peptide (infile_path, chain, chainfile):
 	infile.close()
 
 #########################################
-def  pick_closest_ligand (infile_path, scratch, ligands):
+def pick_closest_ligand(infile_path, scratch, ligands):
 	print "from", frame_string(), ": picking closest ligand not implemented"
 	exit()
 	outf_name = ""
-	return outf_name
+	new_chain = 'X'
+	return outf_name, new_chain
 
 #########################################
 def extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn):
 	infile = open (infile_path, "r")
 	outfile = {}
-	chains = []
+	chains  = []
 	for line in infile:
 		if line[:6]!='HETATM': continue
 		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
@@ -98,22 +107,22 @@ def extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn):
 			outfile[outfile_key] = open(outf_name,"w")
 		outfile[outfile_key].write(line)
 
-	for outf in outfile.values():outf.close()
+	for outf in outfile.values(): outf.close()
 	infile.close()
 	# pick out ligand closest to the chain of interest
 	ligands =  [outf.name for outf in outfile.values()]
-	outf_name = pick_closest_ligand (infile_path, scratch, ligands)
+	outf_name, new_chain = pick_closest_ligand (infile_path, scratch, ligands)
 
-	return  outf_name
+	return  outf_name, new_chain
 
 #########################################
 def extract_ligand(path, scratch, filename, chain, ligand_resn):
 	infile_path = path+"/"+filename
-	outfilename = extract_trivial(infile_path, scratch, chain, ligand_resn)
-	if outfilename: return outfilename, None
-	# otherwise we failed - for example ligand is not associated with the chain we were told to use
-	outfilename = extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn)
-	return outfilename
+	outfilename, chain_found = extract_trivial(infile_path, scratch, chain, ligand_resn)
+	if chain_found: return outfilename, chain # either we found the ligand, or there is chain but not the ligand
+	# otherwise, there is no chain with the name we expected
+	outfilename, new_chain  = extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn)
+	return outfilename, new_chain
 
 #########################################
 def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_file_path, scratch):
@@ -362,13 +371,10 @@ def compile_model(cursor, gene_symbol,scratch):
 		ligand_functions[pdb_chain][pdb_ligand] = ligand_function
 		cmd = "{} {}".format(pdbdown, pdb_chain[:-1]) # this will check if it already exists
 		subprocess.call(cmd, shell=True)
-		ligand_file_path, new_chain = extract_ligand(pdb_path, scratch, pdb_chain[:-1]+".pdb", pdb_chain[-1], pdb_ligand)
-		if os.path.getsize(ligand_file_path)==0: continue
+		# pdbchain might be renamed if there was no orignal chain name in the file or if the ligand was not found under that chain name
+		ligand_file_path, pdbchain = extract_ligand(pdb_path, scratch, pdb_chain[:-1]+".pdb", pdb_chain[-1], pdb_ligand)
+		if not ligand_file_path or os.path.getsize(ligand_file_path)==0: continue
 		# use the transformation matrix to map all ligands to the main_model structure
-		if new_chain:
-			pdbchain = new_chain
-		else:
-			pdbchain = pdb_chain[-1]
 		ligand_file_tfmd_paths = map_ligand_to_model (main_model_info,pdb_path,pdb_chain[:-1]+".pdb", pdbchain, ligand_file_path, scratch)
 		if not ligand_file_tfmd_paths or len(ligand_file_tfmd_paths)==0: continue
 		# remove clashing ligands adn ligands far from the main chain
@@ -415,6 +421,33 @@ def store_ligands(cursor, approved_symbol, model_path, compiled_model, chains, c
 	return
 
 ##########################################
+def model_structure_for_gene(gene_list, other_args):
+
+	db, cursor = connect()
+	switch_to_db(cursor,"monogenic_development")
+	for gene_symbol in gene_list:
+		print gene_symbol
+		os.chdir(cwd)
+		scratch = scratch_dir + "/" + gene_symbol
+		shutil.rmtree(scratch, ignore_errors=True)
+		os.makedirs(scratch)
+		model_path, compiled_model, chains, compiled_ligands, distance_string, ligand_functions = compile_model(cursor,gene_symbol,scratch)
+		if not compiled_model: continue
+		print compiled_model, chains, compiled_ligands
+		print distance_string
+		# store compiled model in hte pdb directory of the monogenic server
+		# store the list  of the ligands to the database
+		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string)
+		shutil.rmtree(scratch, ignore_errors=True)
+		return
+	cursor.close()
+	db.close()
+
+
+	########################################
+
+
+##########################################
 def main():
 
 	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
@@ -428,26 +461,15 @@ def main():
 	switch_to_db(cursor, "monogenic_development")
 	qry = "select distinct(gene_symbol) from model_elements"
 	ret = search_db(cursor,qry)
+	cursor.close()
+	db.close()
+	if not ret:
+		print "no genes found (?)"
+		exit(1)
+	genes = [line[0] for line in ret]
+	parallelize(no_threads, model_structure_for_gene, genes,[])
 
-	for line in ret:
-		gene_symbol = line[0]
-		if gene_symbol!='PAH': continue
-		print gene_symbol
-		os.chdir(cwd)
-		scratch = scratch_dir + "/" + gene_symbol
-		shutil.rmtree(scratch, ignore_errors=True)
-		os.makedirs(scratch)
-		model_path, compiled_model, chains, compiled_ligands, distance_string, ligand_functions = compile_model(cursor,gene_symbol,scratch)
-		if not compiled_model: continue
-		print compiled_model, chains, compiled_ligands
-		print distance_string
-		# store compiled model in hte pdb directory of the monogenic server
-		# store the list  of the ligands to the database
-		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string)
-		#shutil.rmtree(scratch, ignore_errors=True)
+	return
 
-
-
-	########################################
 if __name__ == '__main__':
 	main()

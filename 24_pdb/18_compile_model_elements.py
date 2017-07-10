@@ -1,10 +1,14 @@
 #!/usr/bin/python
 #
 #
-from integrator_utils.mysql import *
-from integrator_utils.restfuls import *
+from integrator_utils.mysql     import *
+from integrator_utils.restfuls  import *
+from integrator_utils.threading import *
+
 import os, subprocess, shutil
 from collections import OrderedDict
+
+no_threads= 1
 
 swissmodel_dir = "/databases/swissmodel"
 scratch_dir    = "/home/ivana/scratch"
@@ -241,6 +245,7 @@ def parse_ions(uniprot_cofactors, metacyc_cofactors):
 ##########################################
 def download_and_store_ligands_from_pdb(cursor, pdb_id):
 	return_list = ligands_from_pdb(pdb_id) # restful request
+	if not return_list: return
 	fixed_fields = {'pdb_id':pdb_id}
 	switch_to_db(cursor, 'monogenic_development')
 	for ligand_info in return_list:
@@ -310,21 +315,25 @@ def reorganize_ligands(smiles_dict):
 	# on the other hand, there might be some notational confusion regarding what is
 	# a substrate and wht is a cofactor
 	ligands_reorganized = {}
-	for [ligand, smiles] in smiles_dict['substrates']:
-		ligands_reorganized[ligand] = [smiles, 'substrate']
 
-	for [ligand, smiles] in smiles_dict['regulators']:
-		if ligands_reorganized.has_key(ligand):
-			ligands_reorganized[ligand] = [smiles, 'substrate;regulator']
-		else:
-			ligands_reorganized[ligand] = [smiles, 'regulator']
+	if smiles_dict.has_key('substrates'):
+		for [ligand, smiles] in smiles_dict['substrates']:
+			ligands_reorganized[ligand] = [smiles, 'substrate']
 
-	for [ligand, smiles] in smiles_dict['cofactors']:
-		if ligands_reorganized.has_key(ligand):
-			[smiles0, function0] = ligands_reorganized[ligand]
-			if function0=='substrate': continue
-			ligands_reorganized[ligand] = [smiles, 'cofactor;regulator']
-		ligands_reorganized[ligand] = [smiles, 'cofactor']
+	if smiles_dict.has_key('regulators'):
+		for [ligand, smiles] in smiles_dict['regulators']:
+			if ligands_reorganized.has_key(ligand):
+				ligands_reorganized[ligand] = [smiles, 'substrate;regulator']
+			else:
+				ligands_reorganized[ligand] = [smiles, 'regulator']
+
+	if smiles_dict.has_key('cofactors'):
+		for [ligand, smiles] in smiles_dict['cofactors']:
+			if ligands_reorganized.has_key(ligand):
+				[smiles0, function0] = ligands_reorganized[ligand]
+				if 'substrate' in function0: continue
+				ligands_reorganized[ligand] = [smiles, 'cofactor;regulator']
+			ligands_reorganized[ligand] = [smiles, 'cofactor']
 
 	return ligands_reorganized
 
@@ -336,8 +345,11 @@ def get_ec_from_pdb(cursor, pdb_chain_id):
 	if ret: return ret[0] # uniprot, ec numbers, cofactors
 	# fetch uniprot id from PDB's das service
 	uniprot_id = uniprot_from_pdb_chain(pdb_chain_id)  # restful request
+	if not uniprot_id: return None
 	# fetch enzyme info from Uniprot
-	ec_numbers, cofactors = ec_cofactors_from_uniprot(uniprot_id)
+	ret = ec_cofactors_from_uniprot(uniprot_id)
+	if not ret: return
+	ec_numbers, cofactors = ret
 	fixed_fields = {'pdb_chain':pdb_chain_id}
 	update_fields = {'uniprot_id':uniprot_id, 'ec_numbers': ec_numbers, 'cofactors':cofactors}
 	store_or_update(cursor, 'pdb_uniprot_ec_maps', fixed_fields, update_fields)
@@ -347,7 +359,9 @@ def get_ec_from_pdb(cursor, pdb_chain_id):
 def get_native_ligands(cursor, pdb_chain_id):
 	# check for pdb ec map in the database
 	# if not present, fetch from PDB and uniprot
-	uniprot_id, ec_numbers, uniprot_cofactors = get_ec_from_pdb(cursor, pdb_chain_id)
+	ret = get_ec_from_pdb(cursor, pdb_chain_id)
+	if not ret: return None
+	uniprot_id, ec_numbers, uniprot_cofactors = ret
 	smiles_dict = substrate_smiles_from_metacyc(cursor,ec_numbers)
 	if not smiles_dict: smiles_dict = {'cofactors':""}
 	parse_ions(uniprot_cofactors,smiles_dict['cofactors'])
@@ -405,7 +419,7 @@ def print_smiles (name, smiles):
 	print "\t"+"\n\t".join(map(lambda x: "%s  %s"%(x[0],x[1]),smiles))+"\n"
 
 ##########################################
-def process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors,uniprot_id,scratch):
+def process_enzyme(cursor, gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors, uniprot_id, scratch):
 	# find all other pdb files with similar sequence and ligands
 	print "\tlooking for pdb with sequence similar to  %s ..." % gene_symbol
 	pdb_pct_similarity = find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch)
@@ -429,29 +443,22 @@ def process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, u
 			store_or_update(cursor, 'monogenic_development.model_elements', fixed_fields, update_fields, verbose=False)
 
 ##########################################
-def main():
-	swissmodel_dir = "/databases/swissmodel"
+def structural_model_elements(diseases, args):
+
 	db, cursor = connect()
-	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
-	                   extract_chain, compiled_model_repository,
-					   blastp, pdb_blast_db, conda, rdkit_runner]:
-		if os.path.exists(dependency): continue
-		print dependency, " not found"
-		exit()
-	# first lets focus on the proteins from the newborn screening
-	genes = newborn_screening_genes(cursor)
-	#genes = all_iem_related_genes(cursor)
-	for disease in genes.keys():
-		print disease
+	genes = args[0]
+	for disease in diseases:
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
-			if gene_symbol=='PAH': continue
-			print disease
+			#if gene_symbol in ['PAH','GALT','LCHADD'] : continue
+			#if gene_symbol!='ACAT1': continue
+			print disease, gene_symbol
+
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
-			#qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
-			#ret = search_db(cursor,qry)
-			#if ret:
-			#	print "model elements found"
-			#	continue
+			qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
+			ret = search_db(cursor,qry)
+			if ret:
+				print "model elements found"
+				continue
 			# check swiss model structure exists, is nonempty, and is indeed pdb
 			print "\tchecking model exists"
 			swissmodel = check_pdb_exists(swissmodel_dir, gene_symbol)
@@ -468,9 +475,11 @@ def main():
 					mismatch = True
 					break
 			if mismatch: continue
+
 			print "\tsequence ok; creating scratch directory\n"
 			# if we got ot here, we might need some scratch space
 			scratch = "/".join([scratch_dir,uniprot_id])
+			os.chdir(cwd)
 			shutil.rmtree(scratch,ignore_errors=True)
 			os.makedirs(scratch)
 
@@ -480,9 +489,35 @@ def main():
 				process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors,uniprot_id,scratch)
 			# else if TM protein
 			# else
+
+			os.chdir(cwd)
 			shutil.rmtree(scratch,ignore_errors=True)
+
 	cursor.close()
 	db.close()
+
+
+##########################################
+def main():
+	db, cursor = connect()
+	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
+	                   extract_chain, compiled_model_repository,
+					   blastp, pdb_blast_db, conda, rdkit_runner]:
+		if os.path.exists(dependency): continue
+		print dependency, " not found"
+		exit()
+	# first lets focus on the proteins from the newborn screening
+	genes = newborn_screening_genes(cursor)
+	#genes = all_iem_related_genes(cursor)
+
+	if not genes:
+		print "no genes found (?)"
+		exit(1)
+	parallelize(no_threads, structural_model_elements, genes.keys(), [genes])
+
+	cursor.close()
+	db.close()
+
 
 #########################################
 if __name__ == '__main__':
