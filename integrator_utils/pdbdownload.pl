@@ -24,12 +24,9 @@ foreach my $pdbname (@pdbnames) {
     $pdbname =~ s/\s//g;
     my @aux  = split ('\.', $pdbname); # get rid of extension
     $pdbname =  lc substr ($aux[0], 0, 4);
-    if (  -e "$PDB_REPOSITORY/$pdbname.pdb" ) {
-	print "$pdbname.pdb found in $PDB_REPOSITORY\n";
-	next;
-    }
-    print $pdbname, " \n"; 
-    
+    -e "$PDB_REPOSITORY/$pdbname.pdb" && next;
+
+
     my $ftp = Net::FTP->new("ftp.wwpdb.org", Debug => 0, Passive=> 1)
 	or die "Cannot connect to ftp.wwpdb.org: $@";
 
@@ -47,5 +44,4 @@ foreach my $pdbname (@pdbnames) {
 	
     `mv  pdb$pdbname.ent $PDB_REPOSITORY/$pdbname.pdb`;
 
-    print "\t downloaded to $PDB_REPOSITORY \n"; 
-}
+ }

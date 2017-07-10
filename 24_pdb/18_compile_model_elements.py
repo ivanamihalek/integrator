@@ -283,6 +283,7 @@ def find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch):
 	target_pct_idtty = OrderedDict()
 	cmd = "{} -db {} -query {} -outfmt 6".format(blastp, pdb_blast_db, queryfile)
 	for line in subprocess.check_output(cmd, shell=True).split("\n"):
+		print line
 		field = line.split()
 		if len(field)==0 or field[0] != uniprot_id:  continue # this is not the result line
 		pct_identity = field[2]
@@ -441,9 +442,9 @@ def main():
 	genes = newborn_screening_genes(cursor)
 	#genes = all_iem_related_genes(cursor)
 	for disease in genes.keys():
-		#print disease
+		print disease
 		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
-			if gene_symbol!='PAH': continue
+			if gene_symbol=='PAH': continue
 			print disease
 			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
 			#qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
@@ -479,7 +480,7 @@ def main():
 				process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors,uniprot_id,scratch)
 			# else if TM protein
 			# else
-			# shutil.rmtree(scratch,ignore_errors=True)
+			shutil.rmtree(scratch,ignore_errors=True)
 	cursor.close()
 	db.close()
 

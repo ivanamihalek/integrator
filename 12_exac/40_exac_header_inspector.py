@@ -4,8 +4,8 @@ import shlex
 
 ##########################################
 def main():
-	infile = open("/databases/exac/ExAC_nonTCGA.r1.sites.vep.vcf")
-	#infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
+	#infile = open("ExAC_nonTCGA.r1.sites.vep.vcf")
+	infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
 	for line in infile:
 		if line[:len("##reference")] == "##reference":
 			print "reference assembly:",line.rstrip().split("=")[-1]

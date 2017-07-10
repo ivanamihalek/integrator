@@ -278,26 +278,26 @@ def main():
 		print dependency, " not found"
 		exit()
 
-	scratch = scratch_dir + "/PAH"
+	scratch = scratch_dir + "/PAH0"
 	ligand_containing_structure = "5fii.pdb"
 	ligand_chain = "A"
 	main_model_info = [scratch,"P00439_20_450_5fgj.1.A_ivana.pdb", ['A','B','C','D']]
 
-	if False:
+	if True:
 		ligand_path, something =  extract_ligand(pdb_path, scratch, ligand_containing_structure, ligand_chain, 'PHE')
 		print ligand_path
-
+		exit()
 		# [path, main_model, main_model_chains]
 		map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_path, scratch)
 	    # map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, ligand_chain, ligand_file_path, scratch):
-
-	compiled_ligand_list = ['H4B', 'DAH', 'PHE', 'LNR', 'FE2', 'FE', 'TIH', 'TRS']
-	chains = main_model_info[2]
-	compiled_ligands_file_path = scratch + "/compiled_ligands.pdb"
-	compiled_model, distance_strings = strip_and_glue(main_model_info, compiled_ligands_file_path,
-		                                                              compiled_ligand_list, scratch)
-	print compiled_model
-	print distance_strings
+	if False:
+		compiled_ligand_list = ['H4B', 'DAH', 'PHE', 'LNR', 'FE2', 'FE', 'TIH', 'TRS']
+		chains = main_model_info[2]
+		compiled_ligands_file_path = scratch + "/compiled_ligands.pdb"
+		compiled_model, distance_strings = strip_and_glue(main_model_info, compiled_ligands_file_path,
+																		  compiled_ligand_list, scratch)
+		print compiled_model
+		print distance_strings
 
 ########################################
 if __name__ == '__main__':

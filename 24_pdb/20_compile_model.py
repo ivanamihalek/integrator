@@ -1,5 +1,7 @@
 #!/usr/bin/python
 from integrator_utils.mysql import *
+from integrator_utils.generic_utils import *
+
 import os, shutil, subprocess
 import json
 
@@ -72,31 +74,14 @@ def extract_peptide (infile_path, chain, chainfile):
 	infile.close()
 
 #########################################
-def extract_ligand_without_chain_name(path, scratch, filename, chain, ligand_resn):
-	print "extracting nonames"
+def  pick_closest_ligand (infile_path, scratch, ligands):
+	print "from", frame_string(), ": picking closest ligand not implemented"
 	exit()
-	# extract all chains
-	infile_path = path+"/"+filename
-	# extract all ligands
-	ligands = extract_ligands(infile_path, chain, ligand_resn)
-	print ligands
-	exit()
-	# extract all chains
-	infile  = open (infile_path, "r")
-	chains = set()
-	for line in infile:
-		if line[:4]=='ATOM': chains.add(line[chain_pos])
-	infile.close()
-	chains = sorted(list(chains))
-	for chain in chains:
-		chainfile =  "/".join([scratch,"tmp"+chain+".pdb"])
-		extract_peptide(infile_path, chain, chainfile)
-	# extract ligands
-	# assign  ligand to the chain where it leaves the largest footprint
-	exit()
+	outf_name = ""
+	return outf_name
 
 #########################################
-def extract_ligands(infile_path, scratch,  ligand_resn):
+def extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn):
 	infile = open (infile_path, "r")
 	outfile = {}
 	chains = []
@@ -105,22 +90,21 @@ def extract_ligands(infile_path, scratch,  ligand_resn):
 		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
 		if resname!=ligand_resn: continue
 		res_number = line[res_number_pos:res_number_pos+res_number_length].replace(' ','')
-		if not outfile.has_key(res_number):
-			filename = infile_path.split("/").pop()
-			chain = line[chain_pos]
-			if chain != ' ':
-				outf_name= "/".join([scratch, filename.replace('.pdb','')+".{}.{}.pdb".format(res_number,chain)])
-				chains.append(chain)
-			else:
-				outf_name= "/".join([scratch, filename.replace('.pdb','')+".{}.pdb".format(res_number)])
-			print outf_name
-			outfile[res_number] = open(outf_name,"w")
-		outfile[res_number].write(line)
+		chain      = line[chain_pos].replace(' ','')
+		outfile_key = chain+res_number # either chain or resnumber should be different if these are two different molecules
+		if not outfile.has_key(outfile_key):
+			filename  = infile_path.split("/").pop()
+			outf_name = "/".join([scratch, filename.replace('.pdb','')+".{}.pdb".format(outfile_key)])
+			outfile[outfile_key] = open(outf_name,"w")
+		outfile[outfile_key].write(line)
 
 	for outf in outfile.values():outf.close()
 	infile.close()
+	# pick out ligand closest to the chain of interest
+	ligands =  [outf.name for outf in outfile.values()]
+	outf_name = pick_closest_ligand (infile_path, scratch, ligands)
 
-	return [outf.name for outf in outfile.values()],chains
+	return  outf_name
 
 #########################################
 def extract_ligand(path, scratch, filename, chain, ligand_resn):
@@ -128,12 +112,7 @@ def extract_ligand(path, scratch, filename, chain, ligand_resn):
 	outfilename = extract_trivial(infile_path, scratch, chain, ligand_resn)
 	if outfilename: return outfilename, None
 	# otherwise we failed - for example ligand is not associated with the chain we were told to use
-	ligands, chains = extract_ligands(infile_path, scratch,  ligand_resn)
-	# say we return the first one
-	if len(chains): return ligands[0], chains[0]
-	exit()
-	# still other possibility: ligand has no chainname, ever
-	extract_ligand_without_chain_name(path, scratch, filename, chain, ligand_resn)
+	outfilename = extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn)
 	return outfilename
 
 #########################################
@@ -141,7 +120,7 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 
 	ligand_file_tfmd_paths = []
 
-	struct_scratch = scratch + "/" + "struct_scratch"
+	struct_scratch = "{}/struct_scratch_{}".format(scratch,ligand_file_path.replace("/","_"))
 	shutil.rmtree(struct_scratch,ignore_errors=True)
 	os.makedirs(struct_scratch)
 	os.chdir(struct_scratch)
@@ -181,7 +160,7 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 		ligand_file_tfmd_paths.append(ligand_file_tfmd_path)
 
 	os.chdir(scratch)
-	shutil.rmtree(struct_scratch,ignore_errors=True)
+	#shutil.rmtree(struct_scratch,ignore_errors=True)
 
 	return ligand_file_tfmd_paths
 
@@ -212,10 +191,11 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 			cmd = "{} {} {}".format(geom_overlap, ligand_file_tfmd_path, compiled_ligand_file_path)
 			ret = subprocess.check_output(cmd, shell=True).rstrip()
 			if float(ret.rstrip())> 0: clashing_ligands.append(ligand_file_tfmd_path)
+		if len(clashing_ligands): print "clashing:", clashing_ligands
+		print
 		ok_ligands = filter(lambda l: l not in clashing_ligands, ligand_file_tfmd_paths)
 		if len(ok_ligands)==0: return None
 		max_resnumber = find_last_res_number(compiled_ligand_file_path)
-		if len(clashing_ligands): print "clashing:", clashing_ligands
 	else:
 		print "compiled ligand file does not exist (?)"
 		ok_ligands    = ligand_file_tfmd_paths
@@ -339,7 +319,7 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 	path = subprocess.check_output(cmd, shell=True).rstrip()
 	model_name = model.replace("swissmodel","peptide")
 	modelfile = scratch+"/"+model_name
-	inf = open(path,"r")
+	inf  = open(path,"r")
 	outf = open(modelfile,"w")
 	chains = set()
 	for line in inf:
@@ -350,6 +330,8 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 	inf.close()
 	outf.close()
 	chains = sorted(list(chains))
+	print "chains in the main peptide file:", chains
+
 	return scratch, model_name, chains
 
 #########################################
@@ -462,7 +444,7 @@ def main():
 		# store compiled model in hte pdb directory of the monogenic server
 		# store the list  of the ligands to the database
 		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string)
-		shutil.rmtree(scratch, ignore_errors=True)
+		#shutil.rmtree(scratch, ignore_errors=True)
 
 
 
