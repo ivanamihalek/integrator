@@ -48,18 +48,18 @@ transform = {}
 #########################################
 def extract_trivial(infile_path, scratch, chain, ligand_resn):
 	infile = open (infile_path, "r")
-	# TWO CASES - have res but no chain, hanve chain but no res
-	outstring = ""
+	# TWO CASES - have res but no chain, have chain but no res
+	outstring   = ""
 	chain_found = False
+	resn_found = False
 	for line in infile:
 		if line[:6] != 'HETATM': continue
-		if line[chain_pos] != chain:
-			continue
-		chain_found = True
 		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
-		#print chain, line[chain_pos], ligand_resn, resname
-		if resname != ligand_resn: continue
-		outstring += line
+		c_check = line[chain_pos] == chain
+		r_check = resname == ligand_resn
+		if c_check: chain_found = True
+		if r_check: resn_found = True
+		if c_check and r_check: outstring += line
 	infile.close()
 
 	if len(outstring)==0:
@@ -69,7 +69,7 @@ def extract_trivial(infile_path, scratch, chain, ligand_resn):
 	outfile = open(outfilename,"w")
 	outfile.write(outstring)
 	outfile.close()
-	return outfilename, chain_found
+	return outfilename, chain_found, resn_found
 
 #########################################
 def extract_peptide(infile_path, chain, chainfile):
@@ -93,7 +93,6 @@ def pick_closest_ligand(infile_path, scratch, ligands):
 def extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn):
 	infile = open (infile_path, "r")
 	outfile = {}
-	chains  = []
 	for line in infile:
 		if line[:6]!='HETATM': continue
 		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
@@ -118,9 +117,10 @@ def extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn):
 #########################################
 def extract_ligand(path, scratch, filename, chain, ligand_resn):
 	infile_path = path+"/"+filename
-	outfilename, chain_found = extract_trivial(infile_path, scratch, chain, ligand_resn)
+	outfilename, chain_found, resn_found = extract_trivial(infile_path, scratch, chain, ligand_resn)
+	if not resn_found: return None, None
 	if chain_found: return outfilename, chain # either we found the ligand, or there is chain but not the ligand
-	# otherwise, there is no chain with the name we expected
+	# otherwise, we have found the residue but not with the expected name
 	outfilename, new_chain  = extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn)
 	return outfilename, new_chain
 
