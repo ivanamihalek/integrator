@@ -1,17 +1,17 @@
 #!/usr/bin/python
 from integrator_utils.mysql import *
 from integrator_utils.generic_utils import *
-from integrator_utils.threading import *
+from multiprocessing import Pool
 
 import os, shutil, subprocess
 import json
-
-no_threads = 1
+import time
+no_of_processes = 1
 
 
 swissmodel_dir    = "/databases/swissmodel"
 pdb_path          = "/databases/pdb/structures"
-scratch_dir       = "/home/ivana/scratch"
+scratch_dir       = "/home/ivana/scratch_2"
 struct            = "/home/ivana/code/struct/struct"
 pdb_affine        = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_tfm.pl"
 pdbdown           = "/home/ivana/pypeworks/integrator/integrator_utils/pdbdownload.pl"
@@ -51,21 +51,21 @@ def extract_trivial(infile_path, scratch, chain, ligand_resn):
 	# TWO CASES - have res but no chain, have chain but no res
 	outstring   = ""
 	chain_found = False
-	resn_found = False
+	resn_found  = False
 	for line in infile:
 		if line[:6] != 'HETATM': continue
 		resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
 		c_check = line[chain_pos] == chain
 		r_check = resname == ligand_resn
 		if c_check: chain_found = True
-		if r_check: resn_found = True
+		if r_check: resn_found  = True
 		if c_check and r_check: outstring += line
 	infile.close()
 
-	if len(outstring)==0:
-		return None, chain_found
-	filename = infile_path.split("/").pop()
-	outfilename = "/".join([scratch, filename.replace('.pdb','')+".{}.{}.pdb".format(chain,ligand_resn)])
+	if len(outstring)==0: return None, chain_found, resn_found
+
+	filename    = infile_path.split("/").pop()
+	outfilename = "/".join([scratch, filename.replace('.pdb','') + ".{}.{}.pdb".format(chain,ligand_resn)])
 	outfile = open(outfilename,"w")
 	outfile.write(outstring)
 	outfile.close()
@@ -139,13 +139,13 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 	for main_model_chain in main_model_chains:
 		# do we have the tfm already by any chance
 		tfm_key = "{}_{}_{}_{}".format(main_model, main_model_chain,ligand_containing_structure, ligand_chain)
+		to_structure_path   = path+"/"+main_model
 		if transform.has_key(tfm_key):
 			outf = open("tmp.tfm","w")
 			outf.write(transform[tfm_key])
 			outf.close()
 		else:
 			from_structure_path = pdb_path+"/"+ligand_containing_structure
-			to_structure_path   = path+"/"+main_model
 			cmd = "%s -from %s -c1 %s -to %s -c2 %s" % (struct, from_structure_path, ligand_chain, to_structure_path, main_model_chain)
 			subprocess.call(cmd, shell=True)
 			almt_file = "{}{}_to_{}{}.0.aln"\
@@ -161,6 +161,15 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 		ligand_file_tmp_path = ligand_file_path.replace('.pdb','') + ".tmp.pdb"
 		cmd = "{} {} tmp.tfm > {}".format(pdb_affine, ligand_file_path, ligand_file_tmp_path)
 		subprocess.call(cmd, shell=True)
+
+		# did we pull up something that is far away actually?
+		cmd = "{} {} {}".format(geom_epitope, ligand_file_tmp_path, to_structure_path)
+		ret = subprocess.check_output(cmd, shell=True).rstrip()
+		if (len(ret)==0): continue # we are not close to anything
+		# are we close to the chain we had in mind? return lines look something like
+		if (len(filter(lambda l: l[0]==main_model_chain, ret.split("\n")))==0 ): continue
+
+
 		# rename chain to match  chain we mapped is to
 		ligand_file_tfmd_path = ligand_file_path.replace('.pdb','') + ".tfmd.{}.pdb".format(main_model_chain)
 		cmd = "{} {} {} {} > {}".format(pdb_chain_rename, ligand_file_tmp_path, ligand_chain, main_model_chain, ligand_file_tfmd_path)
@@ -200,8 +209,8 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 			cmd = "{} {} {}".format(geom_overlap, ligand_file_tfmd_path, compiled_ligand_file_path)
 			ret = subprocess.check_output(cmd, shell=True).rstrip()
 			if float(ret.rstrip())> 0: clashing_ligands.append(ligand_file_tfmd_path)
-		if len(clashing_ligands): print "clashing:", clashing_ligands
-		print
+		if len(clashing_ligands): print os.getpid(), "clashing:", clashing_ligands
+
 		ok_ligands = filter(lambda l: l not in clashing_ligands, ligand_file_tfmd_paths)
 		if len(ok_ligands)==0: return None
 		max_resnumber = find_last_res_number(compiled_ligand_file_path)
@@ -344,7 +353,10 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 	return scratch, model_name, chains
 
 #########################################
-def compile_model(cursor, gene_symbol,scratch):
+def compile_model( cursor, gene_symbol,scratch):
+
+	pid = os.getpid()
+	print pid, gene_symbol, "in compile model"
 
 	chains = {}
 	distance_string = ""
@@ -365,17 +377,17 @@ def compile_model(cursor, gene_symbol,scratch):
 	compiled_ligand_list = []
 	ligand_functions = {}
 	for line in ret:
-		print " **** ", line
+		print pid, gene_symbol, " **** ", line
 		pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot = line
 		if not ligand_functions.has_key(pdb_chain): ligand_functions[pdb_chain]= {}
 		ligand_functions[pdb_chain][pdb_ligand] = ligand_function
 		cmd = "{} {}".format(pdbdown, pdb_chain[:-1]) # this will check if it already exists
 		subprocess.call(cmd, shell=True)
-		# pdbchain might be renamed if there was no orignal chain name in the file or if the ligand was not found under that chain name
+		# pdbchain might be renamed if there was no original chain name in the file or if the ligand was not found under that chain name
 		ligand_file_path, pdbchain = extract_ligand(pdb_path, scratch, pdb_chain[:-1]+".pdb", pdb_chain[-1], pdb_ligand)
 		if not ligand_file_path or os.path.getsize(ligand_file_path)==0: continue
 		# use the transformation matrix to map all ligands to the main_model structure
-		ligand_file_tfmd_paths = map_ligand_to_model (main_model_info,pdb_path,pdb_chain[:-1]+".pdb", pdbchain, ligand_file_path, scratch)
+		ligand_file_tfmd_paths = map_ligand_to_model ( main_model_info,pdb_path,pdb_chain[:-1]+".pdb", pdbchain, ligand_file_path, scratch)
 		if not ligand_file_tfmd_paths or len(ligand_file_tfmd_paths)==0: continue
 		# remove clashing ligands adn ligands far from the main chain
 		# add ligands which are not clashing with the existing ones
@@ -384,9 +396,7 @@ def compile_model(cursor, gene_symbol,scratch):
 			for ligand in new_ligands:
 				if not ligand in compiled_ligand_list: compiled_ligand_list.append(ligand)
 
-
-	print compiled_ligand_list
-
+	print pid, gene_symbol, compiled_ligand_list
 
 	if os.path.exists(compiled_ligands_file_path) and os.path.getsize(compiled_ligands_file_path)>0:
 		chains = main_model_info[2]
@@ -394,6 +404,7 @@ def compile_model(cursor, gene_symbol,scratch):
 		                                                              compiled_ligand_list, scratch)
 		# move out of struct_scratch
 		if compiled_model and len(compiled_model)>0:
+			print ">>",compiled_model, main_model_path
 			os.rename(compiled_model,  main_model_path+"/"+compiled_model)
 	else:
 		compiled_model = None
@@ -420,31 +431,30 @@ def store_ligands(cursor, approved_symbol, model_path, compiled_model, chains, c
 
 	return
 
+
 ##########################################
-def model_structure_for_gene(gene_list, other_args):
+def model_structure_for_gene(gene_symbol):
 
 	db, cursor = connect()
 	switch_to_db(cursor,"monogenic_development")
-	for gene_symbol in gene_list:
-		print gene_symbol
-		os.chdir(cwd)
-		scratch = scratch_dir + "/" + gene_symbol
-		shutil.rmtree(scratch, ignore_errors=True)
-		os.makedirs(scratch)
-		model_path, compiled_model, chains, compiled_ligands, distance_string, ligand_functions = compile_model(cursor,gene_symbol,scratch)
-		if not compiled_model: continue
-		print compiled_model, chains, compiled_ligands
-		print distance_string
+	pid = os.getpid()
+	print  'process id:', pid, gene_symbol
+	os.chdir(cwd)
+	scratch = scratch_dir + "/" + gene_symbol
+	shutil.rmtree(scratch, ignore_errors=True)
+	os.makedirs(scratch)
+
+	model_path, compiled_model, chains, compiled_ligands, distance_string, ligand_functions = compile_model(cursor,gene_symbol,scratch)
+	if compiled_model:
+		print  pid, gene_symbol, compiled_model, chains, compiled_ligands
+		print  pid, gene_symbol, distance_string
 		# store compiled model in hte pdb directory of the monogenic server
 		# store the list  of the ligands to the database
 		store_ligands (cursor, gene_symbol, model_path, compiled_model, chains, compiled_ligands, distance_string)
-		shutil.rmtree(scratch, ignore_errors=True)
-		return
+	shutil.rmtree(scratch, ignore_errors=True)
+
 	cursor.close()
 	db.close()
-
-
-	########################################
 
 
 ##########################################
@@ -467,7 +477,8 @@ def main():
 		print "no genes found (?)"
 		exit(1)
 	genes = [line[0] for line in ret]
-	parallelize(no_threads, model_structure_for_gene, genes,[])
+	process_pool = Pool(no_of_processes)
+	process_pool.map(model_structure_for_gene, genes)
 
 	return
 

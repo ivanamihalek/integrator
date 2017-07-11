@@ -3,12 +3,13 @@
 #
 from integrator_utils.mysql     import *
 from integrator_utils.restfuls  import *
-from integrator_utils.threading import *
+from multiprocessing import Pool
+
 
 import os, subprocess, shutil
 from collections import OrderedDict
 
-no_threads= 1
+no_of_processes = 1
 
 swissmodel_dir = "/databases/swissmodel"
 scratch_dir    = "/home/ivana/scratch"
@@ -48,12 +49,11 @@ physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","
 
 ##########################################
 def newborn_screening_genes(cursor):
-	nbs_genes = {}
+	nbs_genes = []
 	switch_to_db(cursor,'monogenic_development')
 	qry = "select name_short, omim_ids from diseases"
 	for line in search_db(cursor, qry):
 		name_short, omim_ids = line
-		nbs_genes[name_short] = []
 		for omim_id in omim_ids.split(';'):
 			qry  = "select approved_symbol, ensembl_gene_id from blimps_development.omim_genemaps "
 			qry += "where mim_number='%s'" % omim_id
@@ -62,12 +62,12 @@ def newborn_screening_genes(cursor):
 			qry  = "select uniprot_id, ec_number, cofactors from blimps_development.uniprot_basic_infos where ensembl_gene_id='%s'" % ensembl_gene_id
 			ret = search_db(cursor,qry, verbose=True)
 			uniprot_id, ec_number,uniprot_cofactors = ret[0]
-			nbs_genes[name_short].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors])
+			nbs_genes.append([approved_symbol, name_short, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors])
 	return nbs_genes
 
 ##########################################
 def all_iem_related_genes(cursor):
-	iem_genes = {}
+	iem_genes = []
 	qry  = "select mim_number, approved_symbol, ensembl_gene_id, phenotypes "
 	qry += "from blimps_development.omim_genemaps "
 	qry += "where inborn_error_of_metabolism=1"
@@ -85,8 +85,7 @@ def all_iem_related_genes(cursor):
 			#exit()
 		uniprot_id, ec_number, cofactors = ret[0]
 		#print mim_number, approved_symbol, ensembl_gene_id, uniprot_id, ec_number, phenotypes
-		if not iem_genes.has_key(phenotypes): iem_genes[phenotypes] = []
-		iem_genes[phenotypes].append([approved_symbol, ensembl_gene_id, uniprot_id, ec_number, cofactors])
+		iem_genes.append([approved_symbol, phenotypes, ensembl_gene_id, uniprot_id, ec_number, cofactors])
 	return iem_genes
 
 ##########################################
@@ -364,7 +363,7 @@ def get_native_ligands(cursor, pdb_chain_id):
 	uniprot_id, ec_numbers, uniprot_cofactors = ret
 	smiles_dict = substrate_smiles_from_metacyc(cursor,ec_numbers)
 	if not smiles_dict: smiles_dict = {'cofactors':""}
-	parse_ions(uniprot_cofactors,smiles_dict['cofactors'])
+	parse_ions(uniprot_cofactors,smiles_dict)
 	if not smiles_dict: return
 	native_ligands_smiles = reorganize_ligands(smiles_dict)
 	return native_ligands_smiles
@@ -443,55 +442,54 @@ def process_enzyme(cursor, gene_symbol, ensembl_gene_id, ec_number, swissmodel, 
 			store_or_update(cursor, 'monogenic_development.model_elements', fixed_fields, update_fields, verbose=False)
 
 ##########################################
-def structural_model_elements(diseases, args):
+def structural_model_elements(disease_descriptor):
 
 	db, cursor = connect()
-	genes = args[0]
-	for disease in diseases:
-		for [gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] in genes[disease]:
-			#if gene_symbol in ['PAH','GALT','LCHADD'] : continue
-			#if gene_symbol!='ACAT1': continue
-			print disease, gene_symbol
 
-			print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
-			qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
-			ret = search_db(cursor,qry)
-			if ret:
-				print "model elements found"
-				continue
-			# check swiss model structure exists, is nonempty, and is indeed pdb
-			print "\tchecking model exists"
-			swissmodel = check_pdb_exists(swissmodel_dir, gene_symbol)
-			if not swissmodel: continue
-			print "\tfound swissmodel:", swissmodel
-			# is the residue numbering correct?
-			print "\tchecking the numbering in the pdb file ..."
-			identical_pct = check_res_numbers(cursor, "/".join([swissmodel_dir, gene_symbol[0], gene_symbol]), swissmodel)
-			mismatch = False
-			for chain,pct in identical_pct.iteritems():
-				print "\t", chain, "pct identitiy", pct
-				if pct<90:
-					print "\t structure seq mismatch? chain", chain, "pct identical positions:",  pct
-					mismatch = True
-					break
-			if mismatch: continue
+	[gene_symbol, disease, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] = disease_descriptor
+	#if gene_symbol in ['PAH','GALT','LCHADD'] : continue
+	#if gene_symbol!='ACAT1': continue
+	print disease, gene_symbol
 
-			print "\tsequence ok; creating scratch directory\n"
-			# if we got ot here, we might need some scratch space
-			scratch = "/".join([scratch_dir,uniprot_id])
-			os.chdir(cwd)
-			shutil.rmtree(scratch,ignore_errors=True)
-			os.makedirs(scratch)
+	print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
+	qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
+	ret = search_db(cursor,qry)
+	if ret:
+		print "model elements found"
+		return
+	# check swiss model structure exists, is nonempty, and is indeed pdb
+	print "\tchecking model exists"
+	swissmodel = check_pdb_exists(swissmodel_dir, gene_symbol)
+	if not swissmodel: return
+	print "\tfound swissmodel:", swissmodel
+	# is the residue numbering correct?
+	print "\tchecking the numbering in the pdb file ..."
+	identical_pct = check_res_numbers(cursor, "/".join([swissmodel_dir, gene_symbol[0], gene_symbol]), swissmodel)
+	mismatch = False
+	for chain,pct in identical_pct.iteritems():
+		print "\t", chain, "pct identitiy", pct
+		if pct<90:
+			print "\t structure seq mismatch? chain", chain, "pct identical positions:",  pct
+			mismatch = True
+			break
+	if mismatch: return
 
-			# what is the biological assembly for this protein? - lets take for now that swissprot is right
-			# is this an enzyme?
-			if ec_number: # if yes, find substrates and cofactors (ions?)
-				process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors,uniprot_id,scratch)
-			# else if TM protein
-			# else
+	print "\tsequence ok; creating scratch directory\n"
+	# if we got ot here, we might need some scratch space
+	scratch = "/".join([scratch_dir,uniprot_id])
+	os.chdir(cwd)
+	shutil.rmtree(scratch,ignore_errors=True)
+	os.makedirs(scratch)
 
-			os.chdir(cwd)
-			shutil.rmtree(scratch,ignore_errors=True)
+	# what is the biological assembly for this protein? - lets take for now that swissprot is right
+	# is this an enzyme?
+	if ec_number: # if yes, find substrates and cofactors (ions?)
+		process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors,uniprot_id,scratch)
+	# else if TM protein
+	# else
+
+	os.chdir(cwd)
+	shutil.rmtree(scratch,ignore_errors=True)
 
 	cursor.close()
 	db.close()
@@ -507,13 +505,16 @@ def main():
 		print dependency, " not found"
 		exit()
 	# first lets focus on the proteins from the newborn screening
-	genes = newborn_screening_genes(cursor)
-	#genes = all_iem_related_genes(cursor)
+	# genes = newborn_screening_genes(cursor)
+	genes = all_iem_related_genes(cursor)
 
 	if not genes:
 		print "no genes found (?)"
 		exit(1)
-	parallelize(no_threads, structural_model_elements, genes.keys(), [genes])
+	#process_pool = Pool(no_of_processes)
+	#process_pool.map(structural_model_elements, genes)
+	for gene in genes:
+		structural_model_elements(gene)
 
 	cursor.close()
 	db.close()
