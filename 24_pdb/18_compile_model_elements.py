@@ -8,6 +8,7 @@ from multiprocessing import Pool
 
 import os, subprocess, shutil
 from collections import OrderedDict
+import time
 
 no_of_processes = 1
 
@@ -89,7 +90,7 @@ def all_iem_related_genes(cursor):
 	return iem_genes
 
 ##########################################
-def check_pdb_exists(swissmodel_dir, gene_symbol):
+def check_model_exists(swissmodel_dir, gene_symbol):
 	directory = "/".join([swissmodel_dir, gene_symbol[0], gene_symbol])
 	if not os.path.exists(directory):
 		print "\t", directory," not found"
@@ -213,16 +214,15 @@ def substrate_smiles_from_metacyc(cursor, ec_numbers):
 	for name, array in [['substrates', substrates], ['cofactors',cofactors],['alt_cofs', alternative_cofactors],
 	                    ['alt_subs', alternative_substrates], ['regulators', regulators]]:
 		if len(array) == 0: continue
-		for compound_id in array:
-			qry  = "select smiles from metacyc_compounds where unique_id='%s'" % compound_id
-			ret2 = search_db(cursor,qry)
-			if not ret2:
-				for comp_id in compound_id.split(";"):
-					comp_id = comp_id.replace(" ","").replace("+","").upper()
+		for compound_ids in array:
+			for comp_id in compound_ids.split(";"):
+				comp_id = comp_id.replace(" ","").replace("+","").upper()
+				qry  = "select smiles from metacyc_compounds where unique_id='%s'" % comp_id
+				ret2 = search_db(cursor,qry)
+				if ret2:
+					smiles_list[name].append([comp_id, ret2[0][0]])
+				else:
 					smiles_list[name].append([comp_id, None]) # single atoms or ions may not have the smiles string
-			else:
-				for line in ret2:
-					smiles_list[name].append([compound_id, line[0]])
 
 	del smiles_list['alt_subs']
 	del smiles_list['alt_cofs']
@@ -287,7 +287,7 @@ def find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch):
 	target_pct_idtty = OrderedDict()
 	cmd = "{} -db {} -query {} -outfmt 6".format(blastp, pdb_blast_db, queryfile)
 	for line in subprocess.check_output(cmd, shell=True).split("\n"):
-		print line
+		print "\t\t", line
 		field = line.split()
 		if len(field)==0 or field[0] != uniprot_id:  continue # this is not the result line
 		pct_identity = field[2]
@@ -422,7 +422,9 @@ def process_enzyme(cursor, gene_symbol, ensembl_gene_id, ec_number, swissmodel, 
 	# find all other pdb files with similar sequence and ligands
 	print "\tlooking for pdb with sequence similar to  %s ..." % gene_symbol
 	pdb_pct_similarity = find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch)
-
+	if len(pdb_pct_similarity)==0:
+		print "\t no pdbs with sufficient similarity found"
+		return
 	print "\tsearching for pdbs with ligands similar to one of the substrates from metacyc"
 	usable_pdbs = select_pdbs_with_relevant_ligands(cursor,pdb_pct_similarity.keys())
 	if not usable_pdbs: return
@@ -449,17 +451,18 @@ def structural_model_elements(disease_descriptor):
 	[gene_symbol, disease, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] = disease_descriptor
 	#if gene_symbol in ['PAH','GALT','LCHADD'] : continue
 	#if gene_symbol!='ACAT1': continue
-	print disease, gene_symbol
-
+	print "\n####################################"
+	print gene_symbol, ":", disease
 	print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
+
 	qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
 	ret = search_db(cursor,qry)
 	if ret:
-		print "model elements found"
+		print "model elements found in the database"
 		return
 	# check swiss model structure exists, is nonempty, and is indeed pdb
 	print "\tchecking model exists"
-	swissmodel = check_pdb_exists(swissmodel_dir, gene_symbol)
+	swissmodel = check_model_exists(swissmodel_dir, gene_symbol)
 	if not swissmodel: return
 	print "\tfound swissmodel:", swissmodel
 	# is the residue numbering correct?
@@ -474,9 +477,10 @@ def structural_model_elements(disease_descriptor):
 			break
 	if mismatch: return
 
-	print "\tsequence ok; creating scratch directory\n"
+	print "\tsequence ok; creating scratch directory: ",
 	# if we got ot here, we might need some scratch space
 	scratch = "/".join([scratch_dir,uniprot_id])
+	print  scratch
 	os.chdir(cwd)
 	shutil.rmtree(scratch,ignore_errors=True)
 	os.makedirs(scratch)
@@ -484,10 +488,13 @@ def structural_model_elements(disease_descriptor):
 	# what is the biological assembly for this protein? - lets take for now that swissprot is right
 	# is this an enzyme?
 	if ec_number: # if yes, find substrates and cofactors (ions?)
+		print "\t", gene_symbol, "is an enzyme:", ec_number
 		process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors,uniprot_id,scratch)
+		time.sleep(10)
 	# else if TM protein
-	# else
-
+	else:
+		print "\t", gene_symbol, "is not an enzyme"
+		print
 	os.chdir(cwd)
 	shutil.rmtree(scratch,ignore_errors=True)
 
@@ -507,6 +514,8 @@ def main():
 	# first lets focus on the proteins from the newborn screening
 	# genes = newborn_screening_genes(cursor)
 	genes = all_iem_related_genes(cursor)
+	cursor.close()
+	db.close()
 
 	if not genes:
 		print "no genes found (?)"
@@ -516,8 +525,6 @@ def main():
 	for gene in genes:
 		structural_model_elements(gene)
 
-	cursor.close()
-	db.close()
 
 
 #########################################
