@@ -121,6 +121,8 @@ def extract_ligand(path, scratch, filename, chain, ligand_resn):
 	if not resn_found: return None, None
 	if chain_found: return outfilename, chain # either we found the ligand, or there is chain but not the ligand
 	# otherwise, we have found the residue but not with the expected name
+	# TODO: implement this
+	return None, None
 	outfilename, new_chain  = extract_ligands_w_chain_resolution(infile_path, scratch, ligand_resn)
 	return outfilename, new_chain
 
@@ -158,12 +160,12 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 			transform[tfm_key] = inf.read()
 			inf.close()
 
-		ligand_file_tmp_path = ligand_file_path.replace('.pdb','') + ".tmp.pdb"
+		ligand_file_tmp_path = ligand_file_path.replace('.pdb','') + ".{}.tmp.pdb".format(main_model_chain)
 		cmd = "{} {} tmp.tfm > {}".format(pdb_affine, ligand_file_path, ligand_file_tmp_path)
 		subprocess.call(cmd, shell=True)
 
 		# did we pull up something that is far away actually?
-		cmd = "{} {} {}".format(geom_epitope, ligand_file_tmp_path, to_structure_path)
+		cmd = "{} {} {}".format(geom_epitope, to_structure_path, ligand_file_tmp_path)
 		ret = subprocess.check_output(cmd, shell=True).rstrip()
 		if (len(ret)==0): continue # we are not close to anything
 		# are we close to the chain we had in mind? return lines look something like
@@ -178,7 +180,7 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 		ligand_file_tfmd_paths.append(ligand_file_tfmd_path)
 
 	os.chdir(scratch)
-	#shutil.rmtree(struct_scratch,ignore_errors=True)
+	shutil.rmtree(struct_scratch,ignore_errors=True)
 
 	return ligand_file_tfmd_paths
 
@@ -186,10 +188,10 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 def find_last_res_number(pdb_file_path):
 	resnumber_atom   = -1
 	resnumber_hetatm = -1
-	cmd = "awk '$1==\"ATOM\"' {} | tail -n1".format(pdb_file_path)
+	cmd = "awk 'substr($1,1,5)==\"ATOM\"' {} | tail -n1".format(pdb_file_path)
 	ret = subprocess.check_output(cmd, shell=True)
 	if ret and len(ret)>res_number_pos+res_number_length: resnumber_atom = int(ret[res_number_pos:res_number_pos+res_number_length])
-	cmd = "awk '$1==\"HETATM\"' {} | tail -n1".format(pdb_file_path)
+	cmd = "awk 'substr($1,1,6)==\"HETATM\"' {} | tail -n1".format(pdb_file_path)
 	ret = subprocess.check_output(cmd, shell=True)
 	if ret and len(ret)>res_number_pos+res_number_length: resnumber_hetatm = int(ret[res_number_pos:res_number_pos+res_number_length])
 
@@ -209,7 +211,7 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 			cmd = "{} {} {}".format(geom_overlap, ligand_file_tfmd_path, compiled_ligand_file_path)
 			ret = subprocess.check_output(cmd, shell=True).rstrip()
 			if float(ret.rstrip())> 0: clashing_ligands.append(ligand_file_tfmd_path)
-		if len(clashing_ligands): print os.getpid(), "clashing:", clashing_ligands
+		if len(clashing_ligands): print "clashing:", clashing_ligands
 
 		ok_ligands = filter(lambda l: l not in clashing_ligands, ligand_file_tfmd_paths)
 		if len(ok_ligands)==0: return None
@@ -219,6 +221,7 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 		ok_ligands    = ligand_file_tfmd_paths
 		if len(ok_ligands)==0: return None
 		max_resnumber = find_last_res_number(path+"/"+anchor)
+		print "max_resnumber", max_resnumber
 
 	# clashing with the main chain?
 	clashing_ligands = []
@@ -233,10 +236,10 @@ def merge_ligands(path, anchor, compiled_ligand_file_path, ligand_file_tfmd_path
 	# compile what we have so far; renumber
 	outfile = open (compiled_ligand_file_path,"a")
 	new_ligands = []
+	prev_resnumber = -1
+	output_resno = max_resnumber
 	for ligand_file_tfmd_path in remaining_ligands:
 		infile = open(ligand_file_tfmd_path,"r")
-		prev_resnumber = -1
-		output_resno = max_resnumber
 		for line in infile:
 			# -1 will grab the chain id too
 			reslabel = line[res_number_pos-1:res_number_pos+res_number_length+1].replace(" ","")
@@ -341,9 +344,13 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 	outf = open(modelfile,"w")
 	chains = set()
 	for line in inf:
-		if line[:6]=='HETATM' and line[chain_pos]=="_": continue # strip swissmodel ligands
+		# keep ATOM lines only; I do not want comments, connectivity, which wel end up wrong
+		# I do not want (swissmodel) ligands because they have no chain label
+		# TER? this I might need if the chains are not labeled - do I ever bump into a case like that?
+		if not line[:3] in ['ATO','TER']: continue
+		#if line[:6]=='HETATM' and line[chain_pos]=="_": continue # strip swissmodel ligands
 		if line[:4]=='ATOM': chains.add(line[chain_pos])
-		if line[:3]=='END': continue # we are going to glue the ligands at the bottom of the file
+		#if line[:3]=='END': continue # we are going to glue the ligands at the bottom of the file
 		outf.write(line)
 	inf.close()
 	outf.close()
@@ -376,9 +383,13 @@ def compile_model( cursor, gene_symbol,scratch):
 	compiled_ligands_file_path = scratch + "/compiled_ligands.pdb"
 	compiled_ligand_list = []
 	ligand_functions = {}
+	considered = []
 	for line in ret:
-		print pid, gene_symbol, " **** ", line
 		pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot = line
+		label = "{}_{}".format(pdb_chain,pdb_ligand)
+		if label in considered: continue
+		considered.append(label)
+		print "model element:",  gene_symbol, " **** ", line
 		if not ligand_functions.has_key(pdb_chain): ligand_functions[pdb_chain]= {}
 		ligand_functions[pdb_chain][pdb_ligand] = ligand_function
 		cmd = "{} {}".format(pdbdown, pdb_chain[:-1]) # this will check if it already exists
@@ -438,7 +449,7 @@ def model_structure_for_gene(gene_symbol):
 	db, cursor = connect()
 	switch_to_db(cursor,"monogenic_development")
 	pid = os.getpid()
-	print  'process id:', pid, gene_symbol
+	print 'process id:', pid, gene_symbol
 	os.chdir(cwd)
 	scratch = scratch_dir + "/" + gene_symbol
 	shutil.rmtree(scratch, ignore_errors=True)
@@ -477,9 +488,11 @@ def main():
 		print "no genes found (?)"
 		exit(1)
 	genes = [line[0] for line in ret]
-	process_pool = Pool(no_of_processes)
-	process_pool.map(model_structure_for_gene, genes)
-
+	#process_pool = Pool(no_of_processes)
+	#process_pool.map(model_structure_for_gene, genes)
+	for gene in genes:
+		if not gene in ['MCCC2']: continue
+		model_structure_for_gene(gene)
 	return
 
 if __name__ == '__main__':

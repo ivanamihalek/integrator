@@ -19,6 +19,7 @@ pdb_affine     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_t
 extract_chain  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
 blastp         = "/usr/local/bin/blastp"
 pdb_blast_db   = "/databases/pdb/blast/pdb_seqres.fasta" # expected to be formatted using makeblastdb
+pdb_name_resolution_table = "/databases/pdb/blast/name_resolution.txt"
 compiled_model_repository = "/home/ivana/monogenic/public/pdb"
 
 conda          = "/home/ivana/miniconda2/bin"
@@ -45,8 +46,11 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # * A detergent such as beta-octyl-glucoside "SOG","HTG"
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
-crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "HEM","PE4","ACT","NA"]
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "PE4","ACT","NA"]
 physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA","K"]
+
+
+manual_intervention = {'CBS':{'pdb_ligand':'HEM', 'metacyc_ligand':'HEME','ligand_tanimoto':1.0,'ligand_function':'regulator'}}
 
 ##########################################
 def newborn_screening_genes(cursor):
@@ -162,7 +166,7 @@ def get_regulators(cursor, reg_by):
 		ret = search_db(cursor,qry)
 		if not ret: continue
 		regulators.append(ret[0][0])
-	return  ";".join(regulators)
+	return ";".join(regulators)
 
 ##########################################
 def substrate_smiles_from_metacyc(cursor, ec_numbers):
@@ -176,7 +180,10 @@ def substrate_smiles_from_metacyc(cursor, ec_numbers):
 		ret = search_db(cursor,qry)
 		if ret: rets += ret
 	if len(rets)==0:
-		print "\t failed finding %s in metacyc_reactions "  % ec_numbers
+		print qry
+		print ec_numbers
+		print "\tfailed finding %s in metacyc_reactions " % ec_numbers
+		exit()
 		return None
 
 	cofactors = []
@@ -185,7 +192,7 @@ def substrate_smiles_from_metacyc(cursor, ec_numbers):
 	regulators = []
 	substrates = []
 
-	for line in ret:
+	for line in rets:
 		enzymatic_reaction, rxn_left, rxn_right = line
 		for substrate in rxn_left.replace(" ","").split(";") + rxn_right.replace(" ","").split(";"):
 			if substrate in ['WATER', 'NA','CL','PROTON']: continue
@@ -203,7 +210,6 @@ def substrate_smiles_from_metacyc(cursor, ec_numbers):
 				# list is reserved word, so lets call this array
 				for element, array in [[cofs,cofactors], [alt_cofs, alternative_cofactors],
 				                       [alt_subs, alternative_substrates], [regs, regulators]]:
-
 					if element in ['WATER', 'NA','CL','PROTON']: continue
 					if element!='' and 'EV-EXP' not in element and element not in array: array.append(element)
 	subs_smiles = []
@@ -222,7 +228,7 @@ def substrate_smiles_from_metacyc(cursor, ec_numbers):
 				if ret2:
 					smiles_list[name].append([comp_id, ret2[0][0]])
 				else:
-					smiles_list[name].append([comp_id, None]) # single atoms or ions may not have the smiles string
+					smiles_list[name].append([comp_id, None])  # single atoms or ions may not have the smiles string
 
 	del smiles_list['alt_subs']
 	del smiles_list['alt_cofs']
@@ -272,6 +278,14 @@ def get_pdb_ligand_info(cursor, pdb_id):
 	return smiles
 
 ##########################################
+def resolve_pdb_chain_name(pdb_chain_id):
+	cmd = "grep {} {}".format(pdb_chain_id,pdb_name_resolution_table)
+	ret = subprocess.check_output(cmd, shell=True).split("\n")
+	if len(ret)!=1: return None # resolution failed
+	name_resolved = ret.split()[0].replace("_","")
+	return name_resolved
+
+##########################################
 def find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch):
 	os.chdir(scratch)
 	qry = "select sequence from monogenic_development.uniprot_seqs where uniprot_id='%s'" % uniprot_id
@@ -294,6 +308,10 @@ def find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch):
 		if float(pct_identity)<40: break
 		target_id = field[1].replace("_","")
 		if target_id[-1]==target_id[-2]: target_id=target_id[:-1]
+		if len(target_id)>5:
+			target_id = resolve_pdb_chain_name(field[1])
+			if not target_id: continue # name resolving failed for one reason or another
+
 		if not target_id in target_pct_idtty.keys(): target_pct_idtty[target_id]=pct_identity
 	return target_pct_idtty
 
@@ -337,55 +355,96 @@ def reorganize_ligands(smiles_dict):
 	return ligands_reorganized
 
 ##########################################
-def get_ec_from_pdb(cursor, pdb_chain_id):
+def get_ec_from_pdb(cursor, pdb_chain_id, gene_symbol):
 	switch_to_db(cursor,'monogenic_development')
 	qry = "select  uniprot_id, ec_numbers, cofactors from pdb_uniprot_ec_maps where pdb_chain='%s'" % pdb_chain_id
 	ret = search_db(cursor,qry)
-	if ret: return ret[0] # uniprot, ec numbers, cofactors
-	# fetch uniprot id from PDB's das service
-	uniprot_id = uniprot_from_pdb_chain(pdb_chain_id)  # restful request
-	if not uniprot_id: return None
-	# fetch enzyme info from Uniprot
-	ret = ec_cofactors_from_uniprot(uniprot_id)
-	if not ret: return
-	ec_numbers, cofactors = ret
-	fixed_fields = {'pdb_chain':pdb_chain_id}
-	update_fields = {'uniprot_id':uniprot_id, 'ec_numbers': ec_numbers, 'cofactors':cofactors}
-	store_or_update(cursor, 'pdb_uniprot_ec_maps', fixed_fields, update_fields)
-	return  uniprot_id, ec_numbers, cofactors
+	# the ec fields is not empty string
+	if ret: # the ec info can still be an empty string
+		if len(ret[0][1])>0:
+			return ret[0] # uniprot, ec numbers, cofactors
+		elif len(ret[0][0])>0: #ec is zero, but we have found the uniprot_id
+			# attempt resolution from another table
+			uniprot_id = ret[0][0]
+			qry = "select ec_number, cofactors from blimps_development.uniprot_basic_infos where uniprot_id='%s'" % uniprot_id
+			ret2 = search_db(cursor,qry)
+			if ret2 and len(ret[0][0]):
+				ec_number, cofactors = ret2[0]
+				return  uniprot_id, ec_number, cofactors
+			if not ret2:
+				qry = "select uniprot_ids  from blimps_development.genes where symbol='%s'" % gene_symbol
+				ret3 = search_db(cursor,qry)
+				if ret3 and len(ret3[0][0])>0:
+					for uniprot_id in ret3[0][0].split(";"):
+						qry =  "select ec_number, cofactors from blimps_development.uniprot_basic_infos "
+						qry +=  "where uniprot_id='%s'" % uniprot_id
+						ret4 = search_db(cursor,qry)
+						if ret4:
+							ec_number, cofactors = ret4[0]
+							return  uniprot_id, ec_number, cofactors
+
+	else: # the original query returned nothing
+		# fetch uniprot id from PDB's das service
+		uniprot_id = uniprot_from_pdb_chain(pdb_chain_id)  # restful request
+		if not uniprot_id: return None
+		# fetch enzyme info from Uniprot
+		ret = ec_cofactors_from_uniprot(uniprot_id)
+		if not ret: return
+		ec_numbers, cofactors = ret
+		fixed_fields = {'pdb_chain':pdb_chain_id}
+		update_fields = {'uniprot_id':uniprot_id, 'ec_numbers': ec_numbers, 'cofactors':cofactors}
+		store_or_update(cursor, 'pdb_uniprot_ec_maps', fixed_fields, update_fields)
+		return  uniprot_id, ec_numbers, cofactors
+
+	return None, None, None
 
 ##########################################
-def get_native_ligands(cursor, pdb_chain_id):
+def get_native_ligands(cursor, pdb_chain_id, gene_symbol):
 	# check for pdb ec map in the database
 	# if not present, fetch from PDB and uniprot
-	ret = get_ec_from_pdb(cursor, pdb_chain_id)
+	ret = get_ec_from_pdb(cursor, pdb_chain_id, gene_symbol)
 	if not ret: return None
 	uniprot_id, ec_numbers, uniprot_cofactors = ret
 	smiles_dict = substrate_smiles_from_metacyc(cursor,ec_numbers)
-	if not smiles_dict: smiles_dict = {'cofactors':""}
-	parse_ions(uniprot_cofactors,smiles_dict)
+	if not smiles_dict: smiles_dict = {'cofactors':[]}
+	parse_ions(uniprot_cofactors,smiles_dict['cofactors'])
 	if not smiles_dict: return
 	native_ligands_smiles = reorganize_ligands(smiles_dict)
 	return native_ligands_smiles
 
 ##########################################
-def select_pdbs_with_relevant_ligands(cursor, pdb_id_list):
+def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, gene_symbol):
+
+	manual = None
+	if gene_symbol in manual_intervention.keys():
+		manual = manual_intervention[gene_symbol]
 
 	usable_pdbs = {}
 	for pdb_chain_id in pdb_id_list:
 		print "\t\t", pdb_chain_id
 		# the ligands that this enzyme  processes
-		native_ligands_smiles = get_native_ligands(cursor, pdb_chain_id)
-		if not native_ligands_smiles: continue
+		native_ligands_smiles = get_native_ligands(cursor, pdb_chain_id, gene_symbol)
+		if not native_ligands_smiles:
+			print "\t\t no native ligands known"
+			continue
 		# the ligands that are actually present in the PDB
 		pdb_ligand_smiles = get_pdb_ligand_info(cursor, pdb_chain_id)
-		if not pdb_ligand_smiles: continue
+		if not pdb_ligand_smiles:
+			print "\t\t no smiles found for pdb ligand"
+			continue
 
 		ligand_similarities = []
 		for pdb_compound_id, smiles_string in pdb_ligand_smiles.iteritems():
+			if manual and pdb_compound_id==manual['pdb_ligand']:
+				print "manual intervention for", pdb_compound_id
+				print [pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']]
+				ligand_similarities.append([pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']])
+				continue
 			if pdb_compound_id in crystallographic_additives: continue
 			# function: substrate, cofactor, regulator
+			print "\t\t pdb ligand smile string:", smiles_string
 			for native_ligand_id, [native_smiles, native_ligand_function] in native_ligands_smiles.iteritems():
+				print "\t\t\t native smiles:", native_smiles
 				# are the two strings trivially equal by any chance?
 				similarity=0
 				if pdb_compound_id in physiological_ions:
@@ -426,7 +485,7 @@ def process_enzyme(cursor, gene_symbol, ensembl_gene_id, ec_number, swissmodel, 
 		print "\t no pdbs with sufficient similarity found"
 		return
 	print "\tsearching for pdbs with ligands similar to one of the substrates from metacyc"
-	usable_pdbs = select_pdbs_with_relevant_ligands(cursor,pdb_pct_similarity.keys())
+	usable_pdbs = select_pdbs_with_relevant_ligands(cursor,pdb_pct_similarity.keys(), gene_symbol)
 	if not usable_pdbs: return
 	for usable_pdb_id, sims in usable_pdbs.iteritems():
 		print "\t\t", usable_pdb_id, pdb_pct_similarity[usable_pdb_id], sims
@@ -449,12 +508,16 @@ def structural_model_elements(disease_descriptor):
 	db, cursor = connect()
 
 	[gene_symbol, disease, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] = disease_descriptor
-	#if gene_symbol in ['PAH','GALT','LCHADD'] : continue
-	#if gene_symbol!='ACAT1': continue
+	#if gene_symbol in ['PAH','GALT','LCHADD'] : return
+	if gene_symbol!='MCCC2': return
+
 	print "\n####################################"
 	print gene_symbol, ":", disease
 	print "\t", gene_symbol, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors
-
+	# some dirty redo bcs I missed the possibility of multiple ec numbers:
+	# if not uniprot_id in ["Q54XS1","F9VN45","P37798","P43873","P24182","Q0P8W7","A0A0R4I970",
+	# "Q0KBP1","Q9I2A0","Q14376","P04397","P13254","O43175","P17694","P54886","P80147","P23709",
+	# "P47989","P22985","P80457","Q9VXJ0","P51659","P97852","O43451","P14410","P22414","P04394"]: continue
 	qry = "select * from monogenic_development.model_elements where gene_symbol='%s'" % gene_symbol
 	ret = search_db(cursor,qry)
 	if ret:
@@ -490,7 +553,7 @@ def structural_model_elements(disease_descriptor):
 	if ec_number: # if yes, find substrates and cofactors (ions?)
 		print "\t", gene_symbol, "is an enzyme:", ec_number
 		process_enzyme(cursor,gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors,uniprot_id,scratch)
-		time.sleep(10)
+		time.sleep(3)
 	# else if TM protein
 	else:
 		print "\t", gene_symbol, "is not an enzyme"
@@ -507,23 +570,32 @@ def main():
 	db, cursor = connect()
 	for dependency in [swissmodel_dir, scratch_dir, struct, pdb_affine,
 	                   extract_chain, compiled_model_repository,
-					   blastp, pdb_blast_db, conda, rdkit_runner]:
+					   blastp, pdb_blast_db, pdb_name_resolution_table,
+					   conda, rdkit_runner]:
 		if os.path.exists(dependency): continue
 		print dependency, " not found"
 		exit()
 	# first lets focus on the proteins from the newborn screening
 	# genes = newborn_screening_genes(cursor)
-	genes = all_iem_related_genes(cursor)
+	disease_descriptors = all_iem_related_genes(cursor)
 	cursor.close()
 	db.close()
 
-	if not genes:
-		print "no genes found (?)"
+	if not disease_descriptors:
+		print "no disease descriptors found (?)"
 		exit(1)
+	print "number of disease descriptors found:", len(disease_descriptors)
+
 	#process_pool = Pool(no_of_processes)
 	#process_pool.map(structural_model_elements, genes)
-	for gene in genes:
-		structural_model_elements(gene)
+	start = 0
+	end = 10000
+	if len(sys.argv)>2:
+		start = int(sys.argv[1])
+		end   = int(sys.argv[2])
+	print start, end
+	for dd in disease_descriptors[start:end]:
+		structural_model_elements(dd)
 
 
 
