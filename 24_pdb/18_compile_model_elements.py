@@ -528,22 +528,23 @@ def structural_model_elements(disease_descriptor):
 	swissmodel = check_model_exists(swissmodel_dir, gene_symbol)
 	if not swissmodel: return
 	print "\tfound swissmodel:", swissmodel
-	# is the residue numbering correct?
+
+	# is the residue numbering correct? I want at least one chain with pct>90
 	print "\tchecking the numbering in the pdb file ..."
 	identical_pct = check_res_numbers(cursor, "/".join([swissmodel_dir, gene_symbol[0], gene_symbol]), swissmodel)
-	mismatch = False
+	chains_w_pct_gt_90 = 0
 	for chain,pct in identical_pct.iteritems():
 		print "\t", chain, "pct identitiy", pct
-		if pct<90:
-			print "\t structure seq mismatch? chain", chain, "pct identical positions:",  pct
-			mismatch = True
-			break
-	if mismatch: return
+		if pct<90: chains_w_pct_gt_90 += 1
+
+	if chains_w_pct_gt_90==0:
+		print "\t Structure seq mismatch? No chains with pct similarity to uniprot seq > 0."
+		return
 
 	print "\tsequence ok; creating scratch directory: ",
 	# if we got ot here, we might need some scratch space
 	scratch = "/".join([scratch_dir,uniprot_id])
-	print  scratch
+	print scratch
 	os.chdir(cwd)
 	shutil.rmtree(scratch,ignore_errors=True)
 	os.makedirs(scratch)
