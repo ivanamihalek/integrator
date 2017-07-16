@@ -301,15 +301,8 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 		exit()
 	os.chdir(scratch)
 
-	outfile = open(compiled_model,"w")
-	infile  = open(main_model_path+"/"+main_model, "r")
-	for line in infile:
-		if line[:4]=='ATOM' or line[:6] == 'HETATM':
-			resname = line[res_name_pos:res_name_pos+res_name_length].replace(' ','')
-			if resname in crystallographic_additives + ligand_list: continue
-		outfile.write(line)
-	infile.close()
-	outfile.close()
+	cmd = "cp {} {} ".format(main_model_path+"/"+main_model,compiled_model)
+	subprocess.call(cmd, shell=True)
 
 	#concatenate protein and ligand files
 	cmd = "cat {} >> {}".format(compiled_ligand_file_path, compiled_model)
@@ -338,7 +331,13 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 def prepare_main_model(swissmodel_dir, model,scratch):
 	cmd = "find {} -name {}".format(swissmodel_dir,model)
 	path = subprocess.check_output(cmd, shell=True).rstrip()
-	model_name = model.replace("swissmodel","peptide")
+	if "swissmodel" in model:
+		model_name = model.replace("swissmodel","peptide")
+	elif "ivana" in model:
+		model_name = model.replace("ivana","peptide")
+	else:
+		print "unexpected model name:", model
+		exit()
 	modelfile = scratch+"/"+model_name
 	inf  = open(path,"r")
 	outf = open(modelfile,"w")
@@ -355,8 +354,6 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 	inf.close()
 	outf.close()
 	chains = sorted(list(chains))
-	print "chains in the main peptide file:", chains
-
 	return scratch, model_name, chains
 
 #########################################
@@ -491,7 +488,7 @@ def main():
 	#process_pool = Pool(no_of_processes)
 	#process_pool.map(model_structure_for_gene, genes)
 	for gene in genes:
-		if not gene in ['MCCC2']: continue
+		if not gene in ['PAH']: continue
 		model_structure_for_gene(gene)
 	return
 
