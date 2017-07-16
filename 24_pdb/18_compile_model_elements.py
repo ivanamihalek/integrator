@@ -534,7 +534,7 @@ def structural_model_elements(disease_descriptor):
 	identical_pct = check_res_numbers(cursor, "/".join([swissmodel_dir, gene_symbol[0], gene_symbol]), swissmodel)
 	chains_w_pct_gt_90 = 0
 	for chain,pct in identical_pct.iteritems():
-		print "\t", chain, "pct identitiy", pct
+		print "\t", chain, "pct identity", pct
 		if pct<90: chains_w_pct_gt_90 += 1
 
 	if chains_w_pct_gt_90==0:

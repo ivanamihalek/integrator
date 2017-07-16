@@ -5,6 +5,7 @@ from multiprocessing import Pool
 
 import os, shutil, subprocess
 import json
+
 import time
 no_of_processes = 1
 
@@ -327,8 +328,57 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 	distance_string = json.dumps(distances)
 	return compiled_model, distance_string
 
+##########################################
+def pdb_to_sequence(full_path_filename):
+	sequence = {}
+	infile = open (full_path_filename, "r")
+	for line in infile:
+		if line[:4] != 'ATOM': continue
+		chain = line[chain_pos]
+		resname = line[res_name_pos:res_name_pos+res_name_length]
+		resnumber = int(line[res_number_pos:res_number_pos+res_number_length])
+		if not aa_translation.has_key(resname): continue
+		if not sequence.has_key(chain): sequence[chain] = {}
+		sequence[chain][resnumber] = aa_translation[resname]
+
+	return sequence
+
+##########################################
+def find_relevant_chains_in_model(cursor, path, model):
+
+	field = model.split("_")
+	uniprot = field[0]
+	qry = "select sequence from monogenic_development.uniprot_seqs where uniprot_id='%s'" % uniprot
+	ret = search_db(cursor,qry)
+	if not ret:
+		print model
+		print 'sequence not found for', uniprot
+		exit()
+
+	uniprot_sequence = ['.']+list(ret[0][0]) # start index from 1
+	unilength = len(uniprot_sequence)
+	pdb_sequence    = pdb_to_sequence(path + "/" + model)
+	identical_count = {}
+	identical_pct = {}
+	for chain in pdb_sequence:
+		identical_count[chain] = 0
+		for resnumber, restype in pdb_sequence[chain].iteritems():
+			if resnumber<unilength and restype==uniprot_sequence[resnumber]:
+				identical_count[chain] += 1
+		identical_pct[chain] = float(identical_count[chain])/min(unilength, len(pdb_sequence[chain]))
+		identical_pct[chain] = int(100*identical_pct[chain])
+	chains = identical_pct.keys().sort(key=lambda c: identical_pct[c])
+
+	if (identical_pct[chains[0]]<0.9):
+		print frame_string(),
+		print ": the closest chain in the model less than 90% identical to uniprot seq?"
+		exit()
+
+	return chains.filter(lambda c: identical_pct[c]>0.85)
+
 #########################################
 def prepare_main_model(swissmodel_dir, model,scratch):
+
 	cmd = "find {} -name {}".format(swissmodel_dir,model)
 	path = subprocess.check_output(cmd, shell=True).rstrip()
 	if "swissmodel" in model:
@@ -338,23 +388,20 @@ def prepare_main_model(swissmodel_dir, model,scratch):
 	else:
 		print "unexpected model name:", model
 		exit()
+
 	modelfile = scratch+"/"+model_name
 	inf  = open(path,"r")
 	outf = open(modelfile,"w")
-	chains = set()
 	for line in inf:
 		# keep ATOM lines only; I do not want comments, connectivity, which wel end up wrong
 		# I do not want (swissmodel) ligands because they have no chain label
 		# TER? this I might need if the chains are not labeled - do I ever bump into a case like that?
 		if not line[:3] in ['ATO','TER']: continue
-		#if line[:6]=='HETATM' and line[chain_pos]=="_": continue # strip swissmodel ligands
-		if line[:4]=='ATOM': chains.add(line[chain_pos])
-		#if line[:3]=='END': continue # we are going to glue the ligands at the bottom of the file
 		outf.write(line)
 	inf.close()
 	outf.close()
-	chains = sorted(list(chains))
-	return scratch, model_name, chains
+
+	return scratch, model_name
 
 #########################################
 def compile_model( cursor, gene_symbol,scratch):
@@ -370,9 +417,9 @@ def compile_model( cursor, gene_symbol,scratch):
 	if len(ret)>2:
 		print "different models for the same gene?"
 		exit()
-	main_model_info = prepare_main_model(swissmodel_dir, ret[0][0], scratch)
-	main_model_path = main_model_info[0]
-	main_model      = main_model_info[1]
+	main_model_path, main_model = prepare_main_model(swissmodel_dir, ret[0][0], scratch)
+	main_model_chains = find_relevant_chains_in_model(cursor, main_model_path, main_model)
+	main_model_info   = [main_model_path, main_model, main_model_chains]
 
 	qry  = "select  pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot from model_elements"
 	qry += " where gene_symbol='%s' order by pdb_pct_identical_to_uniprot desc"  % gene_symbol
