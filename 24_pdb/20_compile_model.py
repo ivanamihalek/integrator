@@ -326,6 +326,11 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 		subprocess.call(cmd, shell=True)
 		distances["chain"+chain] = epitope2dist_string("mainchain.pdb",chain_pdb)
 
+	if not type(distances) is dict:
+		print "distances is not dictionary"
+		print distances
+		exit()
+
 	distance_string = json.dumps(distances)
 
 
