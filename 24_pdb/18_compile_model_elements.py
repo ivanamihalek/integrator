@@ -46,7 +46,8 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # * A detergent such as beta-octyl-glucoside "SOG","HTG"
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
-crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "PE4","ACT","NA"]
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG",
+							  "SAM", "PE4","ACT","NA", "MLT", "FMT"]
 physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA","K"]
 
 
@@ -105,6 +106,7 @@ def check_model_exists(swissmodel_dir, gene_symbol):
 	swiss = None
 	ivana = None
 	for model in next(os.walk(directory))[2]:
+		if 'old_models' in model: continue
 		if 'swissmodel' in model:  swiss = model
 		if 'ivana' in model:  ivana = model
 	if not ivana and not swiss:
@@ -116,6 +118,7 @@ def check_model_exists(swissmodel_dir, gene_symbol):
 	if first_field in ['ATOM','TITLE', 'HEADER','HETATM']:
 		return swiss
 	print "\t", swiss,"not a PDB file?"
+
 	return False
 
 ##########################################
@@ -183,7 +186,7 @@ def substrate_smiles_from_metacyc(cursor, ec_numbers):
 		print qry
 		print ec_numbers
 		print "\tfailed finding %s in metacyc_reactions " % ec_numbers
-		exit()
+		#exit()
 		return None
 
 	cofactors = []
@@ -375,14 +378,13 @@ def get_ec_from_pdb(cursor, pdb_chain_id, gene_symbol):
 				qry = "select uniprot_ids  from blimps_development.genes where symbol='%s'" % gene_symbol
 				ret3 = search_db(cursor,qry)
 				if ret3 and len(ret3[0][0])>0:
-					for uniprot_id in ret3[0][0].split(";"):
+					for uniprot_id in ret3[0][0].split("|"):
 						qry =  "select ec_number, cofactors from blimps_development.uniprot_basic_infos "
 						qry +=  "where uniprot_id='%s'" % uniprot_id
 						ret4 = search_db(cursor,qry)
 						if ret4:
 							ec_number, cofactors = ret4[0]
 							return  uniprot_id, ec_number, cofactors
-
 	else: # the original query returned nothing
 		# fetch uniprot id from PDB's das service
 		uniprot_id = uniprot_from_pdb_chain(pdb_chain_id)  # restful request
@@ -396,7 +398,7 @@ def get_ec_from_pdb(cursor, pdb_chain_id, gene_symbol):
 		store_or_update(cursor, 'pdb_uniprot_ec_maps', fixed_fields, update_fields)
 		return  uniprot_id, ec_numbers, cofactors
 
-	return None, None, None
+	return None
 
 ##########################################
 def get_native_ligands(cursor, pdb_chain_id, gene_symbol):
@@ -435,7 +437,7 @@ def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, gene_symbol):
 
 		ligand_similarities = []
 		for pdb_compound_id, smiles_string in pdb_ligand_smiles.iteritems():
-			if manual and pdb_compound_id==manual['pdb_ligand']:
+			if manual and pdb_compound_id==manual[pdb_compound_id]:
 				print "manual intervention for", pdb_compound_id
 				print [pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']]
 				ligand_similarities.append([pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']])
@@ -497,8 +499,7 @@ def process_enzyme(cursor, gene_symbol, ensembl_gene_id, ec_number, swissmodel, 
 			update_fields = {'ensembl_gene_id':ensembl_gene_id,'uniprot_id':uniprot_id,
 			                 'ec_number':ec_number,'main_model':swissmodel,
 			                 'pdb_pct_identical_to_uniprot': pdb_pct_similarity[usable_pdb_id],
-			                 'ligand_function':ligand_function,
-			                 'ligand_tanimoto':tanimoto}
+			                 'ligand_function':ligand_function,'ligand_tanimoto':tanimoto}
 			# just store in the database and continue in the next pipe in the pipeline
 			store_or_update(cursor, 'monogenic_development.model_elements', fixed_fields, update_fields, verbose=False)
 
@@ -509,7 +510,7 @@ def structural_model_elements(disease_descriptor):
 
 	[gene_symbol, disease, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] = disease_descriptor
 	#if gene_symbol in ['PAH','GALT','LCHADD'] : return
-	if gene_symbol!='MCCC2': return
+	if gene_symbol!='PCCB': return
 
 	print "\n####################################"
 	print gene_symbol, ":", disease
@@ -535,7 +536,7 @@ def structural_model_elements(disease_descriptor):
 	chains_w_pct_gt_90 = 0
 	for chain,pct in identical_pct.iteritems():
 		print "\t", chain, "pct identity", pct
-		if pct<90: chains_w_pct_gt_90 += 1
+		if pct>90: chains_w_pct_gt_90 += 1
 
 	if chains_w_pct_gt_90==0:
 		print "\t Structure seq mismatch? No chains with pct similarity to uniprot seq > 0."

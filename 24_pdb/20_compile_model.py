@@ -41,7 +41,8 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # * A detergent such as beta-octyl-glucoside "SOG","HTG"
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
-crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG", "SAM", "PE4","ACT","NA"]
+crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG",
+							  "SAM", "PE4","ACT","NA", "MLT", "FMT"]
 physiological_ions         = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
 
 transform = {}
@@ -138,7 +139,7 @@ def map_ligand_to_model(main_model_info,pdb_path,ligand_containing_structure, li
 	os.chdir(struct_scratch)
 
 	# find the  first chain in anchor
-	[path, main_model, main_model_chains] = main_model_info
+	[path, main_model, main_model_chains, other_chains] = main_model_info
 	for main_model_chain in main_model_chains:
 		# do we have the tfm already by any chance
 		tfm_key = "{}_{}_{}_{}".format(main_model, main_model_chain,ligand_containing_structure, ligand_chain)
@@ -291,7 +292,7 @@ def split_into_compounds(compound_file):
 #########################################
 def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scratch):
 
-	main_model_path, main_model, chains_in_main_model = main_model_info
+	main_model_path, main_model, chains_in_main_model, chains_belongig_to_other_genes = main_model_info
 	# the last field in the name is the source (pdb or swissmodel) which we'll replace with "compiled"
 	compiled_model = None
 	for label in ['peptide','swissmodel','ivana']:
@@ -319,13 +320,15 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 		compound_key = ligand_filename.split(".")[-2]
 		distances[compound_key] = epitope2dist_string("mainchain.pdb",ligand_filename)
 
-	for chain in chains_in_main_model[1:]:
+	for chain in (chains_in_main_model[1:] + chains_belongig_to_other_genes):
 		chain_pdb = "chain{}.pdb".format(chain)
 		cmd = "{} {} -p -c{} >> {}".format(extract_chain,compiled_model,chain,chain_pdb)
 		subprocess.call(cmd, shell=True)
 		distances["chain"+chain] = epitope2dist_string("mainchain.pdb",chain_pdb)
 
 	distance_string = json.dumps(distances)
+
+
 	return compiled_model, distance_string
 
 ##########################################
@@ -367,20 +370,27 @@ def find_relevant_chains_in_model(cursor, path, model):
 				identical_count[chain] += 1
 		identical_pct[chain] = float(identical_count[chain])/min(unilength, len(pdb_sequence[chain]))
 		identical_pct[chain] = int(100*identical_pct[chain])
-	chains = identical_pct.keys().sort(key=lambda c: identical_pct[c])
+	chains = identical_pct.keys()
+	chains.sort(key=lambda c: (-identical_pct[c],c)) # the alphabetical tie breaker
+	for chain in chains: print chain+":"+str(identical_pct[chain]),
+	print
 
-	if (identical_pct[chains[0]]<0.9):
+	if (identical_pct[chains[0]]<90):
 		print frame_string(),
 		print ": the closest chain in the model less than 90% identical to uniprot seq?"
 		exit()
 
-	return chains.filter(lambda c: identical_pct[c]>0.85)
+	return [c for c in chains if identical_pct[c]>85], [c for c in chains if identical_pct[c]<=85]
 
 #########################################
 def prepare_main_model(swissmodel_dir, model,scratch):
 
 	cmd = "find {} -name {}".format(swissmodel_dir,model)
-	path = subprocess.check_output(cmd, shell=True).rstrip()
+	for line in subprocess.check_output(cmd, shell=True).split("\n"):
+		if 'old_models' in line or len(line.rstrip())==0: continue
+		path = line # there should be only one
+	print path
+
 	if "swissmodel" in model:
 		model_name = model.replace("swissmodel","peptide")
 	elif "ivana" in model:
@@ -418,8 +428,9 @@ def compile_model( cursor, gene_symbol,scratch):
 		print "different models for the same gene?"
 		exit()
 	main_model_path, main_model = prepare_main_model(swissmodel_dir, ret[0][0], scratch)
-	main_model_chains = find_relevant_chains_in_model(cursor, main_model_path, main_model)
-	main_model_info   = [main_model_path, main_model, main_model_chains]
+	# other chains corresponds to transcripts from other genes
+	main_model_chains, main_model_other_chains = find_relevant_chains_in_model(cursor, main_model_path, main_model)
+	main_model_info = [main_model_path, main_model, main_model_chains, main_model_other_chains]
 
 	qry  = "select  pdb_chain, pdb_ligand, ligand_function, pdb_pct_identical_to_uniprot from model_elements"
 	qry += " where gene_symbol='%s' order by pdb_pct_identical_to_uniprot desc"  % gene_symbol
@@ -442,7 +453,7 @@ def compile_model( cursor, gene_symbol,scratch):
 		ligand_file_path, pdbchain = extract_ligand(pdb_path, scratch, pdb_chain[:-1]+".pdb", pdb_chain[-1], pdb_ligand)
 		if not ligand_file_path or os.path.getsize(ligand_file_path)==0: continue
 		# use the transformation matrix to map all ligands to the main_model structure
-		ligand_file_tfmd_paths = map_ligand_to_model ( main_model_info,pdb_path,pdb_chain[:-1]+".pdb", pdbchain, ligand_file_path, scratch)
+		ligand_file_tfmd_paths = map_ligand_to_model (main_model_info,pdb_path,pdb_chain[:-1]+".pdb", pdbchain, ligand_file_path, scratch)
 		if not ligand_file_tfmd_paths or len(ligand_file_tfmd_paths)==0: continue
 		# remove clashing ligands adn ligands far from the main chain
 		# add ligands which are not clashing with the existing ones
@@ -450,13 +461,11 @@ def compile_model( cursor, gene_symbol,scratch):
 		if new_ligands:
 			for ligand in new_ligands:
 				if not ligand in compiled_ligand_list: compiled_ligand_list.append(ligand)
-
 	print pid, gene_symbol, compiled_ligand_list
 
 	if os.path.exists(compiled_ligands_file_path) and os.path.getsize(compiled_ligands_file_path)>0:
-		chains = main_model_info[2]
-		compiled_model, distance_string = strip_and_glue(main_model_info, compiled_ligands_file_path,
-		                                                              compiled_ligand_list, scratch)
+		chains = main_model_chains + main_model_other_chains
+		compiled_model, distance_string = strip_and_glue(main_model_info, compiled_ligands_file_path, compiled_ligand_list, scratch)
 		# move out of struct_scratch
 		if compiled_model and len(compiled_model)>0:
 			print ">>",compiled_model, main_model_path
@@ -535,7 +544,7 @@ def main():
 	#process_pool = Pool(no_of_processes)
 	#process_pool.map(model_structure_for_gene, genes)
 	for gene in genes:
-		if not gene in ['PAH']: continue
+		if not gene in ['PCCB']: continue
 		model_structure_for_gene(gene)
 	return
 
