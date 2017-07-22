@@ -510,7 +510,7 @@ def structural_model_elements(disease_descriptor):
 
 	[gene_symbol, disease, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] = disease_descriptor
 	#if gene_symbol in ['PAH','GALT','LCHADD'] : return
-	if gene_symbol!='BCKDHB': return
+	if gene_symbol!='BCKDHA': return
 
 	print "\n####################################"
 	print gene_symbol, ":", disease

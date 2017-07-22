@@ -318,7 +318,7 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 	distances = {} # the dictionary will contain distances to each of the remarkable points - interface to other chains, ligands
 	for ligand_filename in split_into_compounds(compiled_ligand_file_path):
 		compound_key = ligand_filename.split(".")[-2]
-		distances[compound_key] = epitope2dist_string("mainchain.pdb",ligand_filename)
+		distances[str(compound_key)] = epitope2dist_string("mainchain.pdb",ligand_filename)
 		if not type(distances) is dict:
 			print "cafter adding ", ligand_filename, "distances is not dictionary"
 			print distances
@@ -559,7 +559,7 @@ def main():
 	#process_pool = Pool(no_of_processes)
 	#process_pool.map(model_structure_for_gene, genes)
 	for gene in genes:
-		if not gene in ['BCKDHA']: continue
+		if not gene in ['BCKDHB']: continue
 		model_structure_for_gene(gene)
 	return
 
