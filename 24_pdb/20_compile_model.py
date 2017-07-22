@@ -42,7 +42,7 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
 crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG",
-							  "SAM", "PE4","ACT","NA", "MLT", "FMT"]
+							  "PE4","ACT","NA", "MLT", "FMT"]
 physiological_ions         = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA"]
 
 transform = {}
@@ -319,15 +319,24 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 	for ligand_filename in split_into_compounds(compiled_ligand_file_path):
 		compound_key = ligand_filename.split(".")[-2]
 		distances[compound_key] = epitope2dist_string("mainchain.pdb",ligand_filename)
+		if not type(distances) is dict:
+			print "cafter adding ", ligand_filename, "distances is not dictionary"
+			print distances
+			exit()
 
 	for chain in (chains_in_main_model[1:] + chains_belongig_to_other_genes):
 		chain_pdb = "chain{}.pdb".format(chain)
 		cmd = "{} {} -p -c{} >> {}".format(extract_chain,compiled_model,chain,chain_pdb)
 		subprocess.call(cmd, shell=True)
 		distances["chain"+chain] = epitope2dist_string("mainchain.pdb",chain_pdb)
+		if not type(distances) is dict:
+			print "cafter adding ", chain_pdb, "distances is not dictionary"
+			print distances
+			exit()
+
 
 	if not type(distances) is dict:
-		print "distances is not dictionary"
+		print "at the end of strip and glue: distances is not dictionary"
 		print distances
 		exit()
 
@@ -466,6 +475,7 @@ def compile_model( cursor, gene_symbol,scratch):
 		if new_ligands:
 			for ligand in new_ligands:
 				if not ligand in compiled_ligand_list: compiled_ligand_list.append(ligand)
+
 	print pid, gene_symbol, compiled_ligand_list
 
 	if os.path.exists(compiled_ligands_file_path) and os.path.getsize(compiled_ligands_file_path)>0:
@@ -549,7 +559,7 @@ def main():
 	#process_pool = Pool(no_of_processes)
 	#process_pool.map(model_structure_for_gene, genes)
 	for gene in genes:
-		if not gene in ['PCCB']: continue
+		if not gene in ['BCKDHA']: continue
 		model_structure_for_gene(gene)
 	return
 

@@ -47,7 +47,7 @@ aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 # NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
 # http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
 crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG",
-							  "SAM", "PE4","ACT","NA", "MLT", "FMT"]
+							  "PE4","ACT","NA", "MLT", "FMT"]
 physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA","K"]
 
 
@@ -437,7 +437,7 @@ def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, gene_symbol):
 
 		ligand_similarities = []
 		for pdb_compound_id, smiles_string in pdb_ligand_smiles.iteritems():
-			if manual and pdb_compound_id==manual[pdb_compound_id]:
+			if manual and pdb_compound_id==manual['pdb_ligand']:
 				print "manual intervention for", pdb_compound_id
 				print [pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']]
 				ligand_similarities.append([pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']])
@@ -510,7 +510,7 @@ def structural_model_elements(disease_descriptor):
 
 	[gene_symbol, disease, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] = disease_descriptor
 	#if gene_symbol in ['PAH','GALT','LCHADD'] : return
-	if gene_symbol!='PCCB': return
+	if gene_symbol!='BCKDHB': return
 
 	print "\n####################################"
 	print gene_symbol, ":", disease
