@@ -510,7 +510,7 @@ def structural_model_elements(disease_descriptor):
 
 	[gene_symbol, disease, ensembl_gene_id, uniprot_id, ec_number, uniprot_cofactors] = disease_descriptor
 	#if gene_symbol in ['PAH','GALT','LCHADD'] : return
-	if gene_symbol!='BCKDHA': return
+	if gene_symbol!='BCKDHB': return
 
 	print "\n####################################"
 	print gene_symbol, ":", disease
@@ -529,6 +529,7 @@ def structural_model_elements(disease_descriptor):
 	swissmodel = check_model_exists(swissmodel_dir, gene_symbol)
 	if not swissmodel: return
 	print "\tfound swissmodel:", swissmodel
+
 
 	# is the residue numbering correct? I want at least one chain with pct>90
 	print "\tchecking the numbering in the pdb file ..."
