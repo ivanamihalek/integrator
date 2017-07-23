@@ -145,7 +145,7 @@ def main():
 		table = "exac_freqs_chr_" + chrom
 		fixed_fields  = {'position':int(addr)}
 		update_fields = {'reference':ref, 'variants':variants, 'variant_counts':ac, 'total_count':an}
-		update_fields = {'consequences': consequences}
+		update_fields['consequences'] = consequences
 		update_fields['afr_counts'] = ac_afr
 		update_fields['afr_tot_count'] = an_afr
 		update_fields['amr_counts'] = ac_amr
