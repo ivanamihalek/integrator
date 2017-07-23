@@ -142,7 +142,7 @@ def main():
 		[chrom, addr, ref, variants, consequences,  ac, an, ac_afr, an_afr,
 		 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
 		 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
-		table = "exac_freqs_chr_" + chrom
+		table = "gnomad_freqs_chr_" + chrom
 		fixed_fields  = {'position':int(addr)}
 		update_fields = {'reference':ref, 'variants':variants, 'variant_counts':ac, 'total_count':an}
 		update_fields['consequences'] = consequences
