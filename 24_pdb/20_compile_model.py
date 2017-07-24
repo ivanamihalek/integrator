@@ -320,7 +320,7 @@ def strip_and_glue (main_model_info, compiled_ligand_file_path, ligand_list, scr
 		compound_key = ligand_filename.split(".")[-2]
 		distances[str(compound_key)] = epitope2dist_string("mainchain.pdb",ligand_filename)
 		if not type(distances) is dict:
-			print "cafter adding ", ligand_filename, "distances is not dictionary"
+			print "after adding ", ligand_filename, "distances is not dictionary"
 			print distances
 			exit()
 
@@ -559,7 +559,7 @@ def main():
 	#process_pool = Pool(no_of_processes)
 	#process_pool.map(model_structure_for_gene, genes)
 	for gene in genes:
-		if not gene in ['BCKDHB']: continue
+		if not gene in ['PAH']: continue
 		model_structure_for_gene(gene)
 	return
 
