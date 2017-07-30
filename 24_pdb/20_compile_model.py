@@ -559,7 +559,7 @@ def main():
 	#process_pool = Pool(no_of_processes)
 	#process_pool.map(model_structure_for_gene, genes)
 	for gene in genes:
-		if not gene in ['PAH']: continue
+		if not gene in ['BCKDHB']: continue
 		model_structure_for_gene(gene)
 	return
 
