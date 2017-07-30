@@ -25,7 +25,7 @@ def parse_csq(csq_string, consequence_header_fields, ref):
 				print "-------------"
 		# somebody screwed up in gnoMAD so the leading base is not included in insert or deletion
 		# what if there is some more complex variant?
-		if len(ref)>1 and len(named_csqs['Allele'])>1:
+		if len(ref)>1 and len(named_csqs['Allele'])>1 and abs(len(ref)-len(named_csqs['Allele']))>1:
 				print "{} ---> {}".format(ref, named_csqs['Allele'])
 				exit()
 		if named_csqs['VARIANT_CLASS']=='SNV':
