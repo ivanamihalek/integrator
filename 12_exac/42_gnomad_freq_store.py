@@ -7,30 +7,41 @@ count_fields = ["AC", "AN", "AF", "GC", "Hemi"]
 population_fields = ["AFR", "AMR", "ASJ", "EAS", "FIN", "NFE","OTH","SAS"]
 gender = ["Male","Female"]
 # lof fields seem to be mostly empty
-storable_fields = ['Allele', 'SYMBOL', 'SWISSPROT', 'Consequence', 'cDNA_position', 'CDS_position',
+storable_fields = ['Allele', 'SYMBOL', 'SWISSPROT', 'VARIANT_CLASS', 'Consequence', 'cDNA_position', 'CDS_position',
                    'Protein_position', 'Amino_acids','SIFT','PolyPhen'] # 'LoF', 'LoF_filter', 'LoF_flags', 'LoF_info']
 
 #########################################
-def parse_csq(csq_string, consequence_header_fields):
-	fields = csq_string.split(",",)
+def parse_csq(csq_string, consequence_header_fields, ref):
+	fields = csq_string.split(",")
 	consequences = []
 	for field in fields:
 		named_csqs = dict(zip(consequence_header_fields,field.split("|")))
 		#if 'missense' in named_csqs['Consequence']:
-		#print field
-		#for k in storable_fields:
-		#	print k, ":",  named_csqs[k]
-		#	print "-------------"
+		if False:
+			print field
+			for k in storable_fields:
+			#for k in named_csqs.keys():
+				print k, ":",  named_csqs[k]
+				print "-------------"
+		# somebody screwed up in gnoMAD so the leading base is not included in insert or deletion
+		# what if there is some more complex variant?
+		if len(ref)>1 and len(named_csqs['Allele'])>1:
+				print "{} ---> {}".format(ref, named_csqs['Allele'])
+		if named_csqs['VARIANT_CLASS']=='SNV':
+			pass # this is ok, G-->T and similar
+		elif named_csqs['VARIANT_CLASS']=='insertion':
+			named_csqs['Allele'] = ref[0]+named_csqs['Allele']
+		elif named_csqs['VARIANT_CLASS']=='deletion':
+			named_csqs['Allele'] = ref[0]
 		csq = "|".join([named_csqs[k] for k in storable_fields])
 		if not csq in consequences: consequences.append(csq)
 	return ",".join(consequences)
 
 #########################################
-def parse_info(chrom, info, consequence_header_fields):
+def parse_info(chrom, ref, info, consequence_header_fields):
 
 	fields = info.split(";")
 	named_fields= dict (map(lambda x: x.split("="), [f for f in fields if '=' in f]))
-
 	data = {}
 	for cnt in count_fields:
 		data[cnt] = {}
@@ -41,7 +52,7 @@ def parse_info(chrom, info, consequence_header_fields):
 	for  k,v  in named_fields.iteritems():
 		field = k.split("_")
 		if field[0]=='CSQ':
-			consequences = parse_csq(v, consequence_header_fields)
+			consequences = parse_csq(v, consequence_header_fields, ref)
 			continue
 		if not field[0] in count_fields: continue
 		count_type = field[0]
@@ -99,8 +110,9 @@ def parse_info(chrom, info, consequence_header_fields):
 def process_line(line, consequence_header_fields):
 	fields = line.rstrip().split("\t")
 	[chrom, addr, junk, ref, variants, quality_score,  filter, info_string] = fields[:8]
+	#if chrom != '3':  return None # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	if filter!='PASS': return None
-	consequences, counts = parse_info (chrom, info_string, consequence_header_fields)
+	consequences, counts = parse_info (chrom, ref, info_string, consequence_header_fields)
 	return [chrom, addr, ref, variants, consequences] + counts
 
 
@@ -118,9 +130,9 @@ def find_csq_header_fields(line):
 
 ##########################################
 def main():
-	infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
+	#infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
 	#infile = open("/databases/exac/gnomad_test.txt")
-	#infile = open("/databases/exac/testY.vcf")
+	infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 
 	db, cursor = connect()
 
@@ -143,6 +155,12 @@ def main():
 		[chrom, addr, ref, variants, consequences,  ac, an, ac_afr, an_afr,
 		 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
 		 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
+		if False:
+			print ref, variants # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
+			print chrom, addr
+			print "\n".join(consequences.split(","))
+			print
+
 		table = "gnomad_freqs_chr_" + chrom
 		fixed_fields  = {'position':int(addr)}
 		update_fields = {'reference':ref, 'variants':variants, 'variant_counts':ac, 'total_count':an}
@@ -163,7 +181,7 @@ def main():
 		update_fields['oth_tot_count'] = an_oth
 		update_fields['sas_counts'] = ac_sas
 		update_fields['sas_tot_count'] = an_sas
-		store_or_update(cursor, table, fixed_fields, update_fields, verbose=False, primary_key='position')
+		#store_or_update(cursor, table, fixed_fields, update_fields, verbose=False, primary_key='position')
 	cursor.close()
 	db.close()
 
