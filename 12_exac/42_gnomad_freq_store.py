@@ -27,6 +27,7 @@ def parse_csq(csq_string, consequence_header_fields, ref):
 		# what if there is some more complex variant?
 		if len(ref)>1 and len(named_csqs['Allele'])>1:
 				print "{} ---> {}".format(ref, named_csqs['Allele'])
+				exit()
 		if named_csqs['VARIANT_CLASS']=='SNV':
 			pass # this is ok, G-->T and similar
 		elif named_csqs['VARIANT_CLASS']=='insertion':
@@ -112,6 +113,7 @@ def process_line(line, consequence_header_fields):
 	[chrom, addr, junk, ref, variants, quality_score,  filter, info_string] = fields[:8]
 	#if chrom != '3':  return None # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	if filter!='PASS': return None
+	print " >>>>>  ", chrom, addr
 	consequences, counts = parse_info (chrom, ref, info_string, consequence_header_fields)
 	return [chrom, addr, ref, variants, consequences] + counts
 
