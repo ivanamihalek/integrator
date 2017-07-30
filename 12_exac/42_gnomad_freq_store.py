@@ -130,9 +130,9 @@ def find_csq_header_fields(line):
 
 ##########################################
 def main():
-	#infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
+	infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
 	#infile = open("/databases/exac/gnomad_test.txt")
-	infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
+	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 
 	db, cursor = connect()
 
