@@ -9,10 +9,28 @@ gender = ["Male","Female"]
 # lof fields seem to be mostly empty
 storable_fields = ['Allele', 'SYMBOL', 'SWISSPROT', 'VARIANT_CLASS', 'Consequence', 'cDNA_position', 'CDS_position',
                    'Protein_position', 'Amino_acids','SIFT','PolyPhen'] # 'LoF', 'LoF_filter', 'LoF_flags', 'LoF_info']
+#########################################
+def check_difference (ref,alt): # bcs of the way the info is store, can have things like "ATT, CTT", inidcating A->C
+	# this is untested
+	if ref==alt: return ref,alt
+	i=-1
+	while True:
+		if not ref[i]: break
+		if not alt[i]: break
+		if ref[i] != alt[i]: break
+		i -= 1
+
+	frm = ref[0:i+1]
+	to  = alt[0:i+1]
+	if not frm or frm=="": frm = "-"
+	if not to  or to=="": to = "-"
+	return frm,to
+
 
 #########################################
-def parse_csq(csq_string, consequence_header_fields, ref):
+def parse_csq(csq_string, consequence_header_fields, ref, vars):
 	fields = csq_string.split(",")
+	variants = vars.split(",")
 	consequences = []
 	for field in fields:
 		named_csqs = dict(zip(consequence_header_fields,field.split("|")))
@@ -25,21 +43,45 @@ def parse_csq(csq_string, consequence_header_fields, ref):
 				print "-------------"
 		# somebody screwed up in gnoMAD so the leading base is not included in insert or deletion
 		# what if there is some more complex variant?
-		if len(ref)>1 and len(named_csqs['Allele'])>1 and abs(len(ref)-len(named_csqs['Allele']))>1:
-				print "{} ---> {}".format(ref, named_csqs['Allele'])
-				exit()
+		if False and  len(ref)>1 and len(named_csqs['Allele'])>1 and abs(len(ref)-len(named_csqs['Allele']))>1:
+			csq =  named_csqs['Consequence']
+			if csq in ['insertion', 'deletion'] and  not 'non_coding' in csq and ('splice' in csq  or 'exon' in csq or 'coding'  in csq):
+				# this is only worth so much to me at this point; mental note: do your own annotation
+				probably_allele = ref[0]+named_csqs['Allele']
+				allele_matches = [var for var in variants if var==probably_allele]
+				if len(allele_matches) != 1:
+					print "point   {}  {}  {} ---> {}   {}".format(named_csqs['VARIANT_CLASS'], named_csqs['Consequence'], ref, named_csqs['Allele'], vars)
+					#exit()
+				# the annotation is complete garbage
+				# I see thins like  deletion    GC ---> T   G,TC,AC
+				# it does seem to be limited to up/downstream variants; I have not found exons or splice sites suffering from this
+				# so as some sort of a patch, if the allele with prepended leading base is not found among the variants, leave the csq field empty
+		patched_allele = None
+
 		if named_csqs['VARIANT_CLASS']=='SNV':
-			pass # this is ok, G-->T and similar
+			# this is ok, G-->T and similar
+			# somtimes I just don't know hot to reconcile this:
+			# Example: ref variant  CT	C,GT
+			# and the nnotation says
+			# G|intron_variant|MODIFIER|RPS4Y1|ENSG00000129824|Transcript|ENST00000250784|protein_coding||1/6|ENST00000250784.8:c.3+17C>G||||||||2||1||deletion
+			# deletion ?!
+			# there is HGNC recommended annotation - look a the whole thing at some other time;
+			# ideally just throw the whole crap away and do my own annotation
+			patched_allele = named_csqs['Allele'][0] + ref[1:]
 		elif named_csqs['VARIANT_CLASS']=='insertion':
-			named_csqs['Allele'] = ref[0]+named_csqs['Allele']
+			patched_allele = ref[0]+named_csqs['Allele']
 		elif named_csqs['VARIANT_CLASS']=='deletion':
-			named_csqs['Allele'] = ref[0]
-		csq = "|".join([named_csqs[k] for k in storable_fields])
-		if not csq in consequences: consequences.append(csq)
+			patched_allele = ref[0]
+		# exactly one match in variants
+		if len([var for var in variants if var==patched_allele])==1:
+			named_csqs['Allele'] = patched_allele
+			csq = "|".join([named_csqs[k] for k in storable_fields])
+			if not csq in consequences: consequences.append(csq)
+
 	return ",".join(consequences)
 
 #########################################
-def parse_info(chrom, ref, info, consequence_header_fields):
+def parse_info(chrom, ref, vars, info, consequence_header_fields):
 
 	fields = info.split(";")
 	named_fields= dict (map(lambda x: x.split("="), [f for f in fields if '=' in f]))
@@ -53,7 +95,7 @@ def parse_info(chrom, ref, info, consequence_header_fields):
 	for  k,v  in named_fields.iteritems():
 		field = k.split("_")
 		if field[0]=='CSQ':
-			consequences = parse_csq(v, consequence_header_fields, ref)
+			consequences = parse_csq(v, consequence_header_fields, ref, vars)
 			continue
 		if not field[0] in count_fields: continue
 		count_type = field[0]
@@ -113,8 +155,7 @@ def process_line(line, consequence_header_fields):
 	[chrom, addr, junk, ref, variants, quality_score,  filter, info_string] = fields[:8]
 	#if chrom != '3':  return None # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	if filter!='PASS': return None
-	print " >>>>>  ", chrom, addr
-	consequences, counts = parse_info (chrom, ref, info_string, consequence_header_fields)
+	consequences, counts = parse_info (chrom, ref, variants, info_string, consequence_header_fields)
 	return [chrom, addr, ref, variants, consequences] + counts
 
 
@@ -135,12 +176,14 @@ def main():
 	infile = open("/databases/exac/gnomad.exomes.r2.0.1.sites.vcf")
 	#infile = open("/databases/exac/gnomad_test.txt")
 	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
+	#infile = open("/databases/exac/testY.vcf")
 
 	db, cursor = connect()
 
 	reading = False
 	count = 0
 	consequence_header_fields = None
+	chrom = ""
 	for line in infile:
 		if not reading:
 			if line[:6] == '#CHROM': reading=True
@@ -150,14 +193,22 @@ def main():
 		if not consequence_header_fields:
 			print 'CSQ info not found'
 			exit()
+		chrom = line.split("\t")[0]
+		#if not chrom in ['1','9','10','22']: continue
+		#if not chrom in ['2','8','11','21']: continue
+		#if not chrom in ['3','7','12','20']: continue
+		#if not chrom in  ['4','6', '13','19']: continue
+		#if not chrom in  ['5','14','16','18']: continue
+		if not chrom in  ['15','17', 'X','Y']: continue
 		ret = process_line(line, consequence_header_fields)
 		count += 1
-		if count%100000==0: print "%dK lines out of 15014K (%5.2f%%)" % (count/1000,  float(count)/15014744*100)
+		#if count%100000==0: print "%dK lines out of 15014K (%5.2f%%)" % (count/1000,  float(count)/15014744*100)
+		if count%10000==0: print "%dK lines of  %s" % (count/1000,  chrom)
 		if not ret: continue
 		[chrom, addr, ref, variants, consequences,  ac, an, ac_afr, an_afr,
 		 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
 		 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
-		if False:
+		if False and (len(ref)>1 or len(variants)>1):
 			print ref, variants # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 			print chrom, addr
 			print "\n".join(consequences.split(","))
@@ -183,7 +234,7 @@ def main():
 		update_fields['oth_tot_count'] = an_oth
 		update_fields['sas_counts'] = ac_sas
 		update_fields['sas_tot_count'] = an_sas
-		#store_or_update(cursor, table, fixed_fields, update_fields, verbose=False, primary_key='position')
+		store_or_update(cursor, table, fixed_fields, update_fields, verbose=False, primary_key='position')
 	cursor.close()
 	db.close()
 
