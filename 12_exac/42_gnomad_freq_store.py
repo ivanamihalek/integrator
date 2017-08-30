@@ -36,15 +36,21 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 		named_csqs = dict(zip(consequence_header_fields,field.split("|")))
 		#if 'missense' in named_csqs['Consequence']:
 		if False:
-			print field
+			print
+			print "ref:",ref
+			print "annotation filed:", field
 			for k in storable_fields:
 			#for k in named_csqs.keys():
 				print k, ":",  named_csqs[k]
 				print "-------------"
+
+		csq =  named_csqs['Consequence']
+		if 'synonymous' in csq:
+			return None
 		# somebody screwed up in gnoMAD so the leading base is not included in insert or deletion
 		# what if there is some more complex variant?
 		if False and  len(ref)>1 and len(named_csqs['Allele'])>1 and abs(len(ref)-len(named_csqs['Allele']))>1:
-			csq =  named_csqs['Consequence']
+
 			if csq in ['insertion', 'deletion'] and  not 'non_coding' in csq and ('splice' in csq  or 'exon' in csq or 'coding'  in csq):
 				# this is only worth so much to me at this point; mental note: do your own annotation
 				probably_allele = ref[0]+named_csqs['Allele']
@@ -53,12 +59,20 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 					print "point   {}  {}  {} ---> {}   {}".format(named_csqs['VARIANT_CLASS'], named_csqs['Consequence'], ref, named_csqs['Allele'], vars)
 					#exit()
 				# the annotation is complete garbage
-				# I see thins like  deletion    GC ---> T   G,TC,AC
+				# I see things like  deletion    GC ---> T   G,TC,AC
 				# it does seem to be limited to up/downstream variants; I have not found exons or splice sites suffering from this
 				# so as some sort of a patch, if the allele with prepended leading base is not found among the variants, leave the csq field empty
 		patched_allele = None
 
-		if named_csqs['VARIANT_CLASS']=='SNV':
+		if named_csqs['Allele']=='-':
+			patched_allele = ref[0]
+		elif len(ref)==1 and len(named_csqs['Allele'])==1:
+			patched_allele = named_csqs['Allele']
+		elif 'insertion' in csq or named_csqs['VARIANT_CLASS']=='insertion':
+			patched_allele = ref[0]+named_csqs['Allele']
+		elif 'deletion' in csq or named_csqs['VARIANT_CLASS']=='deletion':
+			patched_allele = ref[0]
+		elif 'missense' in csq or 'stop' in csq: # this should presumably be an SNV; there are deletions marked as SNV
 			# this is ok, G-->T and similar
 			# somtimes I just don't know hot to reconcile this:
 			# Example: ref variant  CT	C,GT
@@ -68,15 +82,17 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 			# there is HGNC recommended annotation - look a the whole thing at some other time;
 			# ideally just throw the whole crap away and do my own annotation
 			patched_allele = named_csqs['Allele'][0] + ref[1:]
-		elif named_csqs['VARIANT_CLASS']=='insertion':
-			patched_allele = ref[0]+named_csqs['Allele']
-		elif named_csqs['VARIANT_CLASS']=='deletion':
-			patched_allele = ref[0]
+
 		# exactly one match in variants
-		if len([var for var in variants if var==patched_allele])==1:
+		if patched_allele and  len([var for var in variants if var==patched_allele])==1:
 			named_csqs['Allele'] = patched_allele
 			csq = "|".join([named_csqs[k] for k in storable_fields])
 			if not csq in consequences: consequences.append(csq)
+
+	#print "***************************"
+	#print ",".join(consequences)
+	#print "***************************"
+	#print
 
 	return ",".join(consequences)
 
@@ -96,6 +112,7 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 		field = k.split("_")
 		if field[0]=='CSQ':
 			consequences = parse_csq(v, consequence_header_fields, ref, vars)
+			if not consequences: return None, None # synonymous mutation
 			continue
 		if not field[0] in count_fields: continue
 		count_type = field[0]
@@ -156,6 +173,7 @@ def process_line(line, consequence_header_fields):
 	#if chrom != '3':  return None # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	if filter!='PASS': return None
 	consequences, counts = parse_info (chrom, ref, variants, info_string, consequence_header_fields)
+	if not consequences: return None
 	return [chrom, addr, ref, variants, consequences] + counts
 
 
@@ -204,7 +222,7 @@ def main():
 		count += 1
 		#if count%100000==0: print "%dK lines out of 15014K (%5.2f%%)" % (count/1000,  float(count)/15014744*100)
 		if count%10000==0: print "%dK lines of  %s" % (count/1000,  chrom)
-		if not ret: continue
+		if not ret: continue # error or silent mutation
 		[chrom, addr, ref, variants, consequences,  ac, an, ac_afr, an_afr,
 		 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
 		 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
