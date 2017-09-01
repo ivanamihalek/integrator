@@ -24,7 +24,7 @@ def main():
 	in_agreement = 0
 	for line in ret:
 		ensembl_gene_id = line[0]
-		uniprot_id = get_uniprot_id (cursor, ensembl_gene_id)
+		uniprot_id = ensembl_id2uniprot_id(cursor, ensembl_gene_id)
 		qry = "select * from monogenic_development.uniprot_seqs where uniprot_id= '%s' " % uniprot_id
 		[uniprot_id, ensembl_transcript_id, ensembl_protein_id, chrom, strand,\
 		hg19_exon_starts, hg19_exon_ends, hg19_cds_start, hg19_cds_end, \

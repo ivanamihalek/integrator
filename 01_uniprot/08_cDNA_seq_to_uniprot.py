@@ -129,7 +129,7 @@ def sequence_from_das(cursor, uniprot_id):
 
 	translated_seq = new_biopython_seq.translate().split("*")[0]
 
-	return str(new_biopython_seq), str(translated_seq)
+	return str(new_biopython_seq).upper(), str(translated_seq)
 
 ###################################################
 def find_coding_dna_sequence (cursor,ensembl_gene_id):
@@ -204,7 +204,6 @@ def main():
 	# limit ourselves to iems related genes
 	qry = "select ensembl_gene_id from blimps_development.omim_genemaps where inborn_error_of_metabolism=1"
 	ensids  =[line[0] for line in  search_db(cursor, qry)]
-	ensids = ['ENSG00000178057']
 	total = 0
 	in_agreement = 0
 	for  ensembl_gene_id in ensids:
