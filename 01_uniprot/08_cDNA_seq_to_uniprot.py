@@ -109,7 +109,7 @@ def get_region_from_das(assembly, chrom, start, end):
 
 
 ###################################################
-def sequence_from_coding_ranges(cursor, uniprot_id):
+def sequence_from_das(cursor, uniprot_id):
 	# Example: ENST00000377332, the ensembl translation doe not correspond to the one
 	# given in ucsc (as enembl seqeunce)
 	qry = "select * from monogenic_development.uniprot_seqs where uniprot_id= '%s' " % uniprot_id
@@ -129,10 +129,10 @@ def sequence_from_coding_ranges(cursor, uniprot_id):
 
 	translated_seq = new_biopython_seq.translate().split("*")[0]
 
-	return translated_seq.tostring()
+	return str(new_biopython_seq), str(translated_seq)
 
 ###################################################
-def find_coding_dna_sequence (cursor, blastextract, ensembl_gene_id):
+def find_coding_dna_sequence (cursor,ensembl_gene_id):
 	switch_to_db(cursor, 'blimps_development')
 	qry  = "select uniprot_id from uniprot_basic_infos "
 	qry += "where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
@@ -140,60 +140,57 @@ def find_coding_dna_sequence (cursor, blastextract, ensembl_gene_id):
 	if not ret:
 		print ensembl_gene_id, "not found in uniprot_basic_infos"
 		exit()
+	if len(ret)>1:
+		print "more than one uniprot entry for ensembl ",  ensembl_gene_id
+		print ret
+		print "while possible in principle, not equipped to deal with it here"
+		exit()
+	uniprot_id = ret[0][0]
+	print uniprot_id
+
 	switch_to_db(cursor, 'monogenic_development')
+	qry  = "select  sequence from uniprot_seqs where uniprot_id='%s'" % uniprot_id
+	ret =  search_db(cursor,qry)
+	if not ret:
+		print uniprot_id, "sequence not found"
+		exit()
+
 	for line in ret:
-		uniprot_id = line[0]
-		print uniprot_id
-		qry  = "select ensembl_transcript_id, sequence from uniprot_seqs where uniprot_id='%s'" % uniprot_id
-		ret2 =  search_db(cursor,qry)
-		if not ret2:
-			print uniprot_id, ensembl_gene_id, "not found"
-			continue
-		for line2 in ret2:
-			[ensembl_transcript_id, uniprot_sequence] = line2
-			# traascript id has soem sub-something indicated by .digit after the transcript number
-			cmd = "grep %s %s | awk '{print $1}' | sed 's/>//g'" % (ensembl_transcript_id, cdsdb)
-			grepret = subprocess.check_output(cmd, shell=True).rstrip().split("\n")
-			for ensid in grepret:
-				if len(ensid) == 0: continue
-				print ensid
-				#### REDO THIS!! - sequence from DAS server
-				cds, cds_translation = get_seq_from_cds(blastextract, cdsdb, ensid)
-				if not cds_translation:
-					print "no cds translation for ", ensid
-				qry  = "update uniprot_seqs set ensembl_coding_sequence='%s'" % cds
-				qry += "where uniprot_id= '%s' " % uniprot_id
-				search_db(cursor,qry, verbose=False)
-				print uniprot_sequence
-				print '--------------------'
-				print cds_translation
-				new_cds_translation = check_exon_coding_ranges(cursor, uniprot_id)
-				print '--------------------'
-				print new_cds_translation
-				if  uniprot_sequence != cds_translation:
-					print "uniprot_sequence does not equal cds translation - attempting resolution "
-					new_cds_translation = check_exon_coding_ranges(cursor, uniprot_id)
-					qry  = "update uniprot_seqs "
-					if new_cds_translation:
-						qry  += "set ensembl_cds_translation='%s' " % new_cds_translation
-					else:
-						qry  += "set ensembl_cds_translation='%s' " % cds_translation
-					qry += "where uniprot_id= '%s' " % uniprot_id
-					search_db(cursor,qry, verbose=False)
-				else:
-					break # we've found one sequence that corresponds
-	return
+		uniprot_sequence = line[0]
+		cds, cds_translation = sequence_from_das(cursor, uniprot_id)
+		if not cds_translation:
+			print "no cds translation for ", uniprot_id
+		qry  = "update uniprot_seqs set ensembl_coding_sequence='%s'" % cds
+		qry += "where uniprot_id= '%s' " % uniprot_id
+		search_db(cursor,qry, verbose=False)
+		print uniprot_sequence
+		print '--------------------'
+		print cds_translation
+
+		if  uniprot_sequence == cds_translation:
+			print "uniprot_sequence can be reconstructed from ensembl "
+			qry  = "update uniprot_seqs  set ensembl_cds_translation=null "
+			qry += "where uniprot_id= '%s' " % uniprot_id
+			search_db(cursor,qry, verbose=False)
+			in_agreement = True
+			break
+		else:
+			print "uniprot_sequence does not equal cds translation - storing ensembl translation "
+			qry  = "update uniprot_seqs  set ensembl_cds_translation='%s' " % cds_translation
+			qry += "where uniprot_id= '%s' " % uniprot_id
+			search_db(cursor,qry, verbose=False)
+			in_agreement = False
+
+		# in either case, set the alignemnt field to null because it needs reworking
+		qry  = "update uniprot_seqs  set uni2ens_cigar=null "
+		qry += "where uniprot_id= '%s' " % uniprot_id
+		search_db(cursor,qry, verbose=False)
+		print
+
+	return in_agreement
 
 ###################################################
 def main():
-
-	blastextract = "/usr/local/bin/blastdbcmd"
-	cdsdb  = "/databases/ensembl/sequences/hg19/cds/Homo_sapiens.GRCh37.75.cds.all.fa"
-	cdnadb = "/databases/ensembl/sequences/hg19/cdna/Homo_sapiens.GRCh37.75.cdna.all.fa"
-	for dependency in [blastextract, cdsdb, cdnadb]:
-		if not os.path.exists(dependency):
-			print dependency, "not found"
-			exit(1)
 
 	db, cursor = connect()
 	# make sure that the uniprot_seqs table has cds columns
@@ -205,14 +202,22 @@ def main():
 		check_or_make_column (cursor, 'monogenic_development', 'uniprot_seqs', col, coltype)
 
 	# limit ourselves to iems related genes
-	qry = "select ensembl_gene_id from omim_genemaps where inborn_error_of_metabolism=1"
-	ret = search_db(cursor, qry)
-	for line in ret:
-		#ensembl_gene_id = line[0]
-		ensembl_gene_id = 'ENSG00000115525'
+	qry = "select ensembl_gene_id from blimps_development.omim_genemaps where inborn_error_of_metabolism=1"
+	ensids  =[line[0] for line in  search_db(cursor, qry)]
+	ensids = ['ENSG00000188641']
+	total = 0
+	in_agreement = 0
+	for  ensembl_gene_id in ensids:
+		print
 		print ensembl_gene_id
-		find_coding_dna_sequence (cursor, blastextract,  cdsdb,cdnadb, ensembl_gene_id)
-		exit()
+		uniprot_and_ensembl_agree = find_coding_dna_sequence (cursor,  ensembl_gene_id)
+		total += 1
+		if uniprot_and_ensembl_agree: in_agreement+= 1
+
+	print
+	print "total IEM genes:", total
+	print "uniprot and ensembl seq in agreement:", in_agreement
+	print
 
 
 	return
