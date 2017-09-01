@@ -204,7 +204,7 @@ def main():
 	# limit ourselves to iems related genes
 	qry = "select ensembl_gene_id from blimps_development.omim_genemaps where inborn_error_of_metabolism=1"
 	ensids  =[line[0] for line in  search_db(cursor, qry)]
-	ensids = ['ENSG00000188641']
+	ensids = ['ENSG00000178057']
 	total = 0
 	in_agreement = 0
 	for  ensembl_gene_id in ensids:

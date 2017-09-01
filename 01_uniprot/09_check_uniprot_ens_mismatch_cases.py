@@ -4,23 +4,6 @@
 from integrator_utils.mysql import *
 import os,  subprocess, requests, re
 
-###################################################
-def get_uniprot_id (cursor, ensembl_gene_id):
-	switch_to_db(cursor, 'blimps_development')
-	qry  = "select uniprot_id from uniprot_basic_infos "
-	qry += "where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
-	ret = search_db(cursor,qry)
-	if not ret:
-		print ensembl_gene_id, "not found in uniprot_basic_infos"
-		exit()
-	if len(ret)>1:
-		print "more than one uniprot entry for ensembl ",  ensembl_gene_id
-		print ret
-		print "while possible in principle, not equipped to deal with it here"
-		exit()
-
-	uniprot_id = ret[0][0]
-	return uniprot_id
 
 ###################################################
 def main():
