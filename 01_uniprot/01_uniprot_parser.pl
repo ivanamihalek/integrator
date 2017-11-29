@@ -38,10 +38,11 @@ sub parse() {
 	$entry || return;
 	$entry =~ /\nOS   Homo sapiens/ || return;
 	#print $entry;
-	my ($uniprot_ids, $full_name,$gene_name, $tissue, $fn, $ec_number, $ensembl_id,$aa_lengths) =
+	my ($uniprot_ids, $full_name,$gene_name, $tissue, $loc, $fn, $ec_number, $ensembl_id,$aa_lengths) =
 		("", "", "", "", "", "", "", "");
 	my $reading_function  = 0;
-	my $reading_cofactors  = 0;
+	my $reading_cofactors = 0;
+	my $reading_location  = 0;
 	my @cofs = ();
 	foreach (split "\n", $entry) {
 		if  (/^ID/) {
@@ -91,6 +92,10 @@ sub parse() {
 					$reading_function  = 1;
 					$_ =~ s/CC   -!- FUNCTION: //;
 					$fn .= $_." ";
+				} elsif (/SUBCELLULAR LOCATION/) {
+					$reading_location  = 1;
+					$_ =~ s/CC   -!- SUBCELLULAR LOCATION: //;
+					$loc .= $_." ";
 				}
 			} elsif ( $reading_function )  {
 				$_ =~ s/CC      //;
@@ -113,7 +118,7 @@ sub parse() {
 	my $old_uniprot_ids  = join ";", @aux;
 	my $cofactors = "";
 	@cofs && ($cofactors = join ";", @cofs);
-	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$cofactors\t$aa_lengths\t$full_name\t$tissue\t";
+	print "$uniprot_id\t$gene_name\t$ensembl_id\t$ec_number\t$cofactors\t$aa_lengths\t$full_name\t$tissue\t$loc\t";
 	print "$fn\t$old_uniprot_ids\n";
 
 

@@ -169,11 +169,11 @@ def get_region_from_das(assembly, chrom, start, end):
 ########################################
 def find_complex_variants(cursor, table):
 	candidates = []
-	qry = "select * from %s " % table
+	qry  = "select position, reference, variants, variant_counts, total_count from %s " % table
 	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
 	long_vars_count = 0
 	for variant in search_db(cursor, qry):
-		[pos, ref, alt, var_counts, total_count, hotspot_id] = variant
+		[pos, ref, alt, var_counts, total_count] = variant
 		# if pos < 28194894: continue
 		# if pos > 28194933: break
 		# I don't want large rearrangements here
@@ -212,7 +212,7 @@ def find_clusters_of_candidates(candidates):
 		if not cluster_found: # start new cluster - cluster is a list of candidates
 			clusters.append([candidate])
 
-	# lets look at isolated cases too - exac might already
+	# lets look at isolated cases too - gnomad might already
 	# have some periodic expansions there
 	reasonable_clusters = [c for c in clusters if len(c)>=1]
 	return reasonable_clusters
@@ -225,12 +225,23 @@ def find_clusters_of_candidates(candidates):
 def main():
 
 	db, cursor = connect()
-	#chroms = [str(i) for i in range(1,23)] + ['X','Y']
-	chroms = [str(i) for i in range(10,23) + ['X','Y']]
+	#chroms = ['1','22']
+	#chroms = ['2','21']
+	#chroms = ['3','20']
+	#chroms = ['4','19']
+	#chroms = ['5','18']
+	#chroms = ['6','17']
+	#chroms = ['7','16']
+	#chroms = ['8','15']
+	#chroms = ['9','14']
+	#chroms = ['10','13']
+	chroms = ['11','12']
+	#chroms = [str(i) for i in range(10,23)]
+	#chroms = ['X','Y']
 	chroms.reverse()
 	for chrom in chroms:
 		t0 = time()
-		table = "exac_freqs_chr_" + chrom
+		table = "gnomad_freqs_chr_" + chrom
 		print
 		print "*"*20
 		print table
@@ -271,7 +282,7 @@ def main():
 					if len(pattern_freqs)<10000:
 						update_fields['pattern_freqs'] = pattern_freqs
 
-			store_or_update(cursor, 'exac_hotspots', fixed_fields, update_fields)
+			store_or_update(cursor, 'gnomad_hotspots', fixed_fields, update_fields)
 		print
 		print "Number of variants with clusters:", number_of_vars_in_clusters
 		print "Number of clusters with periodic motifs:", number_of_clusters_with_periodic_motifs

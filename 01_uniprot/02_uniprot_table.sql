@@ -12,6 +12,7 @@ CREATE TABLE `uniprot_basic_infos` (
 `canonical_aa_length` int   DEFAULT NULL,
 `full_name`  varchar(100)   DEFAULT NULL,
 `tissue`  text   DEFAULT NULL,
+`location`  text   DEFAULT NULL,
 `function` text  DEFAULT NULL,
 `old_ids` text   DEFAULT NULL,
   PRIMARY KEY (`uniprot_id`),
