@@ -83,19 +83,36 @@ def	number_of_appearances(motif, string):
 
 #########################################
 def characterize_region(cluster):
-	smallest_ref_pos = min ([x[0] for x in cluster])
-	upper_bound_ref  = max ([x[0] + len(x[1]) -1 for x in cluster])
+	smallest_ref_pos = min([x[0] for x in cluster])
+	upper_bound_ref  = max([x[0] + len(x[1]) -1 for x in cluster])
 	number_of_variants = 0
 	for v in cluster:
 		[pos, ref, alts, var_counts, total_count, max_reach] = v
 		number_of_variants += len( filter(lambda x: len(x)>0 and int(x)>0, var_counts.split(",")) )
 	return [smallest_ref_pos, upper_bound_ref, number_of_variants]
 
-#########################################
-def motif_report(chrom, cluster):
 
-	smallest_ref_pos = min ([x[0] for x in cluster])
-	upper_bound_ref  = max ([x[0] + len(x[1]) -1 for x in cluster])
+#########################################
+def get_region_from_das(assembly, chrom, start, end):
+	"""
+	"""
+	das_request  = "http://genome.ucsc.edu/cgi-bin/das/%s/" % assembly
+	das_request += "dna?segment=chr%s:%s,%s" %(chrom, start, end)
+
+	ret = requests.get(das_request).text.lower().replace("\n","")
+	pattern = re.compile("<dna.*?>([\w\s]*)</dna>")
+	matches = re.findall(pattern, ret)
+	dna = ""
+	for m in matches: dna += m.replace(" ","")
+	return dna
+
+ #########################################
+def motif_report(chrom, cluster):
+	""" find motifs in clusters
+
+	"""
+	smallest_ref_pos = min([x[0] for x in cluster])
+	upper_bound_ref  = max([x[0] + len(x[1]) - 1 for x in cluster])
 	original_region = get_region_from_das(assembly, chrom, smallest_ref_pos, upper_bound_ref).upper()
 	refseq = original_region
 	if not refseq or len(refseq)==0:
@@ -143,7 +160,7 @@ def motif_report(chrom, cluster):
 	########### REPORT/STORE TO DB ##########################
 	# never mind the clustering - I am not sure any more that it helps
 	# motif counting though should protect me from counting as diffent
-	# variants when a motif indel is assigned to a different place in the reepeat expansion
+	# variants when a motif indel is assigned to a different place in the repeat expansion
 	# as different a variant
 	#for cluster in find_comparable_patterns(raw_seqs, motifs):
 	report_items= []
@@ -154,28 +171,44 @@ def motif_report(chrom, cluster):
 
 	return ",".join(motifs), ";".join(report_items)
 
-#########################################
-def get_region_from_das(assembly, chrom, start, end):
-	das_request  = "http://genome.ucsc.edu/cgi-bin/das/%s/" % assembly
-	das_request += "dna?segment=chr%s:%s,%s" %(chrom, start, end)
 
-	ret = requests.get(das_request).text.lower().replace("\n","")
-	pattern = re.compile("<dna.*?>([\w\s]*)</dna>")
-	matches = re.findall(pattern, ret)
-	dna = ""
-	for m in matches: dna += m.replace(" ","")
-	return dna
+#########################################
+def find_clusters_of_candidates(candidates):
+	""" find places with indels that cluster and possibly overlap
+		two positions belong to a cluster if they are within 3nt from each other,
+		or within each other's reach
+		the assumptions is that candidates come ordered by increasing position
+		return clusters with more than one member
+	"""
+	clusters = []
+	for candidate in candidates:
+		cluster_found = False
+		for cluster in clusters:
+			if len([x for x in cluster if x[0]<=candidate[0] <= max(x[0]+3,x[-1])]):
+				cluster.append(candidate)
+				cluster_found = True
+				break
+		if not cluster_found: # start new cluster - cluster is a list of candidates
+			clusters.append([candidate])
+
+	# lets look at isolated cases too - gnomad might already
+	# have some periodic expansions there
+	reasonable_clusters = [c for c in clusters if len(c)>=1]
+	return reasonable_clusters
 
 ########################################
 def find_complex_variants(cursor, table):
+	""" find locations with frequent indels (not SNVS, but larger)
+		I am skipping cases where reference length > 30 (presumably large deletion or indel)
+		return a list of candidates, each candindate = [pos, ref, alts, counts, total_count, max_reach]
+		also return the number of long indels we have dropped
+	"""
 	candidates = []
 	qry  = "select position, reference, variants, variant_counts, total_count from %s " % table
 	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
 	long_vars_count = 0
 	for variant in search_db(cursor, qry):
 		[pos, ref, alt, var_counts, total_count] = variant
-		# if pos < 28194894: continue
-		# if pos > 28194933: break
 		# I don't want large rearrangements here
 		if len(ref) > 30:
 			long_vars_count += 1
@@ -199,31 +232,20 @@ def find_complex_variants(cursor, table):
 		candidates.append([pos, ref, ",".join(new_alts), ",".join(new_counts), total_count, max_reach])
 	return candidates, long_vars_count
 
-#########################################
-def find_clusters_of_candidates(candidates):
-	clusters = []
-	for candidate in candidates:
-		cluster_found = False
-		for cluster in clusters:
-			if len([x for x in cluster if x[0] <= candidate[0] <= max(x[0]+3,x[-1]) ]):
-				cluster.append(candidate)
-				cluster_found = True
-				break
-		if not cluster_found: # start new cluster - cluster is a list of candidates
-			clusters.append([candidate])
-
-	# lets look at isolated cases too - gnomad might already
-	# have some periodic expansions there
-	reasonable_clusters = [c for c in clusters if len(c)>=1]
-	return reasonable_clusters
 
 ########################################
 # the clustering and motif searching bomb for  the region
 # 14:106330014-106330121 resulting in the report string > 65,000 chracters
-
 #########################################
 def main():
-
+	"""   main
+			loop over chroms
+			find_complex_variants
+			find_clusters_of_candidates
+			find periodic motifs in clusters, if any
+			create 'report' for each periodic region
+			store
+	"""
 	db, cursor = connect()
 	#chroms = ['1','22']
 	#chroms = ['2','21']

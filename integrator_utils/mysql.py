@@ -218,8 +218,8 @@ def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False, 
         print rows[0]
         return id
        
-    qry = "select last_insert_id()"
-    rows   = search_db (cursor, qry)
+    qry  = "select last_insert_id()"
+    rows = search_db (cursor, qry)
     if rows and (type(rows[0][0]) is long):
         return rows[0][0]
     return  -1

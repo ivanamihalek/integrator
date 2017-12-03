@@ -8,7 +8,7 @@ population_fields = ["AFR", "AMR", "ASJ", "EAS", "FIN", "NFE","OTH","SAS"]
 gender = ["Male","Female"]
 # lof fields seem to be mostly empty
 storable_fields = ['Allele', 'SYMBOL', 'SWISSPROT', 'VARIANT_CLASS', 'Consequence', 'cDNA_position', 'CDS_position',
-                   'Protein_position', 'Amino_acids','SIFT','PolyPhen'] # 'LoF', 'LoF_filter', 'LoF_flags', 'LoF_info']
+				   'Protein_position', 'Amino_acids','SIFT','PolyPhen'] # 'LoF', 'LoF_filter', 'LoF_flags', 'LoF_info']
 #########################################
 def check_difference (ref,alt): # bcs of the way the info is store, can have things like "ATT, CTT", inidcating A->C
 	# this is untested
@@ -47,6 +47,7 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 		if named_csqs['Consequence'] == 'intergenic_variant': return None
 
 		csq =  named_csqs['Consequence']
+
 		if 'synonymous' in csq:
 			return None
 		# somebody screwed up in gnoMAD so the leading base is not included in insert or deletion
@@ -108,9 +109,9 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 		data[cnt] = {}
 		for p in population_fields+['overall']:
 			data[cnt][p] = {}
-			for g in gender+['both']: data[cnt][p][g] = 0
+			for g in gender+['both']: data[cnt][p][g] = '0'
 	consequences = ""
-	for  k,v  in named_fields.iteritems():
+	for k,v in named_fields.iteritems():
 		field = k.split("_")
 		if field[0]=='CSQ':
 			consequences = parse_csq(v, consequence_header_fields, ref, vars)
@@ -169,51 +170,15 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 	return consequences, counts
 
 #########################################
-def parse_data_line(line, consequence_header_fields):
+def process_line(line, consequence_header_fields):
 	fields = line.rstrip().split("\t")
 	[chrom, addr, junk, ref, variants, quality_score,  filter, info_string] = fields[:8]
 	#if chrom != '3':  return None # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	if filter!='PASS': return None
-	consequences, counts = parse_info (chrom, ref, variants, info_string, consequence_header_fields)
+	consequences, counts = parse_info(chrom, ref, variants, info_string, consequence_header_fields)
 	if not consequences: return None
 	return [chrom, addr, ref, variants, consequences] + counts
 
-
-##########################################
-def process_line(cursor, line, consequence_header_fields):
-
-	ret = parse_data_line(line, consequence_header_fields)
-
-	if not ret: return # error or silent mutation
-	[chrom, addr, ref, variants, consequences,  ac, an, ac_afr, an_afr,
-	 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
-	 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
-
-
-	table = "gnomad_freqs_chr_" + chrom
-	fixed_fields  = {'position':int(addr)}
-	
-	update_fields = {'reference':ref, 'variants':variants, 'variant_counts':ac, 'total_count':an}
-	update_fields['consequences'] = consequences
-	update_fields['afr_counts'] = ac_afr
-	update_fields['afr_tot_count'] = an_afr
-	update_fields['amr_counts'] = ac_amr
-	update_fields['amr_tot_count'] = an_amr
-	update_fields['asj_counts'] = ac_asj
-	update_fields['asj_tot_count'] = an_asj
-	update_fields['eas_counts'] = ac_eas
-	update_fields['eas_tot_count'] = an_eas
-	update_fields['fin_counts'] = ac_fin
-	update_fields['fin_tot_count'] = an_fin
-	update_fields['nfe_counts'] = ac_nfe
-	update_fields['nfe_tot_count'] = an_nfe
-	update_fields['oth_counts'] = ac_oth
-	update_fields['oth_tot_count'] = an_oth
-	update_fields['sas_counts'] = ac_sas
-	update_fields['sas_tot_count'] = an_sas
-	store_or_update(cursor, table, fixed_fields, update_fields, verbose=False)
-
-	return
 
 #########################################
 def find_csq_header_fields(line):
@@ -228,18 +193,96 @@ def find_csq_header_fields(line):
 	return None
 
 ##########################################
+def merge(cursor, table, col_names, new_fields, verbose):
+	qry  = "select * from %s where position=%d" % (table, new_fields['position'])
+	rows = search_db(cursor, qry, verbose)
+	old_fields =  dict(zip(col_names, rows[0])) # there should be only one position, with all variants listed here
+	# note: the reference may be different!
+
+	if new_fields['variants']==old_fields['variants']: return
+	new_vars_nominal = new_fields['variants'].split(',')
+	old_vars = old_fields['variants'].split(',')
+	if len(old_vars)<3 and len(new_vars_nominal)<3: return
+	new_vars = [str(v) for v in new_vars_nominal if not v in old_vars]
+	if len(new_vars)==0: return
+	print "merging"
+	print "new_vars_nominal", new_vars_nominal
+	print "old_vars", old_vars
+	print "new_vars", new_vars
+	print "new_fields['reference']", new_fields['reference']
+	print "consequences", new_fields['consequences']
+	for v in new_vars:
+		i = new_vars_nominal.index(v)
+		print "i, v ", i, v
+		old_vars.append(v)
+		# parse counts
+		for f in ['variant_counts', 'afr_counts', 'afr_tot_count', 'amr_counts', 'amr_tot_count',
+		          'asj_counts', 'asj_tot_count', 'eas_counts',  'eas_tot_count', 'fin_counts',
+		          'fin_tot_count', 'nfe_counts', 'nfe_tot_count',
+		          'oth_counts', 'oth_tot_count', 'sas_counts', 'sas_tot_count']:
+			if ',' in  new_fields[f]:
+				new_val = str(new_fields[f]).split(',')[i]
+			elif new_fields[f]=='0':
+				new_val = '0'
+			else:
+				new_val = new_fields[f]
+			print f, new_val
+
+		# parse consequences
+		new_cons_list = []
+		for cons in  new_fields['consequences'].split(","):
+			if cons.split('|')[0].replace(" ","") == v:
+				new_cons_list.append(cons)
+		if len(new_cons_list)>0:
+			new_cons = new_cons_list.join(",")
+		else:
+			new_cons = None
+
+		print 'consequences', new_cons
+
+	exit()
+
+	return
+
+
+##########################################
+def store_or_merge(cursor, table, col_names, fields, verbose):
+
+	# check if the row exists
+	qry  = "select position from %s where position=%d"  % (table, fields['position'])
+	rows = search_db(cursor, qry, verbose=False)
+
+	exists = rows and (type(rows[0][0]) is long)
+	if exists:
+		merge(cursor, table, col_names, fields, verbose)
+	else:
+		#print all_fields
+		#store_without_checking(cursor, table, fields, verbose)
+		pass
+##########################################
+def get_col_names(cursor, table):
+	qry  = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS` "
+	qry += "WHERE `TABLE_SCHEMA`='blimps_development' "
+	qry += "AND `TABLE_NAME`='%s' " % table
+	rows = search_db(cursor, qry, verbose=True)
+	col_names = [row[0] for row in rows]
+	return col_names
+
+##########################################
 def main():
-	infile = open("/databases/exac/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
 	#infile = open("/databases/exac/gnomad_test.txt")
-	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
-	#infile = open("/databases/exac/testY.vcf")
 
 	db, cursor = connect()
 
 	reading = False
 	count = 0
 	consequence_header_fields = None
-	chrom = ""
+
+	chrom = "15"
+	infile = open("/databases/exac/release_2.0.2_vcf_genomes_gnomad.genomes.r2.0.2.sites.chr%s.vcf" % chrom)
+	table = "gnomad_freqs_chr_" + chrom
+	col_names = get_col_names(cursor, table)
+
 	for line in infile:
 		if not reading:
 			if line[:6] == '#CHROM': reading=True
@@ -249,25 +292,52 @@ def main():
 		if not consequence_header_fields:
 			print 'CSQ info not found'
 			exit()
+		chrom_inline = line.split("\t")[0]
+		if chrom_inline!=chrom:
+			print "chromosome %s?" % chrom
+			print line
+			exit()
+		ret = process_line(line, consequence_header_fields)
+
 		count += 1
+		#if count%100000==0: print "%dK lines out of 15014K (%5.2f%%)" % (count/1000,  float(count)/15014744*100)
 		if count%10000==0: print "%dK lines of  %s" % (count/1000,  chrom)
+		if not ret: continue # error or silent mutation
+		[chrom, addr, ref, variants, consequences,  ac, an, ac_afr, an_afr,
+		 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
+		 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
 
-		chrom = line.split("\t")[0]
-		#if not chrom in ['1','9','10','22']: continue
-		#if not chrom in ['2','8','11','21']: continue
-		#if not chrom in ['3','7','12','20']: continue
-		#if not chrom in  ['4','6', '13','19']: continue
-		#if not chrom in  ['5','14','16','18']: continue
-		if not chrom in  ['15','17', 'X','Y']: continue
 
-		process_line(cursor,line, consequence_header_fields)
+		if False and (len(ref)>1 or len(variants)>1):
+			print ref, variants # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
+			print chrom, addr
+			print "\n".join(consequences.split(","))
+			print
 
+		all_fields = {'position':int(addr), 'reference':ref, 'variants':variants, 'variant_counts':ac, 'total_count':an}
+
+		all_fields['consequences'] = consequences
+		all_fields['afr_counts'] = ac_afr
+		all_fields['afr_tot_count'] = an_afr
+		all_fields['amr_counts'] = ac_amr
+		all_fields['amr_tot_count'] = an_amr
+		all_fields['asj_counts'] = ac_asj
+		all_fields['asj_tot_count'] = an_asj
+		all_fields['eas_counts'] = ac_eas
+		all_fields['eas_tot_count'] = an_eas
+		all_fields['fin_counts'] = ac_fin
+		all_fields['fin_tot_count'] = an_fin
+		all_fields['nfe_counts'] = ac_nfe
+		all_fields['nfe_tot_count'] = an_nfe
+		all_fields['oth_counts'] = ac_oth
+		all_fields['oth_tot_count'] = an_oth
+		all_fields['sas_counts'] = ac_sas
+		all_fields['sas_tot_count'] = an_sas
+		store_or_merge(cursor, table, col_names, all_fields, verbose=False)
 	cursor.close()
 	db.close()
 
 	return
-
-
 #########################################
 if __name__ == '__main__':
 	main()

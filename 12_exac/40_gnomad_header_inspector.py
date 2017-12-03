@@ -4,7 +4,6 @@ import shlex
 
 ##########################################
 def main():
-	#infile = open("ExAC_nonTCGA.r1.sites.vep.vcf")
 	infile = open("/databases/exac/gnomad_headers.txt")
 	for line in infile:
 		if line[:len("##reference")] == "##reference":

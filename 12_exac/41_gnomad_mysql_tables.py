@@ -12,18 +12,18 @@ def main():
 		search_db(cursor, qry, verbose=True)
 		print table
 		qry  = "CREATE TABLE %s " % table
-		qry += " (position int(11), reference text,  variants text, consequences text, "
-		qry += " variant_counts text, total_count int, "
-		qry += " afr_counts text, afr_tot_count int, "
-		qry += " amr_counts text, amr_tot_count int, "
-		qry += " asj_counts text, asj_tot_count int, "
-		qry += " eas_counts text, eas_tot_count int, "
-		qry += " fin_counts text, fin_tot_count int, "
-		qry += " nfe_counts text, nfe_tot_count int, "
-		qry += " oth_counts text, oth_tot_count int, "
-		qry += " sas_counts text, sas_tot_count int, "
+		qry += " (id int(11) NOT NULL AUTO_INCREMENT, position int(11), reference text,  variant text, consequences text, "
+		qry += " variant_count int, total_count int, "
+		qry += " afr_count int, afr_tot_count int, "
+		qry += " amr_count int, amr_tot_count int, "
+		qry += " asj_count int, asj_tot_count int, "
+		qry += " eas_count int, eas_tot_count int, "
+		qry += " fin_count int, fin_tot_count int, "
+		qry += " nfe_count int, nfe_tot_count int, "
+		qry += " oth_count int, oth_tot_count int, "
+		qry += " sas_count int, sas_tot_count int, "
 		qry += " hotspot_id int, "
-		qry += " PRIMARY KEY (position) )" # the default engine is InnoDB
+		qry += " PRIMARY KEY (id) )" # the default engine is InnoDB
 		search_db(cursor, qry, verbose=True)
 	cursor.close()
 	db.close()
