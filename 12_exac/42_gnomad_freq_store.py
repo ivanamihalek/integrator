@@ -9,6 +9,17 @@ gender = ["Male","Female"]
 # lof fields seem to be mostly empty
 storable_fields = ['Allele', 'SYMBOL', 'SWISSPROT', 'VARIANT_CLASS', 'Consequence', 'cDNA_position', 'CDS_position',
                    'Protein_position', 'Amino_acids','SIFT','PolyPhen'] # 'LoF', 'LoF_filter', 'LoF_flags', 'LoF_info']
+
+all_keys = ['chrom', 'addr', 'ref', 'variants', 'consequences',  'ac', 'an', 'ac_afr', 'an_afr',
+	 'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
+	 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']
+counts = [key for key in all_keys if key[:2]=='ac']
+totals = [key for key in all_keys if key[:2]=='an']
+
+# the annotation is crap ...
+# 22:17669352 G>GGGACA is an SNV in somebody's book
+
+
 #########################################
 def check_difference (ref,alt): # bcs of the way the info is store, can have things like "ATT, CTT", inidcating A->C
 	# this is untested
@@ -26,11 +37,9 @@ def check_difference (ref,alt): # bcs of the way the info is store, can have thi
 	if not to  or to=="": to = "-"
 	return frm,to
 
-
 #########################################
 def parse_csq(csq_string, consequence_header_fields, ref, vars):
 	fields = csq_string.split(",")
-	print fields
 	variants = vars.split(",")
 	consequences = []
 	for field in fields:
@@ -44,7 +53,6 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 			#for k in named_csqs.keys():
 				print k, ":",  named_csqs[k]
 				print "-------------"
-
 
 		if named_csqs['Consequence'] == 'intergenic_variant': return None
 
@@ -60,55 +68,21 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 				probably_allele = ref[0]+named_csqs['Allele']
 				allele_matches = [var for var in variants if var==probably_allele]
 				if len(allele_matches) != 1:
-					print "point   {}  {}  {} ---> {}   {}".format(named_csqs['VARIANT_CLASS'], named_csqs['Consequence'], ref, named_csqs['Allele'], vars)
+					print "point   {}  {}  {} ---> {}  {}".format(named_csqs['VARIANT_CLASS'], named_csqs['Consequence'], ref, named_csqs['Allele'], vars)
 					#exit()
-				# the annotation is complete garbage
-				# I see things like  deletion    GC ---> T   G,TC,AC
-				# it does seem to be limited to up/downstream variants; I have not found exons or splice sites suffering from this
-				# so as some sort of a patch, if the allele with prepended leading base is not found among the variants, leave the csq field empty
+				# the annotation does not follow the same variant representation as the variants field
 		patched_allele = None
 
-		if named_csqs['Allele']=='-':
-			patched_allele = ref[0]
-		elif len(ref)==1 and len(named_csqs['Allele'])==1:
-			patched_allele = named_csqs['Allele']
-		elif 'insertion' in csq or named_csqs['VARIANT_CLASS']=='insertion':
-			patched_allele = ref[0]+named_csqs['Allele']
-		elif 'deletion' in csq or named_csqs['VARIANT_CLASS']=='deletion':
-			patched_allele = ref[0]
-		elif 'missense' in csq or 'stop' in csq: # this should presumably be an SNV; there are deletions marked as SNV
-			# this is ok, G-->T and similar
-			# somtimes I just don't know hot to reconcile this:
-			# Example: ref variant  CT	C,GT
-			# and the nnotation says
-			# G|intron_variant|MODIFIER|RPS4Y1|ENSG00000129824|Transcript|ENST00000250784|protein_coding||1/6|ENST00000250784.8:c.3+17C>G||||||||2||1||deletion
-			# deletion ?!
-			# there is HGNC recommended annotation - look a the whole thing at some other time;
-			# ideally just throw the whole crap away and do my own annotation
-			patched_allele = named_csqs['Allele'][0] + ref[1:]
-
 		# exactly one match in variants
-		if patched_allele and  len([var for var in variants if var==patched_allele])==1:
-			named_csqs['Allele'] = patched_allele
-			csq = "|".join([named_csqs[k] for k in storable_fields])
-			if not csq in consequences: consequences.append(csq)
+		csq = "|".join([named_csqs[k] for k in storable_fields])
+		if not csq in consequences: consequences.append(csq)
 
-	#print "***************************"
-	#print ",".join(consequences)
-	#print "***************************"
-	#print
-	print ">>>>>>>>>>>"
-	print named_csqs['Consequence']
-	print named_csqs['Allele']
-	print "<<<<<<<<<<<"
-	print "consequences1", consequences
 	return ",".join(consequences)
 
 #########################################
 def parse_info(chrom, ref, vars, info, consequence_header_fields):
 
 	fields = info.split(";")
-	print " ***", fields
 	named_fields= dict (map(lambda x: x.split("="), [f for f in fields if '=' in f]))
 	data = {}
 	for cnt in count_fields:
@@ -167,7 +141,6 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 				print "count mismatch:",data['AN']['overall']['both'], total
 				exit()
 
-	print "consequences2", consequences
 	counts = []
 	counts.append(data['AC']['overall']['both'])
 	counts.append(data['AN']['overall']['both'])
@@ -180,45 +153,75 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 def parse_data_line(line, consequence_header_fields):
 	fields = line.rstrip().split("\t")
 	[chrom, addr, junk, ref, variants, quality_score,  filter, info_string] = fields[:8]
-	print info_string
-	print
-	print filter
-	print
 	if filter!='PASS': return None
 	consequences, counts = parse_info (chrom, ref, variants, info_string, consequence_header_fields)
-	print  "consequences3", consequences
+
 	if not consequences: return None
 	return [chrom, addr, ref, variants, consequences] + counts
 
 ##########################################
+def minimal_var_representation(str1,str2):
+
+	maxl = max([len(str1),len(str2)])
+	# pad to the same length
+	str1 += "x"*(maxl-len(str1))
+	str2 += "x"*(maxl-len(str2))
+	min1 = str1[:1]
+	min2 = str2[:1]
+	for i in range(1,maxl):
+		if str1[i]==str2[i]: break
+		min1 += str1[i]
+		min2 += str2[i]
+
+	return min1.replace("x",""), min2.replace("x","")
+
+##########################################
 def store_variant(cursor, table, var_fields_unpacked):
 
-	print "var_fields_unpacked", var_fields_unpacked
-	print
-	[addr, ref, variant, consequences,  ac, an, ac_afr, an_afr,
-	 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
-	 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = var_fields_unpacked
-	
-	fixed_fields  = {'position':int(addr)}
-	
-	update_fields = {'reference':ref, 'variant':variant, 'variant_count':int(ac), 'total_count':int(an)}
-	update_fields['consequences'] = consequences
-	update_fields['afr_count'] = int(ac_afr)
-	update_fields['afr_tot_count'] = int(an_afr)
-	update_fields['amr_count'] = int(ac_amr)
-	update_fields['amr_tot_count'] = int(an_amr)
-	update_fields['asj_count'] = int(ac_asj)
-	update_fields['asj_tot_count'] = int(an_asj)
-	update_fields['eas_count'] = int(ac_eas)
-	update_fields['eas_tot_count'] = int(an_eas)
-	update_fields['fin_count'] = int(ac_fin)
-	update_fields['fin_tot_count'] = int(an_fin)
-	update_fields['nfe_count'] = int(ac_nfe)
-	update_fields['nfe_tot_count'] = int(an_nfe)
-	update_fields['oth_count'] = int(ac_oth)
-	update_fields['oth_tot_count'] = int(an_oth)
-	update_fields['sas_count'] = int(ac_sas)
-	update_fields['sas_tot_count'] = int(an_sas)
+	# not sure why this happens - filtered varaints (the ones that do not have 'PASS')
+	# still may have count > 0
+	# for the gnomad blogpost
+	# "All sites with no high quality genotype (AC = 0) are marked as filtered using the AC0 filter."
+	if var_fields_unpacked['ac']=='0':
+		return
+
+	# in trying for a compact storage, gnomad packs several variants into a single line
+	# for example ref CT, variants C,AT to account for a deletion and an SNV
+	# we are going to tun that back int CT, C  and C, A
+	ref,var = minimal_var_representation(var_fields_unpacked['ref'], var_fields_unpacked['variant'])
+
+	consq_for_this_variant = []
+	# however in the consequences field, gnomad uses the minimalist representation
+	if len(ref)>1 and len(var)==1:
+		var_rep = "-"
+	elif  len(ref)==1 and len(var)>1:
+		var_rep = var[1:]
+	else:
+		var_rep = var
+	for c in var_fields_unpacked['consequences'].split(','):
+		csq_list = c.split('|')
+		if csq_list[0] == var_rep: consq_for_this_variant.append('|'.join([var]+csq_list[1:]))
+
+	fixed_fields  = {'position':int(var_fields_unpacked['addr']),'reference': ref,  'variant': var}
+	update_fields = {}
+
+	update_fields['consequences'] = ",".join(consq_for_this_variant)
+	for count in counts:
+		if count == 'ac':
+			new_key = 'variant_count'
+		else:
+			population = count.split("_")[-1]
+			new_key = "_".join([population,'count'])
+		update_fields[new_key] = int(var_fields_unpacked[count])
+
+	for count in totals:
+		if count == 'an':
+			new_key = 'total_count'
+		else:
+			population = count.split("_")[-1]
+			new_key = "_".join([population,'tot','count'])
+		update_fields[new_key] = int(var_fields_unpacked[count])
+
 	store_or_update(cursor, table, fixed_fields, update_fields, verbose=False)
 
 	return
@@ -229,21 +232,14 @@ def process_line(cursor, line, consequence_header_fields):
 	ret = parse_data_line(line, consequence_header_fields)
 
 	if not ret: return # error or silent mutation
-	keys = ['chrom', 'addr', 'ref', 'variants', 'consequences',  'ac', 'an', 'ac_afr', 'an_afr',
-	 'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
-	 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']
-	named_fields =  dict(zip(keys,ret))
-
 
 	# unpack variants
-
+	named_fields = dict(zip(all_keys,ret))
 	split_string = {}
 	split_string['variants'] = named_fields['variants'].split(',')
 	number_of_variants = len(split_string['variants'])
 
-	for k in  ['ac', 'an', 'ac_afr', 'an_afr',
-	 'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
-	 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']:
+	for k in  counts:
 		val = named_fields[k]
 		split_string[k] = val.split(',')
 		if len(split_string[k])!=number_of_variants:
@@ -255,18 +251,18 @@ def process_line(cursor, line, consequence_header_fields):
 
 	table = "gnomad_freqs_chr_" + named_fields['chrom']
 	
-	print split_string['variants']
 	for i in range(len(split_string['variants'])):
-		consq_for_this_variant = []
 		v = split_string['variants'][i]
-		for c in named_fields['consequences'].split(','):
-			if c.split('|')[0] == v: consq_for_this_variant.append(c)
-			var_fields_unpacked = [named_fields['addr'],
-			    named_fields['ref'], v, ",".join(consq_for_this_variant)]
-			for k in  ['ac', 'an', 'ac_afr', 'an_afr',
-				 'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
-				 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']:
-				var_fields_unpacked.append(split_string[k][i])
+		# consequences will be filtered fro the varaint they refer to in store_variant,
+		# after we determine the minimal representation for the variant
+		var_fields_unpacked = {'addr': named_fields['addr'],
+			                    'ref': named_fields['ref'], 'variant': v,
+			                    'consequences': named_fields['consequences']}
+		for k in counts:
+			var_fields_unpacked[k] = split_string[k][i]
+		for k in totals:
+			var_fields_unpacked[k] = named_fields[k]
+
 		store_variant(cursor, table, var_fields_unpacked)
 	return
 
@@ -284,10 +280,13 @@ def find_csq_header_fields(line):
 
 ##########################################
 def main():
-	#infile = open("/databases/exac/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
-	infile = open("/databases/exac/gnomad_test.txt")
+	infile = open("/databases/exac/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
+	#infile = open("/databases/exac/gnomad_test.2.txt")
 	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	#infile = open("/databases/exac/testY.vcf")
+
+	# This one is good. Form gnomad blogpost, literally:
+	# "There is no chromosome Y coverage / calls in the gnomAD genomes, because reasons."
 
 	db, cursor = connect()
 
@@ -295,6 +294,14 @@ def main():
 	count = 0
 	consequence_header_fields = None
 	chrom = ""
+
+	#chromgroup = ['1','9','10','22']
+	chromgroup  = ['2','8','11','21']
+	#chromgroup = ['4','6', '13','19']
+	#chromgroup = ['5','14','16','18']
+	#chromgroup = ['15','17', 'X','Y']
+	print "chomosomes:", chromgroup
+
 	for line in infile:
 		if not reading:
 			if line[:6] == '#CHROM': reading=True
@@ -304,16 +311,12 @@ def main():
 		if not consequence_header_fields:
 			print 'CSQ info not found'
 			exit()
+
+		chrom = line.split("\t")[0]
+		if not chrom in chromgroup: continue
 		count += 1
 		if count%10000==0: print "%dK lines of  %s" % (count/1000,  chrom)
 
-		chrom = line.split("\t")[0]
-		#if not chrom in ['1','9','10','22']: continue
-		#if not chrom in ['2','8','11','21']: continue
-		#if not chrom in ['3','7','12','20']: continue
-		#if not chrom in  ['4','6', '13','19']: continue
-		#if not chrom in  ['5','14','16','18']: continue
-		#if not chrom in  ['15','17', 'X','Y']: continue
 		process_line(cursor,line, consequence_header_fields)
 
 	cursor.close()
