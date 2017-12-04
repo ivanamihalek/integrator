@@ -30,6 +30,7 @@ def check_difference (ref,alt): # bcs of the way the info is store, can have thi
 #########################################
 def parse_csq(csq_string, consequence_header_fields, ref, vars):
 	fields = csq_string.split(",")
+	print fields
 	variants = vars.split(",")
 	consequences = []
 	for field in fields:
@@ -43,6 +44,7 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 			#for k in named_csqs.keys():
 				print k, ":",  named_csqs[k]
 				print "-------------"
+
 
 		if named_csqs['Consequence'] == 'intergenic_variant': return None
 
@@ -95,13 +97,18 @@ def parse_csq(csq_string, consequence_header_fields, ref, vars):
 	#print ",".join(consequences)
 	#print "***************************"
 	#print
-
+	print ">>>>>>>>>>>"
+	print named_csqs['Consequence']
+	print named_csqs['Allele']
+	print "<<<<<<<<<<<"
+	print "consequences1", consequences
 	return ",".join(consequences)
 
 #########################################
 def parse_info(chrom, ref, vars, info, consequence_header_fields):
 
 	fields = info.split(";")
+	print " ***", fields
 	named_fields= dict (map(lambda x: x.split("="), [f for f in fields if '=' in f]))
 	data = {}
 	for cnt in count_fields:
@@ -160,6 +167,7 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 				print "count mismatch:",data['AN']['overall']['both'], total
 				exit()
 
+	print "consequences2", consequences
 	counts = []
 	counts.append(data['AC']['overall']['both'])
 	counts.append(data['AN']['overall']['both'])
@@ -172,12 +180,48 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 def parse_data_line(line, consequence_header_fields):
 	fields = line.rstrip().split("\t")
 	[chrom, addr, junk, ref, variants, quality_score,  filter, info_string] = fields[:8]
-	#if chrom != '3':  return None # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
+	print info_string
+	print
+	print filter
+	print
 	if filter!='PASS': return None
 	consequences, counts = parse_info (chrom, ref, variants, info_string, consequence_header_fields)
+	print  "consequences3", consequences
 	if not consequences: return None
 	return [chrom, addr, ref, variants, consequences] + counts
 
+##########################################
+def store_variant(cursor, table, var_fields_unpacked):
+
+	print "var_fields_unpacked", var_fields_unpacked
+	print
+	[addr, ref, variant, consequences,  ac, an, ac_afr, an_afr,
+	 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
+	 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = var_fields_unpacked
+	
+	fixed_fields  = {'position':int(addr)}
+	
+	update_fields = {'reference':ref, 'variant':variant, 'variant_count':int(ac), 'total_count':int(an)}
+	update_fields['consequences'] = consequences
+	update_fields['afr_count'] = int(ac_afr)
+	update_fields['afr_tot_count'] = int(an_afr)
+	update_fields['amr_count'] = int(ac_amr)
+	update_fields['amr_tot_count'] = int(an_amr)
+	update_fields['asj_count'] = int(ac_asj)
+	update_fields['asj_tot_count'] = int(an_asj)
+	update_fields['eas_count'] = int(ac_eas)
+	update_fields['eas_tot_count'] = int(an_eas)
+	update_fields['fin_count'] = int(ac_fin)
+	update_fields['fin_tot_count'] = int(an_fin)
+	update_fields['nfe_count'] = int(ac_nfe)
+	update_fields['nfe_tot_count'] = int(an_nfe)
+	update_fields['oth_count'] = int(ac_oth)
+	update_fields['oth_tot_count'] = int(an_oth)
+	update_fields['sas_count'] = int(ac_sas)
+	update_fields['sas_tot_count'] = int(an_sas)
+	store_or_update(cursor, table, fixed_fields, update_fields, verbose=False)
+
+	return
 
 ##########################################
 def process_line(cursor, line, consequence_header_fields):
@@ -185,34 +229,45 @@ def process_line(cursor, line, consequence_header_fields):
 	ret = parse_data_line(line, consequence_header_fields)
 
 	if not ret: return # error or silent mutation
-	[chrom, addr, ref, variants, consequences,  ac, an, ac_afr, an_afr,
-	 ac_amr, an_amr, ac_asj, an_asj, ac_eas, an_eas, ac_fin, an_fin,
-	 ac_nfe, an_nfe, ac_oth, an_oth, ac_sas, an_sas] = ret
+	keys = ['chrom', 'addr', 'ref', 'variants', 'consequences',  'ac', 'an', 'ac_afr', 'an_afr',
+	 'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
+	 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']
+	named_fields =  dict(zip(keys,ret))
 
 
-	table = "gnomad_freqs_chr_" + chrom
-	fixed_fields  = {'position':int(addr)}
+	# unpack variants
+
+	split_string = {}
+	split_string['variants'] = named_fields['variants'].split(',')
+	number_of_variants = len(split_string['variants'])
+
+	for k in  ['ac', 'an', 'ac_afr', 'an_afr',
+	 'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
+	 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']:
+		val = named_fields[k]
+		split_string[k] = val.split(',')
+		if len(split_string[k])!=number_of_variants:
+			if named_fields[k]=='0':
+				print 'err <<< '
+				exit()
+			else:
+				split_string[k] = ['0']*number_of_variants
+
+	table = "gnomad_freqs_chr_" + named_fields['chrom']
 	
-	update_fields = {'reference':ref, 'variants':variants, 'variant_counts':ac, 'total_count':an}
-	update_fields['consequences'] = consequences
-	update_fields['afr_counts'] = ac_afr
-	update_fields['afr_tot_count'] = an_afr
-	update_fields['amr_counts'] = ac_amr
-	update_fields['amr_tot_count'] = an_amr
-	update_fields['asj_counts'] = ac_asj
-	update_fields['asj_tot_count'] = an_asj
-	update_fields['eas_counts'] = ac_eas
-	update_fields['eas_tot_count'] = an_eas
-	update_fields['fin_counts'] = ac_fin
-	update_fields['fin_tot_count'] = an_fin
-	update_fields['nfe_counts'] = ac_nfe
-	update_fields['nfe_tot_count'] = an_nfe
-	update_fields['oth_counts'] = ac_oth
-	update_fields['oth_tot_count'] = an_oth
-	update_fields['sas_counts'] = ac_sas
-	update_fields['sas_tot_count'] = an_sas
-	store_or_update(cursor, table, fixed_fields, update_fields, verbose=False)
-
+	print split_string['variants']
+	for i in range(len(split_string['variants'])):
+		consq_for_this_variant = []
+		v = split_string['variants'][i]
+		for c in named_fields['consequences'].split(','):
+			if c.split('|')[0] == v: consq_for_this_variant.append(c)
+			var_fields_unpacked = [named_fields['addr'],
+			    named_fields['ref'], v, ",".join(consq_for_this_variant)]
+			for k in  ['ac', 'an', 'ac_afr', 'an_afr',
+				 'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
+				 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']:
+				var_fields_unpacked.append(split_string[k][i])
+		store_variant(cursor, table, var_fields_unpacked)
 	return
 
 #########################################
@@ -229,8 +284,8 @@ def find_csq_header_fields(line):
 
 ##########################################
 def main():
-	infile = open("/databases/exac/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
-	#infile = open("/databases/exac/gnomad_test.txt")
+	#infile = open("/databases/exac/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
+	infile = open("/databases/exac/gnomad_test.txt")
 	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	#infile = open("/databases/exac/testY.vcf")
 
@@ -258,8 +313,7 @@ def main():
 		#if not chrom in ['3','7','12','20']: continue
 		#if not chrom in  ['4','6', '13','19']: continue
 		#if not chrom in  ['5','14','16','18']: continue
-		if not chrom in  ['15','17', 'X','Y']: continue
-
+		#if not chrom in  ['15','17', 'X','Y']: continue
 		process_line(cursor,line, consequence_header_fields)
 
 	cursor.close()
