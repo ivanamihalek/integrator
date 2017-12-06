@@ -3,6 +3,16 @@
 from integrator_utils.mysql import *
 import shlex
 
+# output the tables rather thatn trying to store them from python - much faster
+'''
+ for i in $(seq 1 22)
+> do
+> echo $i
+> mysqlimport --login-path=ivana  --local blimps_development gnomad_freqs_chr_$i.txt
+> done
+repeat for X and Y
+for i in X Y; do echo $i; done
+'''
 count_fields = ["AC", "AN", "AF", "GC", "Hemi"]
 population_fields = ["AFR", "AMR", "ASJ", "EAS", "FIN", "NFE","OTH","SAS"]
 gender = ["Male","Female"]
@@ -202,7 +212,7 @@ def store_variant(cursor, table, var_fields_unpacked):
 		csq_list = c.split('|')
 		if csq_list[0] == var_rep: consq_for_this_variant.append('|'.join([var]+csq_list[1:]))
 
-	fixed_fields  = {'position':int(var_fields_unpacked['addr']),'reference': ref,  'variant': var}
+	fixed_fields  = {'position':int(var_fields_unpacked['addr']),'reference': ref, 'variant': var}
 	update_fields = {}
 
 	update_fields['consequences'] = ",".join(consq_for_this_variant)
@@ -222,9 +232,19 @@ def store_variant(cursor, table, var_fields_unpacked):
 			new_key = "_".join([population,'tot','count'])
 		update_fields[new_key] = int(var_fields_unpacked[count])
 
-	store_or_update(cursor, table, fixed_fields, update_fields, verbose=False)
 
-	return
+	#store_or_update(cursor, table, fixed_fields, update_fields, verbose=False)
+	all_fields = fixed_fields
+	all_fields.update(update_fields)
+	#store_without_checking(cursor, table, all_fields, verbose=False)
+	db_field_names = ['position', 'reference', 'variant', 'consequences', 'variant_count', 'total_count',
+	                  'afr_count', 'afr_tot_count', 'amr_count', 'amr_tot_count', 'asj_count',
+	                  'asj_tot_count', 'eas_count', 'eas_tot_count', 'fin_count', 'fin_tot_count',
+	                  'nfe_count', 'nfe_tot_count', 'oth_count', 'oth_tot_count', 'sas_count',
+	                  'sas_tot_count', 'hotspot_id']
+	all_fields['hotspot_id'] = "\N"
+	tabbed_line = "\t".join([str(all_fields[field_name]) for field_name in db_field_names])
+	return tabbed_line
 
 ##########################################
 def process_line(cursor, line, consequence_header_fields):
@@ -263,8 +283,8 @@ def process_line(cursor, line, consequence_header_fields):
 		for k in totals:
 			var_fields_unpacked[k] = named_fields[k]
 
-		store_variant(cursor, table, var_fields_unpacked)
-	return
+		tabbed_line = store_variant(cursor, table, var_fields_unpacked)
+	return tabbed_line
 
 #########################################
 def find_csq_header_fields(line):
@@ -295,17 +315,18 @@ def main():
 	consequence_header_fields = None
 	chrom = ""
 
-	#chromgroup = ['1','9','10','22']
-	chromgroup  = ['2','8','11','21']
-	#chromgroup = ['4','6', '13','19']
-	#chromgroup = ['5','14','16','18']
-	#chromgroup = ['15','17', 'X','Y']
-	print "chomosomes:", chromgroup
+	# gnomad does not have Y for some reason
+	chromosomes = [str(i) for i in range(1,23)] + ['X','Y']
+	chromosomes = ['Y']
+	outfile = {}
+	for chrom in chromosomes:
+		fnm = "gnomad_freqs_chr_%s.tab" % chrom
+		outfile[chrom] = open(fnm,"w")
 
 	for line in infile:
 		if not reading:
 			if line[:6] == '#CHROM': reading=True
-			if not consequence_header_fields  and line[:len('##INFO=<')] == '##INFO=<':
+			if not consequence_header_fields and line[:len('##INFO=<')] == '##INFO=<':
 				consequence_header_fields = find_csq_header_fields(line)
 			continue
 		if not consequence_header_fields:
@@ -313,11 +334,17 @@ def main():
 			exit()
 
 		chrom = line.split("\t")[0]
-		if not chrom in chromgroup: continue
+		if not chrom == 'Y': continue
 		count += 1
 		if count%10000==0: print "%dK lines of  %s" % (count/1000,  chrom)
 
-		process_line(cursor,line, consequence_header_fields)
+		tabbed_line = process_line(cursor,line, consequence_header_fields)
+		outfile[chrom].write("%d\t%s\n"%(count,tabbed_line))
+
+
+	for chrom in chromosomes:
+		outfile[chrom].close()
+
 
 	cursor.close()
 	db.close()
