@@ -12,6 +12,12 @@ import shlex
 > done
 repeat for X and Y
 for i in X Y; do echo $i; done
+
+"For each text file named on the command line, mysqlimport strips any extension 
+from the file name and uses the result to determine the name of the table into 
+which to import the file's contents. For example, files named patient.txt,
+patient.text , and patient all would be imported into a table named patient."
+
 '''
 count_fields = ["AC", "AN", "AF", "GC", "Hemi"]
 population_fields = ["AFR", "AMR", "ASJ", "EAS", "FIN", "NFE","OTH","SAS"]
@@ -99,7 +105,7 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 		data[cnt] = {}
 		for p in population_fields+['overall']:
 			data[cnt][p] = {}
-			for g in gender+['both']: data[cnt][p][g] = 0
+			for g in gender+['both']: data[cnt][p][g] = '0'
 	consequences = ""
 	for  k,v  in named_fields.iteritems():
 		field = k.split("_")
@@ -305,7 +311,7 @@ def main():
 	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	#infile = open("/databases/exac/testY.vcf")
 
-	# This one is good. Form gnomad blogpost, literally:
+	# This one is good. From gnomad blogpost, literally:
 	# "There is no chromosome Y coverage / calls in the gnomAD genomes, because reasons."
 
 	db, cursor = connect()
@@ -317,11 +323,12 @@ def main():
 
 	# gnomad does not have Y for some reason
 	chromosomes = [str(i) for i in range(1,23)] + ['X','Y']
-	chromosomes = ['Y']
 	outfile = {}
+	count_per = {}
 	for chrom in chromosomes:
-		fnm = "gnomad_freqs_chr_%s.tab" % chrom
+		fnm = "/home/ivana/scratch/gnomad_freqs_tmp/gnomad_freqs_chr_%s.tab" % chrom
 		outfile[chrom] = open(fnm,"w")
+		count_per[chrom] = 0
 
 	for line in infile:
 		if not reading:
@@ -334,12 +341,13 @@ def main():
 			exit()
 
 		chrom = line.split("\t")[0]
-		if not chrom == 'Y': continue
+		#if not chrom == 'Y': continue
 		count += 1
 		if count%10000==0: print "%dK lines of  %s" % (count/1000,  chrom)
-
+		count_per[chrom]  += 1
 		tabbed_line = process_line(cursor,line, consequence_header_fields)
-		outfile[chrom].write("%d\t%s\n"%(count,tabbed_line))
+		if not tabbed_line: continue
+		outfile[chrom].write("%d\t%s\n"%(count_per[chrom], tabbed_line))
 
 
 	for chrom in chromosomes:

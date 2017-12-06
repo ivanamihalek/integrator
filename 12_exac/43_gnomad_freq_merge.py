@@ -1,5 +1,7 @@
 #!/usr/bin/python
-
+# create index gnomad_pos_idx_1 on gnomad_freqs_chr_1 (position);
+# careful with this, because it adds to existing without checking
+# perhaps some better wasy could be found for this
 from integrator_utils.mysql import *
 import shlex
 
@@ -15,6 +17,8 @@ all_keys = ['chrom', 'addr', 'ref', 'variants', 'consequences',  'ac', 'an', 'ac
 	 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']
 counts = [key for key in all_keys if key[:2]=='ac']
 totals = [key for key in all_keys if key[:2]=='an']
+
+db_gnomad_freq_keys = []
 
 # the annotation is crap ...
 # 22:17669352 G>GGGACA is an SNV in somebody's book
@@ -89,7 +93,7 @@ def parse_info(chrom, ref, vars, info, consequence_header_fields):
 		data[cnt] = {}
 		for p in population_fields+['overall']:
 			data[cnt][p] = {}
-			for g in gender+['both']: data[cnt][p][g] = 0
+			for g in gender+['both']: data[cnt][p][g] = '0'
 	consequences = ""
 	for  k,v  in named_fields.iteritems():
 		field = k.split("_")
@@ -176,6 +180,42 @@ def minimal_var_representation(str1,str2):
 	return min1.replace("x",""), min2.replace("x","")
 
 ##########################################
+def store_or_add_variant(cursor, table, fixed_fields, update_fields, verbose=False):
+
+	qry  = "select * from %s "   % table
+	qry += "where position=%d "  % fixed_fields['position']
+	qry += "and reference='%s' " % fixed_fields['reference']
+	qry += "and variant='%s' "   % fixed_fields['variant']
+	ret = search_db(cursor,qry)
+	if ret and ret[0][1]==fixed_fields['position']:
+		existing_fields = dict(zip(db_gnomad_freq_keys,ret[0]))
+		# sum and update
+		update_assignments = []
+		# the first 5 are addres, consequences etc, the last one is hotspot id
+		for count in db_gnomad_freq_keys[5:-1]:
+			#print count, existing_fields[count], update_fields[count]
+			update_fields[count] += existing_fields[count]
+			# create update query
+			update_assignments.append("%s=%d" %(count,update_fields[count]))
+		# create update query
+		qry = "update %s set " % table
+		qry += ", ".join(update_assignments) + " "
+		qry += "where id=%d "  % existing_fields['id']
+		# print update qry
+		# print qry
+		# print fixed_fields['position']
+		# print fixed_fields['reference']
+		# print fixed_fields['variant']
+		search_db(cursor,qry)
+
+	else:
+		all_fields = fixed_fields
+		all_fields.update(update_fields)
+		# print "new entry"
+		store_without_checking(cursor, table, all_fields, verbose=False)
+
+
+##########################################
 def store_variant(cursor, table, var_fields_unpacked):
 
 	# not sure why this happens - filtered varaints (the ones that do not have 'PASS')
@@ -222,7 +262,7 @@ def store_variant(cursor, table, var_fields_unpacked):
 			new_key = "_".join([population,'tot','count'])
 		update_fields[new_key] = int(var_fields_unpacked[count])
 
-	store_or_update(cursor, table, fixed_fields, update_fields, verbose=False)
+	store_or_add_variant(cursor, table, fixed_fields, update_fields, verbose=False)
 
 	return
 
@@ -243,8 +283,8 @@ def process_line(cursor, line, consequence_header_fields):
 		val = named_fields[k]
 		split_string[k] = val.split(',')
 		if len(split_string[k])!=number_of_variants:
-			if named_fields[k]=='0':
-				print 'err <<< '
+			if named_fields[k]!='0':
+				print 'err <<< ', k, number_of_variants, split_string[k]
 				exit()
 			else:
 				split_string[k] = ['0']*number_of_variants
@@ -280,7 +320,8 @@ def find_csq_header_fields(line):
 
 ##########################################
 def main():
-	infile = open("/databases/exac/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
+	#infile = open("/databases/exac/gnomad.genomes.r2.0.2.sites.coding_only.chrX.vcf")
+	infile = open("/databases/exac/gnomad.genomes.r2.0.2.sites.coding_only.chr1-22.vcf")
 	#infile = open("/databases/exac/gnomad_test.2.txt")
 	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	#infile = open("/databases/exac/testY.vcf")
@@ -289,6 +330,12 @@ def main():
 	# "There is no chromosome Y coverage / calls in the gnomAD genomes, because reasons."
 
 	db, cursor = connect()
+	qry  = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS` "
+	qry += "WHERE `TABLE_SCHEMA`='blimps_development' AND `TABLE_NAME`='gnomad_freqs_chr_1'"
+
+	global db_gnomad_freq_keys
+	db_gnomad_freq_keys = [entry[0] for entry in search_db(cursor, qry)]
+
 
 	reading = False
 	count = 0
@@ -301,6 +348,8 @@ def main():
 	#chromgroup = ['4','6', '13','19']
 	#chromgroup = ['5','14','16','18']
 	#chromgroup = ['15','17', 'X','Y']
+	#chromgroup = ['15','17', 'Y']
+
 	print "chomosomes:", chromgroup
 
 	for line in infile:
@@ -316,8 +365,7 @@ def main():
 		chrom = line.split("\t")[0]
 		if not chrom in chromgroup: continue
 		count += 1
-		if count%10000==0: print "%dK lines of  %s" % (count/1000,  chrom)
-
+		if count%1000==0: print "%dK lines of  %s" % (count/1000,  chrom)
 		process_line(cursor,line, consequence_header_fields)
 
 	cursor.close()
