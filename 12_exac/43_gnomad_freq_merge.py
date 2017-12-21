@@ -342,13 +342,14 @@ def main():
 	consequence_header_fields = None
 	chrom = ""
 
+	# redo 22
 	#chromgroup = ['1','9','10','22']
 	#chromgroup  = ['2','8','11','21']
-	chromgroup  = ['3','7','12','22']
+	#chromgroup  = ['3','7','12','22']
 	#chromgroup = ['4','6', '13','19']
 	#chromgroup = ['5','14','16','18']
-	#chromgroup = ['15','17', 'X','Y']
-	#chromgroup = ['15','17', 'Y']
+	chromgroup = ['15','17', 'X','Y']
+	chromgroup = ['20']
 
 	print "chomosomes:", chromgroup
 

@@ -487,7 +487,6 @@ def compile_model( cursor, gene_symbol,scratch):
 			os.rename(compiled_model,  main_model_path+"/"+compiled_model)
 	else:
 		compiled_model = None
-
 	#print compiled_ligand_list
 	#print distance_string
 	return main_model_path, compiled_model, chains, compiled_ligand_list, distance_string, ligand_functions
@@ -509,7 +508,6 @@ def store_ligands(cursor, approved_symbol, model_path, compiled_model, chains, c
 	store_or_update (cursor, 'monogenic_development.structures', fixed_fields, update_fields, verbose=False)
 
 	return
-
 
 ##########################################
 def model_structure_for_gene(gene_symbol):
