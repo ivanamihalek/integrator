@@ -22,7 +22,7 @@ open (IF, "<$filename" )
 
 my %manual_fix_for_ensembl = ();
 #not sure what is going on here:
-#  O43826 is annotated an manually reviewed entry for SLC37A4, associated with ENSG00000281500 --> patch in ensembl GRCh38
+# O43826 is annotated and manually reviewed entry for SLC37A4, associated with ENSG00000281500 --> patch in ensembl GRCh38
 # U3KQS2 is unreviewd, un-annotated, also says SLC37A4, and associated with ENSG00000137700 ensembl GRCh37
 $manual_fix_for_ensembl{'O43826'} = 'ENST00000545985;ENST00000357590;ENST00000330775;ENST00000538950';
 
@@ -84,7 +84,7 @@ sub parse() {
 		(substr $exon_ends, -1)eq',' && chop($exon_ends);
 		$chrom =~ s/chr//;
 
-		print join "\t", ($uniprot_id,  $enst,  $ensp, $chrom, $strand,
+		print join "\t", ($uniprot_id, $enst, $ensp, $chrom, $strand,
 				$exon_starts, $exon_ends, $cds_start, $cds_end, $seq,"","",""); # I have some extr fields in the database table
 		print "\n";
 	}

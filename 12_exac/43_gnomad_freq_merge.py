@@ -350,6 +350,7 @@ def main():
 	#chromgroup = ['5','14','16','18']
 	chromgroup = ['15','17', 'X','Y']
 	chromgroup = ['20']
+	chromgroup = ['22']
 
 	print "chomosomes:", chromgroup
 

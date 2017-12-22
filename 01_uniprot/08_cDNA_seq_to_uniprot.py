@@ -23,7 +23,7 @@ def find_relative_transl_start(hg19_exon_starts, hg19_exon_ends, hg19_cds_start)
 	starts = [int(x) for x in hg19_exon_starts.split(",")]
 	ends   = [int(x) for x in hg19_exon_ends.split(",")]
 	if (len(starts)!=len(ends)):
-		print "start end elngth mimsmatch"
+		print "start end length mimsmatch"
 		exit(1)
 
 	for i in range(len(starts)):

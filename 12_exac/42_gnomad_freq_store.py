@@ -322,7 +322,9 @@ def main():
 	chrom = ""
 
 	# gnomad does not have Y for some reason
-	chromosomes = [str(i) for i in range(1,23)] + ['X','Y']
+	# chromosomes = [str(i) for i in range(1,23)] + ['X','Y']
+	chromosomes = ['22']
+
 	outfile = {}
 	count_per = {}
 	for chrom in chromosomes:
