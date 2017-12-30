@@ -6,11 +6,20 @@ from integrator_utils.mysql import *
 ##########################################
 def main():
 	db, cursor = connect()
+
+	qry = "create table gnomad_hotspots "
+	qry += " (id int(11) NOT NULL AUTO_INCREMENT, "
+	qry += " chrom varchar(255), start int(11), end int(11), "
+	qry += " PRIMARY KEY (id) )"
+	search_db(cursor, qry, verbose=True)
+	exit()
+
 	for chrom in [str(i) for i in range(1,23)] + ['X','Y']:
 		table = "gnomad_freqs_chr_" + chrom
 		qry = "DROP TABLE %s " % table
-		search_db(cursor, qry, verbose=True)
+		#search_db(cursor, qry, verbose=True)
 		print table
+		continue
 		qry  = "CREATE TABLE %s " % table
 		qry += " (id int(11) NOT NULL AUTO_INCREMENT, position int(11), reference text,  variant text, consequences text, "
 		qry += " variant_count int, total_count int, "

@@ -180,6 +180,7 @@ def find_clusters_of_candidates(candidates):
 		the assumptions is that candidates come ordered by increasing position
 		return clusters with more than one member
 	"""
+	print "no candidates:", len(candidates)
 	clusters = []
 	for candidate in candidates:
 		cluster_found = False
@@ -204,32 +205,23 @@ def find_complex_variants(cursor, table):
 		also return the number of long indels we have dropped
 	"""
 	candidates = []
-	qry  = "select position, reference, variants, variant_counts, total_count from %s " % table
-	qry += "where char_length(reference)!=1 or char_length(variants)!=1"
+	qry  = "select position, reference, variant, variant_count, total_count from %s " % table
+	qry += "where char_length(reference)!=1 or char_length(variant)!=1"
+	print qry
 	long_vars_count = 0
 	for variant in search_db(cursor, qry):
-		[pos, ref, alt, var_counts, total_count] = variant
+		[pos, ref, alt, var_count, total_count] = variant
 		# I don't want large rearrangements here
 		if len(ref) > 30:
 			long_vars_count += 1
 			continue
 		# from these further remove cases where the variant field is a list of SNPs
-		if alt == '' or var_counts == '': continue
-		list_of_alts = alt.split(",")
+		if alt == '' or var_count == '': continue
 		ref_len = len(ref)
-		if ref_len == 1 and ("," in alt) and (len(alt) + 1) == 2 * len(list_of_alts): continue
 		# remove cases with count 0
-		new_alts   = []
-		new_counts = []
-		list_of_counts = var_counts.split(",")
-		for i in range(len(list_of_alts)):
-			if int(list_of_counts[i]) == 0: continue
-			if list_of_alts[i] == '' or list_of_counts[i] == '': continue
-			new_alts.append(list_of_alts[i])
-			new_counts.append(list_of_counts[i])
 		max_reach = pos + ref_len - 1
 		# I want the positions to remain sorted
-		candidates.append([pos, ref, ",".join(new_alts), ",".join(new_counts), total_count, max_reach])
+		candidates.append([pos, ref, alt, var_count, total_count, max_reach])
 	return candidates, long_vars_count
 
 
@@ -269,7 +261,7 @@ def main():
 		print table
 		print "number of variants:", search_db(cursor, "select count(1) from %s" % table)[0][0]
 		qry  = "select count(1) from %s " % table
-		qry += "where char_length(reference)=1 and char_length(variants)=1"
+		qry += "where char_length(reference)=1 and char_length(variant)=1"
 		print "simple SNPs",  search_db(cursor, qry)[0][0]
 
 		candidates, long_vars_ct = find_complex_variants(cursor, table)
@@ -289,22 +281,10 @@ def main():
 			# no varaints: cluster is just the number of positions here, not the number of
 			# vars repoted for each
 			[start,end, number_of_variants] = characterize_region(cluster)
-			periodic = periodicity_found(cluster)
-			if not periodic and number_of_variants<2: continue
+			if number_of_variants<2: continue
 			number_of_vars_in_clusters += number_of_variants
 			fixed_fields  = {'chrom':chrom, 'start':start, 'end':end}
-			update_fields = {'number_of_variants': number_of_variants}
-			if periodic:
-				number_of_clusters_with_periodic_motifs += 1
-				# find motifs and their repetition patterns
-				# with the estimate of the frequency for the pattern
-				motifs, pattern_freqs = motif_report(chrom,cluster)
-				if motifs:
-					update_fields['motifs'] = motifs
-					if len(pattern_freqs)<10000:
-						update_fields['pattern_freqs'] = pattern_freqs
-
-			store_or_update(cursor, 'gnomad_hotspots', fixed_fields, update_fields)
+			store_without_checking(cursor, 'gnomad_hotspots', fixed_fields)
 		print
 		print "Number of variants with clusters:", number_of_vars_in_clusters
 		print "Number of clusters with periodic motifs:", number_of_clusters_with_periodic_motifs
