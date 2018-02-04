@@ -1,8 +1,10 @@
 #!/usr/bin/python
 #
 #
-from integrator_utils.mysql     import *
-from integrator_utils.restfuls  import *
+from integrator_utils.python.mysql     import *
+from integrator_utils.python.restfuls  import *
+from integrator_utils.python.pdb_tools import *
+import integrator_utils.python.pdb_constants as pdbc
 from multiprocessing import Pool
 
 
@@ -15,11 +17,8 @@ no_of_processes = 1
 swissmodel_dir = "/databases/swissmodel"
 scratch_dir    = "/home/ivana/scratch"
 struct         = "/home/ivana/code/struct/struct"
-pdb_affine     = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_affine_tfm.pl"
-extract_chain  = "/home/ivana/pypeworks/integrator/integrator_utils/pdb_extract_chain.pl"
-blastp         = "/usr/local/bin/blastp"
-pdb_blast_db   = "/databases/pdb/blast/pdb_seqres.fasta" # expected to be formatted using makeblastdb
-pdb_name_resolution_table = "/databases/pdb/blast/name_resolution.txt"
+pdb_affine     = "/home/ivana/pypeworks/integrator/integrator_utils/perl/pdb_affine_tfm.pl"
+extract_chain  = "/home/ivana/pypeworks/integrator/integrator_utils/perl/pdb_extract_chain.pl"
 compiled_model_repository = "/home/ivana/monogenic/public/pdb"
 
 conda          = "/home/ivana/miniconda2/bin"
@@ -28,27 +27,6 @@ rdkit_runner   = "/home/ivana/pypeworks/integrator/24_pdb/17_rdkit_smiles_compar
 
 
 cwd    = os.getcwd()
-chain_pos = 21  #length 1
-res_name_pos = 17
-res_name_length = 3
-res_number_pos = 22
-res_number_length = 4
-aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
-                  'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N',
-                  'GLY': 'G', 'HIS': 'H', 'LEU': 'L', 'ARG': 'R', 'TRP': 'W',
-                  'ALA': 'A', 'VAL':'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M'}
-# http://www-structmed.cimr.cam.ac.uk/Course/Crystals/optimization.html
-# popular crystallographic additives
-# * Glycerol, which may stop nucleation and may give you fewer, larger crystals, and
-# has the advantage of doubling as a cryo-protectant. "GOL","PGO","PGR"
-# * Ethanol or dioxane, which have the effect of poisoning the crystals and stopping too much nucleation
-# *Divalent cations like magnesium "EDO","EOH", "DIO
-# * A detergent such as beta-octyl-glucoside "SOG","HTG"
-# NAG?  N-ACETYL-D-GLUCOSAMINE is that n additive
-# http://www.chem.gla.ac.uk/research/groups/protein/mirror/stura/cryst/add.html
-crystallographic_additives = ['HOH', "SO4", "GOL","PGO","PGR","EDO","EOH","DIO","SOG","HTG","CL","PEG","NAG",
-							  "PE4","ACT","NA", "MLT", "FMT"]
-physiological_ions = ["FE","FE2","MN","ZN","ZN2","MG","CU","CO","CD","MO","VA","NI","W", "SE","CA","K"]
 
 
 manual_intervention = {'CBS':{'pdb_ligand':'HEM', 'metacyc_ligand':'HEME','ligand_tanimoto':1.0,'ligand_function':'regulator'}}
@@ -120,21 +98,6 @@ def check_model_exists(swissmodel_dir, gene_symbol):
 	print "\t", swiss,"not a PDB file?"
 
 	return False
-
-##########################################
-def pdb_to_sequence(path, filename):
-	sequence = {}
-	infile = open (path+"/"+filename, "r")
-	for line in infile:
-		if line[:4] != 'ATOM': continue
-		chain = line[chain_pos]
-		resname = line[res_name_pos:res_name_pos+res_name_length]
-		resnumber = int(line[res_number_pos:res_number_pos+res_number_length])
-		if not aa_translation.has_key(resname): continue
-		if not sequence.has_key(chain): sequence[chain] = {}
-		sequence[chain][resnumber] = aa_translation[resname]
-
-	return sequence
 
 ##########################################
 def check_res_numbers(cursor, path, model):
@@ -242,7 +205,7 @@ def parse_ions(uniprot_cofactors, metacyc_cofactors):
 	for cof in uniprot_cofactors.split(";"):
 		cof =  cof[:2].upper()
 		# TODO: could it be that i have some cofactors here other than ions, which are not present in metacyc?
-		if cof not in physiological_ions: continue
+		if cof not in pdbc.physiological_ions: continue
 		seen_in_metacyc = False
 		for [compound, smiles] in metacyc_cofactors:
 			if cof==compound[:2].upper():
@@ -279,44 +242,6 @@ def get_pdb_ligand_info(cursor, pdb_id):
 		chemical_id, smile = line
 		smiles[chemical_id] = smile
 	return smiles
-
-##########################################
-def resolve_pdb_chain_name(pdb_chain_id):
-	cmd = "grep {} {}".format(pdb_chain_id,pdb_name_resolution_table)
-	ret = subprocess.check_output(cmd, shell=True).split("\n")
-	if len(ret)!=1: return None # resolution failed
-	name_resolved = ret.split()[0].replace("_","")
-	return name_resolved
-
-##########################################
-def find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch):
-	os.chdir(scratch)
-	qry = "select sequence from monogenic_development.uniprot_seqs where uniprot_id='%s'" % uniprot_id
-	ret = search_db(cursor,qry)
-	queryfile = uniprot_id+".fasta"
-	outf = open(queryfile,"w")
-	outf.write(">{}\n{}\n".format(uniprot_id,ret[0][0]))
-	outf.close()
-
-	# outfmt 6 is tabular format; the column headers are given using outfmt 7:
-	# query acc., subject acc., % identity, alignment length, mismatches,
-	#      gap opens, q. start, q. end, s. start, s. end, evalue, bit score
-	target_pct_idtty = OrderedDict()
-	cmd = "{} -db {} -query {} -outfmt 6".format(blastp, pdb_blast_db, queryfile)
-	for line in subprocess.check_output(cmd, shell=True).split("\n"):
-		print "\t\t", line
-		field = line.split()
-		if len(field)==0 or field[0] != uniprot_id:  continue # this is not the result line
-		pct_identity = field[2]
-		if float(pct_identity)<40: break
-		target_id = field[1].replace("_","")
-		if target_id[-1]==target_id[-2]: target_id=target_id[:-1]
-		if len(target_id)>5:
-			target_id = resolve_pdb_chain_name(field[1])
-			if not target_id: continue # name resolving failed for one reason or another
-
-		if not target_id in target_pct_idtty.keys(): target_pct_idtty[target_id]=pct_identity
-	return target_pct_idtty
 
 ##########################################
 def rdkit_compare(smiles1, smiles2):
@@ -442,20 +367,20 @@ def select_pdbs_with_relevant_ligands(cursor, pdb_id_list, gene_symbol):
 				print [pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']]
 				ligand_similarities.append([pdb_compound_id, manual['metacyc_ligand'], manual['ligand_function'], "%.2f"%manual['ligand_tanimoto']])
 				continue
-			if pdb_compound_id in crystallographic_additives: continue
+			if pdb_compound_id in pdbc.crystallographic_additives: continue
 			# function: substrate, cofactor, regulator
 			print "\t\t pdb ligand smile string:", smiles_string
 			for native_ligand_id, [native_smiles, native_ligand_function] in native_ligands_smiles.iteritems():
 				print "\t\t\t native smiles:", native_smiles
 				# are the two strings trivially equal by any chance?
 				similarity=0
-				if pdb_compound_id in physiological_ions:
-					if not native_ligand_id in physiological_ions: continue
+				if pdb_compound_id in pdbc.physiological_ions:
+					if not native_ligand_id in pdbc.physiological_ions: continue
 					# pdb people can be lax with the ion charge
 					if (pdb_compound_id.translate(None,"+-123"))==(native_ligand_id.translate(None,"+-123")):
 						similarity=1.0
 				else:
-					if native_ligand_id in physiological_ions: continue
+					if native_ligand_id in pdbc.physiological_ions: continue
 					if native_smiles and smiles_string:
 						if native_smiles.upper()==smiles_string.upper():
 							similarity=1.0
@@ -482,7 +407,10 @@ def print_smiles (name, smiles):
 def process_enzyme(cursor, gene_symbol, ensembl_gene_id, ec_number, swissmodel, uniprot_cofactors, uniprot_id, scratch):
 	# find all other pdb files with similar sequence and ligands
 	print "\tlooking for pdb with sequence similar to  %s ..." % gene_symbol
-	pdb_pct_similarity = find_pdb_ids_of_similar_seqs(cursor,uniprot_id,scratch)
+	qry = "select sequence from monogenic_development.uniprot_seqs where uniprot_id='%s'" % uniprot_id
+	sequence = search_db(cursor,qry)[0][0]
+	# 40 is cutoff_ct identity, and unprot_id ill be used as a tmp name
+	pdb_pct_similarity = find_pdb_ids_of_similar_seqs(sequence, 40, scratch, uniprot_id)
 	if len(pdb_pct_similarity)==0:
 		print "\t no pdbs with sufficient similarity found"
 		return

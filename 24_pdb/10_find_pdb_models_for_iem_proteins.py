@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
-from integrator_utils.mysql import *
+from integrator_utils.python.mysql import *
 import os
 import urllib
+
 
 def parse_meta(swissmetafile):
 	infile = open(swissmetafile,"r")
@@ -15,10 +16,11 @@ def parse_meta(swissmetafile):
 		models[uniprot_id].append([coordinate_id, provider, start, end, template, qmean, qmean_norm,url])
 	return models
 
+
 ##########################################
 def parse_url(ur):
 	# url of the form
-	#https://swissmodel.expasy.org/repository/uniprot/P22304.pdb?from=34&to=550&template=5fql.1.A&provider=swissmodel
+	# https://swissmodel.expasy.org/repository/uniprot/P22304.pdb?from=34&to=550&template=5fql.1.A&provider=swissmodel
 	[addr, fnm] = ur.split('?')
 	uniprot_id = addr.split("/")[-1].replace('.pdb','')
 	pdbname =  uniprot_id
@@ -27,6 +29,8 @@ def parse_url(ur):
 		pdbname += "_" + v
 	pdbname += ".pdb"
 	return pdbname
+
+
 ##########################################
 def main():
 	swissmodel_dir = "/databases/swissmodel"
@@ -36,7 +40,7 @@ def main():
 
 	pdbmodels = parse_meta(swissmodel_meta_file)
 
-	#qry = 'select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where inborn_error_of_metabolism=1'
+	# qry = 'select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where inborn_error_of_metabolism=1'
 	qry = "select approved_symbol, ensembl_gene_id, phenotypes from omim_genemaps where approved_symbol='HMGCL'"
 	ret = search_db(cursor, qry)
 	print 'genes: ', len(ret)
