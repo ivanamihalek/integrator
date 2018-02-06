@@ -26,7 +26,7 @@ cwd    = os.getcwd()
 chain_pos      = 21  #length 1
 res_name_pos   = 17
 res_name_length = 3
-res_number_pos = 22
+res_number_pos  = 22
 res_number_length = 4
 aa_translation = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
                   'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N',

@@ -3,9 +3,9 @@ import pdb_constants as pdbc
 import os, subprocess, shutil
 from collections import OrderedDict
 
-blastp       = "/usr/local/bin/blastp"
-pdb_blast_db = "/databases/pdb/blast/pdb_seqres.fasta" # expected to be formatted using makeblastdb
-pdb_name_resolution_table = "/databases/pdb/blast/name_resolution.txt"
+blastp       = "/usr/bin/blastp"
+pdb_blast_db = "/data/pdb/blast/pdb_seqres.fasta" # expected to be formatted using makeblastdb
+pdb_name_resolution_table = "/data/pdb/blast/pdb_seqres.name_resolution"
 
 
 ##########################################
@@ -46,22 +46,22 @@ def resolve_pdb_chain_name(pdb_chain_id):
 
 
 ##########################################
-def find_pdb_ids_of_similar_seqs(sequence, cutoff_pct, scratch, tmpname):
+def find_pdb_ids_of_similar_seqs(sequence, cutoff_pct, scratch, qryname, verbose=False):
 	os.chdir(scratch)
-	queryfile = tmpname+".fasta"
+	queryfile = "{}.{}.fasta".format(qryname, os.getpid())
 	outf = open(queryfile,"w")
-	outf.write(">{}\n{}\n".format(tmpname, sequence))
+	outf.write(">{}\n{}\n".format(qryname, sequence))
 	outf.close()
 
 	# outfmt 6 is tabular format; the column headers are given using outfmt 7:
 	# query acc., subject acc., % identity, alignment length, mismatches,
 	#      gap opens, q. start, q. end, s. start, s. end, evalue, bit score
-	target_pct_idtty = OrderedDict()
+	target_vs_pct_idtty = OrderedDict()
 	cmd = "{} -db {} -query {} -outfmt 6".format(blastp, pdb_blast_db, queryfile)
 	for line in subprocess.check_output(cmd, shell=True).split("\n"):
-		print "\t\t", line
+		if verbose: print "\t\t", line
 		field = line.split()
-		if len(field)==0 or field[0] != tmpname:  continue # this is not the result line
+		if len(field)==0 or field[0] != qryname:  continue # this is not the result line
 		pct_identity = field[2]
 		if float(pct_identity)<cutoff_pct: break
 		target_id = field[1].replace("_","")
@@ -70,5 +70,8 @@ def find_pdb_ids_of_similar_seqs(sequence, cutoff_pct, scratch, tmpname):
 			target_id = resolve_pdb_chain_name(field[1])
 			if not target_id: continue # name resolving failed for one reason or another
 
-		if not target_id in target_pct_idtty.keys(): target_pct_idtty[target_id]=pct_identity
-	return target_pct_idtty
+		if not target_id in target_vs_pct_idtty.keys(): target_vs_pct_idtty[target_id]=pct_identity
+
+	os.remove(queryfile)
+	
+	return target_vs_pct_idtty
