@@ -38,10 +38,11 @@ def pdb_to_sequence(path, filename):
 
 ##########################################
 def resolve_pdb_chain_name(pdb_chain_id):
+	# we arde doing this because makeblastdb cannot handle properly the pdb identifiers
 	cmd = "grep {} {}".format(pdb_chain_id,pdb_name_resolution_table)
-	ret = subprocess.check_output(cmd, shell=True).split("\n")
-	if len(ret)!=1: return None # resolution failed
-	name_resolved = ret.split()[0].replace("_","")
+	ret = subprocess.check_output(cmd, shell=True).split("\n")[0].split()
+	if len(ret)!=2: return None # resolution failed
+	name_resolved = ret[0]
 	return name_resolved
 
 
@@ -63,15 +64,13 @@ def find_pdb_ids_of_similar_seqs(sequence, cutoff_pct, scratch, qryname, verbose
 		field = line.split()
 		if len(field)==0 or field[0] != qryname:  continue # this is not the result line
 		pct_identity = field[2]
+		match_start_on_qry = field[6]
+		match_end_on_qry = field[7]
 		if float(pct_identity)<cutoff_pct: break
-		target_id = field[1].replace("_","")
-		if target_id[-1]==target_id[-2]: target_id=target_id[:-1]
-		if len(target_id)>5:
-			target_id = resolve_pdb_chain_name(field[1])
-			if not target_id: continue # name resolving failed for one reason or another
-
-		if not target_id in target_vs_pct_idtty.keys(): target_vs_pct_idtty[target_id]=pct_identity
+		pdb_chain_id = resolve_pdb_chain_name(field[1])
+		if not   resolve_pdb_chain_name(pdb_chain_id) in target_vs_pct_idtty.keys():
+			target_vs_pct_idtty[pdb_chain_id]=[pct_identity, match_start_on_qry, match_end_on_qry]
 
 	os.remove(queryfile)
-	
+
 	return target_vs_pct_idtty

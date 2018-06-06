@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
-from integrator_utils.mysql import *
+from integrator_utils.python.mysql import *
 import shlex
 
-# output the tables rather thatn trying to store them from python - much faster
+# output the tables rather than trying to store them from python - much faster
 '''
  for i in $(seq 1 22)
 > do
 > echo $i
-> mysqlimport --login-path=ivana  --local blimps_development gnomad_freqs_chr_$i.txt
+> mysqlimport --login-path=ivana  --local blimps_development gnomad_freqs_chr_$i.tab
 > done
 repeat for X and Y
 for i in X Y; do echo $i; done
@@ -306,7 +306,7 @@ def find_csq_header_fields(line):
 
 ##########################################
 def main():
-	infile = open("/databases/exac/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
+	infile = open("/storage/databases/gnomad/release_2.0.2_vcf_exomes_gnomad.exomes.r2.0.2.sites.vcf")
 	#infile = open("/databases/exac/gnomad_test.2.txt")
 	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
 	#infile = open("/databases/exac/testY.vcf")
@@ -314,7 +314,9 @@ def main():
 	# This one is good. From gnomad blogpost, literally:
 	# "There is no chromosome Y coverage / calls in the gnomAD genomes, because reasons."
 
-	db, cursor = connect()
+	db     = connect_to_mysql()
+	cursor = db.cursor()
+
 
 	reading = False
 	count = 0
@@ -322,8 +324,8 @@ def main():
 	chrom = ""
 
 	# gnomad does not have Y for some reason
-	# chromosomes = [str(i) for i in range(1,23)] + ['X','Y']
-	chromosomes = ['22']
+	chromosomes = [str(i) for i in range(1,23)] + ['X']
+	#chromosomes = ['22']
 
 	outfile = {}
 	count_per = {}
@@ -336,6 +338,8 @@ def main():
 		if not reading:
 			if line[:6] == '#CHROM': reading=True
 			if not consequence_header_fields and line[:len('##INFO=<')] == '##INFO=<':
+				# this function will look for the line that contains "CSQ" after '##INFO=<'
+				# and ignore the rest
 				consequence_header_fields = find_csq_header_fields(line)
 			continue
 		if not consequence_header_fields:

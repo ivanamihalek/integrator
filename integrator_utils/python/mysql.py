@@ -39,365 +39,395 @@ def ensembl_id2uniprot_id (cursor, ensembl_gene_id):
 	uniprot_id = ret[0][0]
 	return uniprot_id
 
+########
+def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=None):
+
+	if conf_file:
+		if not  os.path.isfile(conf_file):
+			print conf_file, "not found or is not a file"
+			return None
+		try: # user is spelled out in the conf file
+			mysql_conn_handle = MySQLdb.connect(read_default_file=conf_file)
+		except  MySQLdb.Error, e:
+			print "Error connecting to mysql (%s) " % (e.args[1])
+			sys.exit(1)
+		return mysql_conn_handle
+
+	else:
+
+		try:
+			if (user is None):
+				mysql_conn_handle = MySQLdb.connect(user="root")
+			elif (host is None):
+				mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd)
+			else:
+				mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd, host=host, port=port)
+
+		except  MySQLdb.Error, e:
+			print "Error connecting to mysql as %s" % (e.args[1])
+			sys.exit(1)
+
+		return mysql_conn_handle
+
 
 ##########################################
 def connect():
-    development = gethostname() in ['pegasus','bison']
-    if development:
-        db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
-    else:
-        db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
-    if not db: exit(1)
-    cursor = db.cursor()
-    qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
-    search_db(cursor,qry,False)
-    if development:
-        switch_to_db(cursor, 'blimps_development')
-    else:
-        switch_to_db(cursor, 'blimps_production')
-    return db, cursor
+	development = gethostname() in ['pegasus','bison']
+	if development:
+		db = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
+	else:
+		db = connect_to_mysql(user="blimps", passwd=(os.environ['BLIMPS_DATABASE_PASSWORD']))
+	if not db: exit(1)
+	cursor = db.cursor()
+	qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
+	search_db(cursor,qry,False)
+	if development:
+		switch_to_db(cursor, 'blimps_development')
+	else:
+		switch_to_db(cursor, 'blimps_production')
+	return db, cursor
 
 
 ########
 def check_null (variable):
 
-    if variable is None:
-        return None
-    if (type(variable) is str and variable=="None"):
-        return None
-    return variable
+	if variable is None:
+		return None
+	if (type(variable) is str and variable=="None"):
+		return None
+	return variable
 
 
 ########
 def switch_to_db (cursor, db_name, verbose=False):
-    qry = "use %s" % db_name
-    rows = search_db (cursor, qry, verbose)
-    if (rows):
-        print rows
-        return False
-    return True
+	qry = "use %s" % db_name
+	rows = search_db (cursor, qry, verbose)
+	if (rows):
+		print rows
+		return False
+	return True
 
 ########
 def store_without_checking(cursor, table, fields, verbose=False):
-    qry = "insert into %s " % table
-    qry += "("
-    first = True
-    for field in fields.keys(): # again will have to check for the type here
-        if (not first):
-            qry += ", "
-        qry += field
-        first = False
-    qry += ")"
+	qry = "insert into %s " % table
+	qry += "("
+	first = True
+	for field in fields.keys(): # again will have to check for the type here
+		if (not first):
+			qry += ", "
+		qry += field
+		first = False
+	qry += ")"
 
-    qry += " values "
-    qry += "("
-    first = True
-    for value in fields.values(): # again will have to check for the type here
-        if (not first):
-            qry += ", "
-        if  value is None:
-            qry += " null "
-        elif type(value) is int:
-            qry += " %d" % value
-        elif type(value) is float:
-            qry += " %f" % value
-        else:
-            qry += " \'%s\'" % value
-        first = False
-    qry += ")"
+	qry += " values "
+	qry += "("
+	first = True
+	for value in fields.values(): # again will have to check for the type here
+		if (not first):
+			qry += ", "
+		if  value is None:
+			qry += " null "
+		elif type(value) is int:
+			qry += " %d" % value
+		elif type(value) is float:
+			qry += " %f" % value
+		else:
+			qry += " \'%s\'" % value
+		first = False
+	qry += ")"
 
 
-    rows   = search_db (cursor, qry)
-    if verbose:
-        print
-        print " ** ", qry
-        print " ** ", rows
+	rows   = search_db (cursor, qry)
+	if verbose:
+		print
+		print " ** ", qry
+		print " ** ", rows
 
-    if (rows):
-        rows   = search_db (cursor, qry, verbose=True)
-        print rows
-        return False
+	if (rows):
+		rows   = search_db (cursor, qry, verbose=True)
+		print rows
+		return False
 
-    return True
+	return True
 
 ########
 def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False, primary_key='id'):
 
-    id = -1
-    conditions = ""
-    first = True
-    for [field, value] in fixed_fields.iteritems():
-        if (not first):
-            conditions += " and "
-        if ( type (value) is int):
-            conditions += " %s= %d "  % (field, value)
-        elif value is None:
-            conditions += " %s= null" % field
-        else:
-            conditions += " %s='%s' " % (field, value)
-        first = False
+	id = -1
+	conditions = ""
+	first = True
+	for [field, value] in fixed_fields.iteritems():
+		if (not first):
+			conditions += " and "
+		if ( type (value) is int):
+			conditions += " %s= %d "  % (field, value)
+		elif value is None:
+			conditions += " %s= null" % field
+		else:
+			conditions += " %s='%s' " % (field, value)
+		first = False
 
-    # check if the row exists
-    qry = "select %s from %s  where %s "  % (primary_key, table, conditions)
-    rows   = search_db (cursor, qry, verbose)
-    exists = rows and (type(rows[0][0]) is long)
+	# check if the row exists
+	qry = "select %s from %s  where %s "  % (primary_key, table, conditions)
+	rows   = search_db (cursor, qry, verbose)
+	exists = rows and (type(rows[0][0]) is long)
 
-    if exists: id = rows[0][0]
+	if exists: id = rows[0][0]
 
-    if verbose:
-        print
-        print qry
-        print rows
-        print "exists?", exists
-
-
-    if exists and not update_fields: return id
+	if verbose:
+		print
+		print qry
+		print rows
+		print "exists?", exists
 
 
-    if exists: # if it exists, update
-        if verbose: print "exists; update"
-        qry = "update %s set " % table
-        first = True
-        for field, value in update_fields.iteritems():
-            if (not first):
-                qry += ", "
-            qry += " %s = " % field
-            if  value is None:
-                qry += " null "
-            elif type(value) is int:
-                qry += " %d" % value
-            elif type(value) is float:
-                qry += " %f" % value
-            else:
-                qry += " \'%s\'" % value
+	if exists and not update_fields: return id
 
-            first = False
-        qry += " where %s " % conditions
 
-    else: # if not, make a new one
-        if verbose: print "does not exist; make new one"
+	if exists: # if it exists, update
+		if verbose: print "exists; update"
+		qry = "update %s set " % table
+		first = True
+		for field, value in update_fields.iteritems():
+			if (not first):
+				qry += ", "
+			qry += " %s = " % field
+			if  value is None:
+				qry += " null "
+			elif type(value) is int:
+				qry += " %d" % value
+			elif type(value) is float:
+				qry += " %f" % value
+			else:
+				qry += " \'%s\'" % value
 
-        qry = "insert into %s " % table
-        qry += "("
-        first = True
-        for field in fixed_fields.keys()+update_fields.keys(): # again will have to check for the type here
-            if (not first):
-                qry += ", "
-            qry += field
-            first = False
-        qry += ")"
-       
-        qry += " values "
-        qry += "("
-        first = True
-        for value in fixed_fields.values()+update_fields.values(): # again will have to check for the type here
-            if (not first):
-                qry += ", "
-            if  value is None:
-                qry += " null "
-            elif type(value) is int:
-                qry += " %d" % value
-            elif type(value) is float:
-                qry += " %f" % value
-            else:
-                qry += " \'%s\'" % value
+			first = False
+		qry += " where %s " % conditions
 
-            first = False
-        qry += ")"
-        
-    rows   = search_db (cursor, qry, verbose)
+	else: # if not, make a new one
+		if verbose: print "does not exist; make new one"
 
-    if verbose:
-        print
-        print " ** ", qry
-        print " ** ", rows
+		qry = "insert into %s " % table
+		qry += "("
+		first = True
+		for field in fixed_fields.keys()+update_fields.keys(): # again will have to check for the type here
+			if (not first):
+				qry += ", "
+			qry += field
+			first = False
+		qry += ")"
 
-    # if there is a return, it is an error msg
-    if (rows):
-        rows   = search_db (cursor, qry, verbose=True)
-        print rows[0]
-        return id
-       
-    qry  = "select last_insert_id()"
-    rows = search_db (cursor, qry)
-    if rows and (type(rows[0][0]) is long):
-        return rows[0][0]
-    return  -1
+		qry += " values "
+		qry += "("
+		first = True
+		for value in fixed_fields.values()+update_fields.values(): # again will have to check for the type here
+			if (not first):
+				qry += ", "
+			if  value is None:
+				qry += " null "
+			elif type(value) is int:
+				qry += " %d" % value
+			elif type(value) is float:
+				qry += " %f" % value
+			else:
+				qry += " \'%s\'" % value
+
+			first = False
+		qry += ")"
+
+	rows   = search_db (cursor, qry, verbose)
+
+	if verbose:
+		print
+		print " ** ", qry
+		print " ** ", rows
+
+	# if there is a return, it is an error msg
+	if (rows):
+		rows   = search_db (cursor, qry, verbose=True)
+		print rows[0]
+		return id
+
+	qry  = "select last_insert_id()"
+	rows = search_db (cursor, qry)
+	if rows and (type(rows[0][0]) is long):
+		return rows[0][0]
+	return  -1
 
 #########################################
 def create_index (cursor, db_name, index_name, table, columns):
 
-    if  not switch_to_db (cursor, db_name):
-        return False
-    
-    # check whether this index exists already
-    qry = "show index from %s where key_name like '%s'" % ( table, index_name) 
-    rows = search_db (cursor, qry, verbose=True)
-    if (rows):
-        print rows
-        return True
+	if  not switch_to_db (cursor, db_name):
+		return False
+
+	# check whether this index exists already
+	qry = "show index from %s where key_name like '%s'" % ( table, index_name)
+	rows = search_db (cursor, qry, verbose=True)
+	if (rows):
+		print rows
+		return True
    
-    # columns is a list of columns that we want to have indexed
-    qry = "create index %s  on %s " % (index_name, table)
-    qry += " ("
-    first = True
-    for column in columns:
-        if (not first):
-            qry += ", "
-        qry += column
-        first = False
-    qry += ")"
+	# columns is a list of columns that we want to have indexed
+	qry = "create index %s  on %s " % (index_name, table)
+	qry += " ("
+	first = True
+	for column in columns:
+		if (not first):
+			qry += ", "
+		qry += column
+		first = False
+	qry += ")"
 
 
-    rows = search_db (cursor, qry, verbose=True)
-    if (rows):
-        print rows
-        return False
+	rows = search_db (cursor, qry, verbose=True)
+	if (rows):
+		print rows
+		return False
    
-    return True
+	return True
 
 #########################################
 def get_column_names (cursor, db_name, table_name):
 
-    if  not switch_to_db (cursor, db_name):
-        return False
+	if  not switch_to_db (cursor, db_name):
+		return False
 
-    qry = "show columns from "+ table_name
-    rows = search_db (cursor, qry, verbose=False)
-    if (rows):
-        if ( 'Error' in rows[0]):
-            rows = search_db (cursor, qry, verbose=True)
-            return False
-        else:
-            return [row[0] for row in rows]
-    else:
-        return False
+	qry = "show columns from "+ table_name
+	rows = search_db (cursor, qry, verbose=False)
+	if (rows):
+		if ( 'Error' in rows[0]):
+			rows = search_db (cursor, qry, verbose=True)
+			return False
+		else:
+			return [row[0] for row in rows]
+	else:
+		return False
 
 #########################################
 def check_column_exists (cursor, db_name, table_name, column_name):
-    
-    if  not switch_to_db (cursor, db_name):
-        return False
 
-    qry = "show columns from "+ table_name + " like '%s'" % column_name
-    rows = search_db (cursor, qry, verbose=False)
-    if (rows):
-        if ( 'Error' in rows[0]):
-            return False
-        else:
-            return True
-    else: 
-        return False
+	if  not switch_to_db (cursor, db_name):
+		return False
+
+	qry = "show columns from "+ table_name + " like '%s'" % column_name
+	rows = search_db (cursor, qry, verbose=False)
+	if (rows):
+		if ( 'Error' in rows[0]):
+			return False
+		else:
+			return True
+	else:
+		return False
 
 #########################################
 def check_or_make_column (cursor, db_name, table_name, column_name, column_type):
 
-    if check_column_exists (cursor, db_name, table_name, column_name):
-        return # we're ok
+	if check_column_exists (cursor, db_name, table_name, column_name):
+		return # we're ok
 
-    print "making column", column_name, " in uniprot_seqs"
-    qry = "alter table monogenic_development.uniprot_seqs "
-    qry += "add  %s %s" % (column_name, column_type)
-    search_db(cursor,qry, verbose=True)
-    return
+	print "making column", column_name, " in uniprot_seqs"
+	qry = "alter table monogenic_development.uniprot_seqs "
+	qry += "add  %s %s" % (column_name, column_type)
+	search_db(cursor,qry, verbose=True)
+	return
 
 #########################################
 def check_table_exists (cursor, db_name, table_name):
-    
-    if  not switch_to_db (cursor, db_name):
-        return False
 
-    qry = "show tables like '%s'" % table_name
-    rows = search_db (cursor, qry, verbose=False)
-    if (rows):
-        if ( 'Error' in rows[0]):
-            return False
-        else:
-            return True
-    else: 
-        return False
+	if  not switch_to_db (cursor, db_name):
+		return False
+
+	qry = "show tables like '%s'" % table_name
+	rows = search_db (cursor, qry, verbose=False)
+	if (rows):
+		if ( 'Error' in rows[0]):
+			return False
+		else:
+			return True
+	else:
+		return False
 
 #########################################
 def table_create_time (cursor, db_name, table_name):
-    
-    qry  = "select create_time from information_schema.tables where "
-    qry += "table_schema   = '%s' " % db_name
-    qry += "and table_name = '%s' " % table_name
 
-    rows = search_db (cursor, qry, verbose=False)
-    if (not rows or  'Error' in rows[0]):
-        search_db (cursor, qry, verbose=True)
-        return ""
-    else: 
-        return rows[0][0]
+	qry  = "select create_time from information_schema.tables where "
+	qry += "table_schema   = '%s' " % db_name
+	qry += "and table_name = '%s' " % table_name
+
+	rows = search_db (cursor, qry, verbose=False)
+	if (not rows or  'Error' in rows[0]):
+		search_db (cursor, qry, verbose=True)
+		return ""
+	else:
+		return rows[0][0]
 
 #######
 def search_db (cursor, qry, verbose=False):
 
-    try:
-        cursor.execute(qry)
-    except MySQLdb.Error, e:
-        if verbose:
-            print "Error running cursor.execute() for  qry: %s: %s " % (qry, e.args[1])
-        return  [["ERROR: "+e.args[1]]]
+	try:
+		cursor.execute(qry)
+	except MySQLdb.Error, e:
+		if verbose:
+			print "Error running cursor.execute() for  qry: %s: %s " % (qry, e.args[1])
+		return  [["ERROR: "+e.args[1]]]
 
 
-    try:
-        rows = cursor.fetchall()
-    except MySQLdb.Error, e:
-        if verbose:
-            print "Error running cursor.fetchall() for  qry: %s: %s " % (qry, e.args[1])
-        return  ["ERROR: "+e.args[1]]
-    
-    if (len(rows) == 0):
-        if verbose:
-            print "No return for query %s"  % qry
-        return False
+	try:
+		rows = cursor.fetchall()
+	except MySQLdb.Error, e:
+		if verbose:
+			print "Error running cursor.fetchall() for  qry: %s: %s " % (qry, e.args[1])
+		return  ["ERROR: "+e.args[1]]
 
-    return rows
+	if (len(rows) == 0):
+		if verbose:
+			print "No return for query %s"  % qry
+		return False
+
+	return rows
 
 ########
 def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=None):
-    # type: (object, object, object, object, object) -> object
+	# type: (object, object, object, object, object) -> object
 
-    if conf_file:
-        if not  os.path.isfile(conf_file):
-            print conf_file, "not found or is not a file"
-            return None
-        try: # user is spelled out in the conf file
-            mysql_conn_handle = MySQLdb.connect(read_default_file=conf_file)
-        except  MySQLdb.Error, e:
-            print "Error connecting to mysql (%s) " % (e.args[1])
-            sys.exit(1) 
-        return mysql_conn_handle
-    
-    else:
-       
-        try:
-            if (user is None):
-                mysql_conn_handle = MySQLdb.connect(user="root")
-            elif (host is None):
-                mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd)
-            else:
-                mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd, host=host, port=port)
-            
-        except  MySQLdb.Error, e:
-            print "Error connecting to mysql as %s" % (e.args[1])
-            sys.exit(1)
+	if conf_file:
+		if not  os.path.isfile(conf_file):
+			print conf_file, "not found or is not a file"
+			return None
+		try: # user is spelled out in the conf file
+			mysql_conn_handle = MySQLdb.connect(read_default_file=conf_file)
+		except  MySQLdb.Error, e:
+			print "Error connecting to mysql (%s) " % (e.args[1])
+			sys.exit(1)
+		return mysql_conn_handle
 
-        return mysql_conn_handle
+	else:
+
+		try:
+			if (user is None):
+				mysql_conn_handle = MySQLdb.connect(user="root")
+			elif (host is None):
+				mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd)
+			else:
+				mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd, host=host, port=port)
+
+		except  MySQLdb.Error, e:
+			print "Error connecting to mysql as %s" % (e.args[1])
+			sys.exit(1)
+
+		return mysql_conn_handle
 
 ########
 def connect_to_db (db_name, user=None, passwd=None):
 
-    try:
-        if not user is None:
-            db = MySQLdb.connect(user=user, passwd=passwd, db=db_name)
-        else:
-            db = MySQLdb.connect(user="root", db=db_name)
-    except  MySQLdb.Error, e:
-        print "Error connecting to %s: %d %s" % (db_name, e.args[0], e.args[1])
-        exit(1)
+	try:
+		if not user is None:
+			db = MySQLdb.connect(user=user, passwd=passwd, db=db_name)
+		else:
+			db = MySQLdb.connect(user="root", db=db_name)
+	except  MySQLdb.Error, e:
+		print "Error connecting to %s: %d %s" % (db_name, e.args[0], e.args[1])
+		exit(1)
 
-    return db
+	return db
 

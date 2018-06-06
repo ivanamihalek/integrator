@@ -1,8 +1,13 @@
 #!/usr/bin/python
+
+# merge exoma and genome coding region data
+
 # create index gnomad_pos_idx_1 on gnomad_freqs_chr_1 (position);
 # careful with this, because it adds to existing without checking
 # perhaps some better wasy could be found for this
-from integrator_utils.mysql import *
+from integrator_utils.python.mysql import *
+from integrator_utils.python.processes import *
+from random import shuffle
 import shlex
 
 count_fields = ["AC", "AN", "AF", "GC", "Hemi"]
@@ -17,8 +22,6 @@ all_keys = ['chrom', 'addr', 'ref', 'variants', 'consequences',  'ac', 'an', 'ac
 	 'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']
 counts = [key for key in all_keys if key[:2]=='ac']
 totals = [key for key in all_keys if key[:2]=='an']
-
-db_gnomad_freq_keys = []
 
 # the annotation is crap ...
 # 22:17669352 G>GGGACA is an SNV in somebody's book
@@ -180,7 +183,7 @@ def minimal_var_representation(str1,str2):
 	return min1.replace("x",""), min2.replace("x","")
 
 ##########################################
-def store_or_add_variant(cursor, table, fixed_fields, update_fields, verbose=False):
+def store_or_add_variant(cursor, table,  db_gnomad_freq_keys,fixed_fields, update_fields, verbose=False):
 
 	qry  = "select * from %s "   % table
 	qry += "where position=%d "  % fixed_fields['position']
@@ -216,7 +219,7 @@ def store_or_add_variant(cursor, table, fixed_fields, update_fields, verbose=Fal
 
 
 ##########################################
-def store_variant(cursor, table, var_fields_unpacked):
+def store_variant(cursor, table,  db_gnomad_freq_keys, var_fields_unpacked):
 
 	# not sure why this happens - filtered varaints (the ones that do not have 'PASS')
 	# still may have count > 0
@@ -262,12 +265,12 @@ def store_variant(cursor, table, var_fields_unpacked):
 			new_key = "_".join([population,'tot','count'])
 		update_fields[new_key] = int(var_fields_unpacked[count])
 
-	store_or_add_variant(cursor, table, fixed_fields, update_fields, verbose=False)
+	store_or_add_variant(cursor, table,  db_gnomad_freq_keys, fixed_fields, update_fields, verbose=False)
 
 	return
 
 ##########################################
-def process_line(cursor, line, consequence_header_fields):
+def process_line(cursor, line,  db_gnomad_freq_keys, consequence_header_fields):
 
 	ret = parse_data_line(line, consequence_header_fields)
 
@@ -303,7 +306,7 @@ def process_line(cursor, line, consequence_header_fields):
 		for k in totals:
 			var_fields_unpacked[k] = named_fields[k]
 
-		store_variant(cursor, table, var_fields_unpacked)
+		store_variant(cursor, table,  db_gnomad_freq_keys, var_fields_unpacked)
 	return
 
 #########################################
@@ -312,52 +315,39 @@ def find_csq_header_fields(line):
 	my_splitter.whitespace += ','
 	my_splitter.whitespace_split = True
 	fields = list(my_splitter)
+
 	field_name = fields[0].split('=')[-1]
 	field_content = fields[-1].split('=')[-1]
 	if field_name == 'CSQ':
 		return field_content.split(':')[1].replace(" ","").split('|')
 	return None
 
-##########################################
-def main():
-	#infile = open("/databases/exac/gnomad.genomes.r2.0.2.sites.coding_only.chrX.vcf")
-	infile = open("/databases/exac/gnomad.genomes.r2.0.2.sites.coding_only.chr1-22.vcf")
-	#infile = open("/databases/exac/gnomad_test.2.txt")
-	#infile = open("/databases/exac/test_pccb.vcf") # <<<<<<<<<<<<<<<<  !!!!!!!!!!!!
-	#infile = open("/databases/exac/testY.vcf")
+###############################################
+def merge_exome_and_genome_freqs(chromosomes, other_args):
 
-	# This one is good. Form gnomad blogpost, literally:
-	# "There is no chromosome Y coverage / calls in the gnomAD genomes, because reasons."
+	infile_name = other_args[0]
+	infile = open(infile_name,"r")
 
-	db, cursor = connect()
+	db     = connect_to_mysql()
+	cursor = db.cursor()
+	switch_to_db(cursor,"gnomad")
 	qry  = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS` "
-	qry += "WHERE `TABLE_SCHEMA`='blimps_development' AND `TABLE_NAME`='gnomad_freqs_chr_1'"
+	qry += "WHERE `TABLE_SCHEMA`='gnomad' AND `TABLE_NAME`='gnomad_freqs_chr_1'"
 
-	global db_gnomad_freq_keys
 	db_gnomad_freq_keys = [entry[0] for entry in search_db(cursor, qry)]
-
 
 	reading = False
 	count = 0
 	consequence_header_fields = None
-	chrom = ""
 
-	# redo 22
-	#chromgroup = ['1','9','10','22']
-	#chromgroup  = ['2','8','11','21']
-	#chromgroup  = ['3','7','12','22']
-	#chromgroup = ['4','6', '13','19']
-	#chromgroup = ['5','14','16','18']
-	chromgroup = ['15','17', 'X','Y']
-	chromgroup = ['20']
-	chromgroup = ['22']
-
-	print "chomosomes:", chromgroup
+	print "chomosomes:", chromosomes
 
 	for line in infile:
 		if not reading:
 			if line[:6] == '#CHROM': reading=True
 			if not consequence_header_fields and line[:len('##INFO=<')] == '##INFO=<':
+				# this function will look for the line that contains "CSQ" after '##INFO=<'
+				# and ignore the rest
 				consequence_header_fields = find_csq_header_fields(line)
 			continue
 		if not consequence_header_fields:
@@ -365,13 +355,37 @@ def main():
 			exit()
 
 		chrom = line.split("\t")[0]
-		if not chrom in chromgroup: continue
+		if not chrom in chromosomes: continue
 		count += 1
 		if count%1000==0: print "%dK lines of  %s" % (count/1000,  chrom)
-		process_line(cursor,line, consequence_header_fields)
+		process_line(cursor,line, db_gnomad_freq_keys, consequence_header_fields)
 
 	cursor.close()
 	db.close()
+
+	infile.close()
+
+	return
+
+##########################################
+def main():
+	chrom = ''
+	if chrom=='X':
+		infile_name = "/storage/databases/gnomad/gnomad.genomes.r2.0.2.sites.coding_only.chrX.vcf"
+		chromosomes = ['X']
+		number_of_chunks = 1  # myISAM does not deadlock
+	else:
+		infile_name = "/storage/databases/gnomad/gnomad.genomes.r2.0.2.sites.coding_only.chr1-22.vcf"
+		chromosomes = [str(i) for i in range(1,23)]
+		shuffle(chromosomes)
+		#chromosomes = ['2','3']
+		number_of_chunks = 8  # myISAM does not deadlock
+
+	# This one is good. Form gnomad blogpost, literally:
+	# "There is no chromosome Y coverage / calls in the gnomAD genomes, because reasons."
+
+	parallelize(number_of_chunks, merge_exome_and_genome_freqs, chromosomes, [infile_name])
+
 
 	return
 

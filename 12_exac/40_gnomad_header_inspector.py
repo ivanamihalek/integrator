@@ -4,7 +4,7 @@ import shlex
 
 ##########################################
 def main():
-	infile = open("/databases/exac/gnomad_headers.txt")
+	infile = open("/storage/databases/gnomad/gnomad_headers.txt")
 	for line in infile:
 		if line[:len("##reference")] == "##reference":
 			print "reference assembly:",line.rstrip().split("=")[-1]
