@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # this builds on monogenic db:populate pipeline
-# this is even wore than ruby
+# this is even worse than ruby
 
 from integrator_utils.mysql import *
 from time import time
