@@ -28,12 +28,12 @@ def ensembl_id2uniprot_id (cursor, ensembl_gene_id):
 	qry += "where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
 	ret = search_db(cursor,qry)
 	if not ret:
-		print ensembl_gene_id, "not found in uniprot_basic_infos"
+		print(ensembl_gene_id, "not found in uniprot_basic_infos")
 		exit()
 	if len(ret)>1:
-		print "more than one uniprot entry for ensembl ",  ensembl_gene_id
-		print ret
-		print "while possible in principle, not equipped to deal with it here"
+		print("more than one uniprot entry for ensembl ", ensembl_gene_id)
+		print(ret)
+		print("while possible in principle, not equipped to deal with it here")
 		exit()
 
 	uniprot_id = ret[0][0]
@@ -44,12 +44,12 @@ def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=No
 
 	if conf_file:
 		if not  os.path.isfile(conf_file):
-			print conf_file, "not found or is not a file"
+			print(conf_file, "not found or is not a file")
 			return None
 		try: # user is spelled out in the conf file
 			mysql_conn_handle = MySQLdb.connect(read_default_file=conf_file)
-		except  MySQLdb.Error, e:
-			print "Error connecting to mysql (%s) " % (e.args[1])
+		except  MySQLdb.Error as e:
+			print("Error connecting to mysql (%s) " % (e.args[1]))
 			sys.exit(1)
 		return mysql_conn_handle
 
@@ -63,8 +63,8 @@ def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=No
 			else:
 				mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd, host=host, port=port)
 
-		except  MySQLdb.Error, e:
-			print "Error connecting to mysql as %s" % (e.args[1])
+		except  MySQLdb.Error as e:
+			print("Error connecting to mysql as %s" % (e.args[1]))
 			sys.exit(1)
 
 		return mysql_conn_handle
@@ -103,156 +103,98 @@ def switch_to_db (cursor, db_name, verbose=False):
 	qry = "use %s" % db_name
 	rows = search_db (cursor, qry, verbose)
 	if (rows):
-		print rows
+		print(rows)
 		return False
 	return True
+
+
+########
+def val2mysqlval(value):
+	if  value is None:
+		return  "null "
+	elif type(value) is str:
+		return "\'%s\'" % value
+	return "{}".format(value)
+
 
 ########
 def store_without_checking(cursor, table, fields, verbose=False):
 	qry = "insert into %s " % table
 	qry += "("
-	first = True
-	for field in fields.keys(): # again will have to check for the type here
-		if (not first):
-			qry += ", "
-		qry += field
-		first = False
+	qry += ",".join(fields.keys())
 	qry += ")"
 
 	qry += " values "
 	qry += "("
-	first = True
-	for value in fields.values(): # again will have to check for the type here
-		if (not first):
-			qry += ", "
-		if  value is None:
-			qry += " null "
-		elif type(value) is int:
-			qry += " %d" % value
-		elif type(value) is float:
-			qry += " %f" % value
-		else:
-			qry += " \'%s\'" % value
-		first = False
+	qry += ",".join([val2mysqlval(v) for v in fields.values()])
 	qry += ")"
 
+	rows  = search_db (cursor, qry, verbose)
+	if verbose: print("qry:",qry,"\n", "rows:", rows)
 
-	rows   = search_db (cursor, qry)
-	if verbose:
-		print
-		print " ** ", qry
-		print " ** ", rows
-
-	if (rows):
+	if rows:
 		rows   = search_db (cursor, qry, verbose=True)
-		print rows
-		return False
+		print(rows)
+		return -1
 
-	return True
+	rows = search_db (cursor, "select last_insert_id()" )
+	try:
+		row_id = int(rows[0][0])
+	except:
+		row_id = -1
+	return row_id
 
 ########
 def store_or_update (cursor, table, fixed_fields, update_fields, verbose=False, primary_key='id'):
 
-	id = -1
-	conditions = ""
-	first = True
-	for [field, value] in fixed_fields.iteritems():
-		if (not first):
-			conditions += " and "
-		if ( type (value) is int):
-			conditions += " %s= %d "  % (field, value)
-		elif value is None:
-			conditions += " %s= null" % field
-		else:
-			conditions += " %s='%s' " % (field, value)
-		first = False
+	conditions = " and ".join(["{}={}".format(k,val2mysqlval(v)) for k,v in fixed_fields.items()])
 
 	# check if the row exists
 	qry = "select %s from %s  where %s "  % (primary_key, table, conditions)
 	rows   = search_db (cursor, qry, verbose)
-	exists = rows and (type(rows[0][0]) is long)
+	exists = rows and (type(rows[0][0]) is int)
 
-	if exists: id = rows[0][0]
-
-	if verbose:
-		print
-		print qry
-		print rows
-		print "exists?", exists
-
-
-	if exists and not update_fields: return id
-
+	row_id = -1
+	if exists: row_id = rows[0][0]
+	if verbose: print("\n".join(["", qry, "exists? {}".format(exists), str(row_id)]))
+	if exists and not update_fields: return row_id
 
 	if exists: # if it exists, update
-		if verbose: print "exists; update"
-		qry = "update %s set " % table
-		first = True
-		for field, value in update_fields.iteritems():
-			if (not first):
-				qry += ", "
-			qry += " %s = " % field
-			if  value is None:
-				qry += " null "
-			elif type(value) is int:
-				qry += " %d" % value
-			elif type(value) is float:
-				qry += " %f" % value
-			else:
-				qry += " \'%s\'" % value
-
-			first = False
+		if verbose: print("exists; updating")
+		qry  = "update %s set " % table
+		qry += ",".join(["{}={}".format(k,val2mysqlval(v)) for k,v in update_fields.items()])
 		qry += " where %s " % conditions
 
 	else: # if not, make a new one
-		if verbose: print "does not exist; make new one"
-
-		qry = "insert into %s " % table
-		qry += "("
-		first = True
-		for field in fixed_fields.keys()+update_fields.keys(): # again will have to check for the type here
-			if (not first):
-				qry += ", "
-			qry += field
-			first = False
-		qry += ")"
-
+		if verbose: print("does not exist; making new one")
+		qry  = "insert into %s " % table
+		keys = list(fixed_fields.keys())
+		vals = list(fixed_fields.values())
+		if update_fields:
+			keys += list(update_fields.keys())
+			vals += list(update_fields.values())
+		qry += "(" + ",".join(keys) + ")"
 		qry += " values "
-		qry += "("
-		first = True
-		for value in fixed_fields.values()+update_fields.values(): # again will have to check for the type here
-			if (not first):
-				qry += ", "
-			if  value is None:
-				qry += " null "
-			elif type(value) is int:
-				qry += " %d" % value
-			elif type(value) is float:
-				qry += " %f" % value
-			else:
-				qry += " \'%s\'" % value
-
-			first = False
-		qry += ")"
+		qry += "(" + ",".join([val2mysqlval(v) for v in vals]) + ")"
 
 	rows   = search_db (cursor, qry, verbose)
 
-	if verbose:
-		print
-		print " ** ", qry
-		print " ** ", rows
-
+	if verbose: print("qry:",qry,"\n", "rows:", rows)
 	# if there is a return, it is an error msg
-	if (rows):
+	if rows:
 		rows   = search_db (cursor, qry, verbose=True)
-		print rows[0]
-		return id
+		print(rows[0])
+		return -1
 
-	qry  = "select last_insert_id()"
-	rows = search_db (cursor, qry)
-	if rows and (type(rows[0][0]) is long):
-		return rows[0][0]
-	return  -1
+	if row_id==-1:
+		rows = search_db (cursor, "select last_insert_id()" )
+		try:
+			row_id = int(rows[0][0])
+		except:
+			row_id = -1
+	return row_id
+
+
 
 #########################################
 def create_index (cursor, db_name, index_name, table, columns):
@@ -264,7 +206,7 @@ def create_index (cursor, db_name, index_name, table, columns):
 	qry = "show index from %s where key_name like '%s'" % ( table, index_name)
 	rows = search_db (cursor, qry, verbose=True)
 	if (rows):
-		print rows
+		print(rows)
 		return True
    
 	# columns is a list of columns that we want to have indexed
@@ -281,7 +223,7 @@ def create_index (cursor, db_name, index_name, table, columns):
 
 	rows = search_db (cursor, qry, verbose=True)
 	if (rows):
-		print rows
+		print(rows)
 		return False
    
 	return True
@@ -325,7 +267,7 @@ def check_or_make_column (cursor, db_name, table_name, column_name, column_type)
 	if check_column_exists (cursor, db_name, table_name, column_name):
 		return # we're ok
 
-	print "making column", column_name, " in uniprot_seqs"
+	print("making column", column_name, " in uniprot_seqs")
 	qry = "alter table monogenic_development.uniprot_seqs "
 	qry += "add  %s %s" % (column_name, column_type)
 	search_db(cursor,qry, verbose=True)
@@ -366,22 +308,22 @@ def search_db (cursor, qry, verbose=False):
 
 	try:
 		cursor.execute(qry)
-	except MySQLdb.Error, e:
+	except MySQLdb.Error as e:
 		if verbose:
-			print "Error running cursor.execute() for  qry: %s: %s " % (qry, e.args[1])
+			print("Error running cursor.execute() for  qry: %s: %s " % (qry, e.args[1]))
 		return  [["ERROR: "+e.args[1]]]
 
 
 	try:
 		rows = cursor.fetchall()
-	except MySQLdb.Error, e:
+	except MySQLdb.Error as e:
 		if verbose:
-			print "Error running cursor.fetchall() for  qry: %s: %s " % (qry, e.args[1])
+			print("Error running cursor.fetchall() for  qry: %s: %s " % (qry, e.args[1]))
 		return  ["ERROR: "+e.args[1]]
 
 	if (len(rows) == 0):
 		if verbose:
-			print "No return for query %s"  % qry
+			print("No return for query %s" % qry)
 		return False
 
 	return rows
@@ -392,12 +334,12 @@ def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=No
 
 	if conf_file: # http://mysql-python.sourceforge.net/MySQLdb.html
 		if not  os.path.isfile(conf_file):
-			print conf_file, "not found or is not a file"
+			print(conf_file, "not found or is not a file")
 			return None
 		try: # user is spelled out in the conf file
 			mysql_conn_handle = MySQLdb.connect(read_default_file=conf_file)
-		except  MySQLdb.Error, e:
-			print "Error connecting to mysql (%s) " % (e.args[1])
+		except  MySQLdb.Error as e:
+			print("Error connecting to mysql (%s) " % (e.args[1]))
 			sys.exit(1)
 		return mysql_conn_handle
 
@@ -411,8 +353,8 @@ def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=No
 			else:
 				mysql_conn_handle = MySQLdb.connect(user=user, passwd=passwd, host=host, port=port)
 
-		except  MySQLdb.Error, e:
-			print "Error connecting to mysql as %s" % (e.args[1])
+		except  MySQLdb.Error as e:
+			print("Error connecting to mysql as %s" % (e.args[1]))
 			sys.exit(1)
 
 		return mysql_conn_handle
@@ -425,8 +367,8 @@ def connect_to_db (db_name, user=None, passwd=None):
 			db = MySQLdb.connect(user=user, passwd=passwd, db=db_name)
 		else:
 			db = MySQLdb.connect(user="root", db=db_name)
-	except  MySQLdb.Error, e:
-		print "Error connecting to %s: %d %s" % (db_name, e.args[0], e.args[1])
+	except  MySQLdb.Error as e:
+		print("Error connecting to %s: %d %s" % (db_name, e.args[0], e.args[1]))
 		exit(1)
 
 	return db

@@ -1,5 +1,5 @@
 
-import urllib2
+import urllib.request
 from bs4   import BeautifulSoup
 
 
@@ -42,7 +42,6 @@ def mol_descriptions_from_pdb(pdb_id):
 		polymers.append([poltype]+info)
 
 	return polymers
-
 
 ##########################################
 def ligands_from_pdb(pdb_id):
@@ -91,3 +90,14 @@ def ec_cofactors_from_uniprot(uniprot_id):
 		for c in  cof.findChildren():
 			if c.name=='name': cofactors.append(str(c.text).replace("cation",'').replace("anion","").replace("ion","").replace(" ",""))
 	return ec_numbers, ";".join(cofactors)
+
+##########################################
+def ucsc_fragment_sequence(assembly, chrom, start, end):
+	if not 'chr' in chrom: chrom = 'chr'+chrom
+	das_request = "http://genome.ucsc.edu/cgi-bin/das/{}/".format(assembly)
+	das_request += "dna?segment={}:{},{}".format(chrom, start, end)
+	response = urllib.request.urlopen(das_request)
+	html = response.read()
+	soup = BeautifulSoup(html, 'html.parser')
+	if not soup: return None
+	return soup.find('dna').string.strip().replace("\n", "")

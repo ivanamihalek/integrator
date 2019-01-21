@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from integrator_utils.mysql import *
+from integrator_utils.python.mysql import *
 
 
 ##########################################
