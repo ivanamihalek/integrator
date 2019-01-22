@@ -50,13 +50,14 @@ def gnomad_variants(cursor, chrom, outf):
 	table = "gnomad_freqs_chr_" + chrom
 	print(table)
 	qry = "select position, reference, variant, variant_count, total_count from %s" % table
-	# IT LOOKS LIKE I HAVA BUG IN HTE WAY I AM FILLING TH GNOMAD, SEE chr 22 16279328
+	# IT LOOKS LIKE I HAVE A BUG IN ThE WAY I AM FILLING THE GNOMAD, SEE chr 22 16279328
 	# ref and variant are th same , while this should actually be a deletion
 	ret = search_db(cursor, qry)
 	if not ret:
 		print("no ret for", qry)
 		exit(1)
 	for [position, reference, variant, variant_count, total_count] in ret:
+		if (randint(1,3)>1): continue # I need smaller files
 		if reference==variant: continue # see the bug described above
 		alleles = {}
 		for parent in ['mother', 'father']:
@@ -91,13 +92,15 @@ def random_variants(cursor, assembly, chrom, member, outf):
 	qry = "select distinct(name) from %s where chromosome='chr%s'" % (table,chrom)
 	names = [line[0] for line in  search_db(cursor, qry)]
 	for name in names:
-		if (randint(1,20)>2): continue
+		if (randint(1,20)>1): continue
 		qry = "select exon_count, exon_starts, exon_ends from %s where chromosome='chr%s' and name='%s' limit 1" % (table, chrom, name)
 		[exon_count, exon_sts, exon_es] = search_db(cursor, qry)[0]
 		exon_starts = [int(i) for i in exon_sts.decode().split(",")] # withtout decode() get  a bytes-like object is required, not 'str'
 		exon_ends   = [int(i) for i in exon_es.decode().split(",")]
 		random_exon = randint(1,exon_count)-1
 		random_pos  = randint(exon_starts[random_exon], exon_ends[random_exon])
+		# it looks like das server is 1 based while the resot of ucsc databases are 0-based
+		random_pos += 1
 		nucleotide  = ucsc_fragment_sequence(assembly, chrom, random_pos, random_pos).upper()
 		if (randint(1,10)<2):
 			mutation = nucleotide+nucleotide
@@ -117,19 +120,44 @@ def random_variants(cursor, assembly, chrom, member, outf):
 								str(randint(100,5000)), ".",  ".", "GT:AD:DP",
 								"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
 
+##########################################
+def disease_variants(disease, member, outf):
+	# careful: UCSC browser coordinates are 1-based
+	# but coordinates in databases are 0-based
+	[chrom, position, reference, variant, dp, ad1, gt] = [""]*7
+	if disease=="ANGELMAN":
+		done = False
+		while not done:
+			[dp, ad1, gt] = cookup_depths()
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="0/1": continue # Angelman must be dominant
+			done  = True
+		# this is all hg19
+		chrom = 15
+		position = 25616139
+		reference = "C"
+		variant = "CC"
+
+	else:
+		print(disease, "not recognized")
+		exit()
+
+	outf[member].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+				str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+				"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
 
 ##########################################
 def main():
 
 	assembly = 'hg19'
-
+	disease = "ANGELMAN"
 	db     = connect_to_mysql()
 	cursor = db.cursor()
 
 	switch_to_db(cursor,"gnomad")
 	outf = {}
 	for member in ["mother", "father","child"]:
-		outf[member] = open ("%s.vcf"%member,"w")
+		outf[member] = open ("%s_%s.vcf"%(disease[0].lower(),member), "w")
 		outf[member].write(hdr(member))
 	tot = 0
 	selected = 0
@@ -138,13 +166,18 @@ def main():
 	for chrom in ['22']:
 		# gnomad variants
 		gnomad_variants(cursor, chrom, outf)
+		print (chrom, "gnomad vars done")
 		# idiosyncratic/de novo variants in parents
 		random_variants(cursor, assembly,  chrom, "mother", outf)
+		print (chrom, "random vars mother done")
 		random_variants(cursor, assembly,  chrom, "father", outf)
+		print (chrom,"random vars father done")
 		# idiosyncratic/de novo variants in child
 		random_variants(cursor, assembly,  chrom, "child", outf)
+		print (chrom,"random vars child done")
 
 	# disease variant(s) in the child
+	disease_variants(disease, "child", outf)
 
 	for member in ["mother", "father","child"]:
 		outf[member].close()
