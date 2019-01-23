@@ -34,8 +34,8 @@ def read_variants(infile):
 ##########################################
 def annovar_input(vars, outfile):
 	outf = open(outfile, "w")
-	for chrom,vars in vars.items():
-		for var in vars:  outf.write(var+"\n")
+	for chrom,variants in vars.items():
+		for var in variants:  outf.write(var+"\n")
 	outf.close()
 
 ##########################################
@@ -64,22 +64,57 @@ def annovar_annotation(assembly, vars):
 		annotation[variant] = fields[5:7] + fields[8:]
 
 	return annotation
+##########################################
+def gnomad_freqs(cursor, vars):
+	frequency  = {}
+	for chrom,variants in vars.items():
+		for var in variants:
+			[chrom, position_from, position_to, ref, alt] = var.split(" ")
+			table = "gnomad_freqs_chr_%s"%chrom
+			qry = "select variant_count, total_count from %s where position=%s" % (table, position_from)
+			ret = search_db(cursor,qry)
+			if ret:
+				frequency[var] = "%5.1e"%(float(ret[0][0])/float(ret[0][1]))
+			else:
+				frequency[var] = "0"
+
+	return frequency
+##########################################
+def read_omim():
+	gene2omim = {}
+	inf = open("/storage/databases/omim/mim2hgnc.tsv", "r")
+	for line in inf:
+		fields = line.split()
+		if len(fields)<2: continue
+		if fields[1] != None and fields[1] != "":
+			gene2omim[fields[1]] = fields[0]
+	inf.close()
+	return gene2omim
+
 
 ##########################################
 def main():
 
 	assembly = 'hg19'
-	disease = "ANGELMAN"
+	disease = "NPC"
+
+	gene2omim = read_omim()
+
 	db = connect_to_mysql()
+	cursor = db.cursor()
+	switch_to_db(cursor,"gnomad")
+
 	infile = {}
 	for member in ["mother", "father","child"]:
-		infile[member] = "%s_%s.vcf"%(disease[0].lower(),member)
+		infile[member] = "%s/%s_%s.vcf"%(disease.lower(), disease[0].lower(),member)
 
-	outfile = "%s_%s.vcf"%(disease[0].lower(),"trio")
+	outfile = "%s/%s_%s.vcf"%(disease.lower(), disease[0].lower(),"trio")
 	outf = open(outfile, "w")
-	outf.write("\t".join(["chrom", "position", "ref", "alt", "zygosity mom", "zygosity dad",  "zygosity proband",
-						"location", "gene name", "effect","protein change"]) + "\n")
+	outf.write("\t".join(["chrom", "position", "ref", "alt", "frequency",
+						"zygosity mom", "zygosity dad",  "zygosity proband",
+						 "gene name", "omim", "location", "effect", "protein change"]) + "\n")
 	vars, zygosity = read_variants(infile)
+	frequency = gnomad_freqs(cursor, vars)
 	annotation = annovar_annotation(assembly, vars)
 	for var,annotation_fields in annotation.items():
 		[chrom, position_from, position_to, ref, alt] = var.split(" ")
@@ -89,15 +124,23 @@ def main():
 				z = zygosity[member][var]
 				if z=="0/0":
 					zyg_descriptive.append("no_variant")
-				elif z=="0/1":
+				elif z=="0/1" or z=="1/0":
 					zyg_descriptive.append("heterozygous")
 				elif z=="1/1":
 					zyg_descriptive.append("homozygous")
 			else:
 				zyg_descriptive.append("no_variant")
-		outf.write("\t".join([chrom, position_from, ref, alt] + zyg_descriptive + annotation_fields) +"\n")
+		[location, gene_name, effect, prot] = annotation_fields
+		if gene_name in gene2omim:
+			omim = gene2omim[gene_name]
+		else:
+			omim = ""
+		ann_fields2 = [gene_name, omim, location, effect, prot]
+		outf.write("\t".join([chrom, position_from, ref, alt, frequency[var]] + zyg_descriptive + ann_fields2) +"\n")
 
 	outf.close()
+	cursor.close()
+	db.close()
 
 	return True
 

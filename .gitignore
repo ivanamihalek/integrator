@@ -36,6 +36,9 @@ sys_tfm
 *seqs_not_found
 .creds
 *.vcf
+*.tsv
+*.avinput
+*.txt
 
 
 

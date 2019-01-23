@@ -121,10 +121,11 @@ def random_variants(cursor, assembly, chrom, member, outf):
 								"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
 
 ##########################################
-def disease_variants(disease, member, outf):
+def disease_variants(disease, outf):
 	# careful: UCSC browser coordinates are 1-based
 	# but coordinates in databases are 0-based
 	[chrom, position, reference, variant, dp, ad1, gt] = [""]*7
+
 	if disease=="ANGELMAN":
 		done = False
 		while not done:
@@ -137,20 +138,109 @@ def disease_variants(disease, member, outf):
 		position = 25616139
 		reference = "C"
 		variant = "CC"
+		outf["child"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+
+	elif disease=="NPC":
+		done = False
+		while not done:
+			skew = "right"
+			[dp, ad1, gt] = cookup_depths(skew)
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="1/1": continue # NPC recessive
+			done  = True
+		# this is all hg19 p.C516Y
+		chrom = 18
+		position = 21134728
+		reference = "G"
+		variant = "A"
+		outf["child"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+		done = False
+		while not done:
+			[dp, ad1, gt] = cookup_depths()
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="0/1": continue #
+			done  = True
+		outf["father"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+		done = False
+		while not done:
+			[dp, ad1, gt] = cookup_depths()
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="0/1": continue #
+			done  = True
+		outf["mother"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+
+
+
+
+	elif disease=="RAINE":
+		done = False
+		while not done:
+			[dp, ad1, gt] = cookup_depths()
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="0/1": continue #
+			done  = True
+		# this is all hg19 p.P328S
+		chrom = 7
+		position = 288306
+		reference = "C"
+		variant = "T"
+		outf["child"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+		done = False
+		while not done:
+			[dp, ad1, gt] = cookup_depths()
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="0/1": continue #
+			done  = True
+		outf["mother"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+
+
+		done = False
+		while not done:
+			[dp, ad1, gt] = cookup_depths()
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="0/1": continue #
+			done  = True
+		# this is all hg19 p.G266R
+		chrom = 7
+		position = 208909
+		reference = "G"
+		variant = "A"
+		outf["child"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+		done = False
+		while not done:
+			[dp, ad1, gt] = cookup_depths()
+			if dp<4: continue # we didn't pass the quality check
+			if gt!="0/1": continue #
+			done  = True
+		outf["father"].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
+					str(randint(100,5000)), ".",  ".", "GT:AD:DP",
+					"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
+
 
 	else:
 		print(disease, "not recognized")
 		exit()
 
-	outf[member].write("\t".join(["chr%s"%chrom, str(position), ".", reference, variant,
-				str(randint(100,5000)), ".",  ".", "GT:AD:DP",
-				"{}:{},{}:{}".format(gt, ad1, dp-ad1, dp)])+"\n")
 
 ##########################################
 def main():
 
 	assembly = 'hg19'
-	disease = "ANGELMAN"
+	disease = "RAINE"
 	db     = connect_to_mysql()
 	cursor = db.cursor()
 
@@ -159,25 +249,27 @@ def main():
 	for member in ["mother", "father","child"]:
 		outf[member] = open ("%s_%s.vcf"%(disease[0].lower(),member), "w")
 		outf[member].write(hdr(member))
+
+
 	tot = 0
 	selected = 0
 	# at the moment I am not interested in sex-chromosome mutations
-	#for chrom in [str(i) for i in range(1,23)]: #+ ['X']: # no 'Y' in gnomad
-	for chrom in ['22']:
+	# for chrom in [str(i) for i in range(1,23)]: #+ ['X']: # no 'Y' in gnomad
+	#for chrom in ['22']:
 		# gnomad variants
-		gnomad_variants(cursor, chrom, outf)
-		print (chrom, "gnomad vars done")
-		# idiosyncratic/de novo variants in parents
-		random_variants(cursor, assembly,  chrom, "mother", outf)
-		print (chrom, "random vars mother done")
-		random_variants(cursor, assembly,  chrom, "father", outf)
-		print (chrom,"random vars father done")
-		# idiosyncratic/de novo variants in child
-		random_variants(cursor, assembly,  chrom, "child", outf)
-		print (chrom,"random vars child done")
+		# gnomad_variants(cursor, chrom, outf)
+		# print (chrom, "gnomad vars done")
+		# # idiosyncratic/de novo variants in parents
+		# random_variants(cursor, assembly,  chrom, "mother", outf)
+		# print (chrom, "random vars mother done")
+		# random_variants(cursor, assembly,  chrom, "father", outf)
+		# print (chrom,"random vars father done")
+		# # idiosyncratic/de novo variants in child
+		# random_variants(cursor, assembly,  chrom, "child", outf)
+		# print (chrom,"random vars child done")
 
-	# disease variant(s) in the child
-	disease_variants(disease, "child", outf)
+	# disease variant(s)
+	disease_variants(disease,  outf)
 
 	for member in ["mother", "father","child"]:
 		outf[member].close()
