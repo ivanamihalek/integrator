@@ -7,15 +7,39 @@ def get_process_id():
 
 	return os.getpid()
 
+
 # don't know how to do this if there are no other_args,
 # except by passing it an empty list in th place
+########################################
+def round_robin_pll(number_of_chunks, embarassingly_pllbl_fn, list, other_args):
+	list_per_process = []
+	for process in range(number_of_chunks):
+		list_per_process.append([])
+
+	for element in list:
+		idx = list.index(element)
+		list_per_process[idx%number_of_chunks].append(element)
+
+	# run
+	processes = []
+	for ps in range (number_of_chunks):
+
+		process = multiprocessing.Process(target=embarassingly_pllbl_fn, args=(list_per_process[ps], other_args))
+		try:
+			process.start()
+			processes.append(process)
+		except:
+			print("Error: unable to start process")
+			return False
+
+	return processes
 
 ########################################
 def parallelize (number_of_chunks, embarassingly_pllbl_fn, list, other_args):
 
 
 	if (number_of_chunks < 1):
-		print "number of processs is expected to be >= 1"
+		print("number of processs is expected to be >= 1")
 		return False
 
 	if (number_of_chunks == 1):
@@ -52,7 +76,7 @@ def parallelize (number_of_chunks, embarassingly_pllbl_fn, list, other_args):
 		try:
 			process.start()
 		except:
-			print "Error: unable to start process"
+			print("Error: unable to start process")
 			return False
     
     

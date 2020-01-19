@@ -21,23 +21,24 @@ from socket import gethostname
 # Contact: ivana.mihalek@gmail.com
 #
 
-###################################################
-def ensembl_id2uniprot_id (cursor, ensembl_gene_id):
-	switch_to_db(cursor, 'blimps_development')
-	qry  = "select uniprot_id from uniprot_basic_infos "
-	qry += "where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
-	ret = search_db(cursor,qry)
-	if not ret:
-		print(ensembl_gene_id, "not found in uniprot_basic_infos")
+#########################################
+def error_intolerant_search(cursor, qry):
+	ret =  search_db(cursor, qry)
+	if not ret: return ret
+	if type(ret[0][0])==str and 'error' in ret[0][0].lower():
+		search_db(cursor, qry, verbose=True)
 		exit()
-	if len(ret)>1:
-		print("more than one uniprot entry for ensembl ", ensembl_gene_id)
-		print(ret)
-		print("while possible in principle, not equipped to deal with it here")
-		exit()
+	return ret
 
-	uniprot_id = ret[0][0]
-	return uniprot_id
+
+#########################################
+def hard_landing_search(cursor, qry):
+	ret =  search_db(cursor, qry)
+	if not ret or (type(ret[0][0])==str and 'error' in ret[0][0].lower()):
+		search_db(cursor, qry, verbose=True)
+		exit()
+	return ret
+
 
 ########
 def connect_to_mysql (user=None, passwd=None, host=None, port=None, conf_file=None):
@@ -87,6 +88,23 @@ def connect():
 		switch_to_db(cursor, 'blimps_production')
 	return db, cursor
 
+###################################################
+def ensembl_id2uniprot_id (cursor, ensembl_gene_id):
+	switch_to_db(cursor, 'blimps_development')
+	qry  = "select uniprot_id from uniprot_basic_infos "
+	qry += "where ensembl_gene_id like '%%%s%%'" % ensembl_gene_id
+	ret = search_db(cursor,qry)
+	if not ret:
+		print(ensembl_gene_id, "not found in uniprot_basic_infos")
+		exit()
+	if len(ret)>1:
+		print("more than one uniprot entry for ensembl ", ensembl_gene_id)
+		print(ret)
+		print("while possible in principle, not equipped to deal with it here")
+		exit()
+
+	uniprot_id = ret[0][0]
+	return uniprot_id
 
 ########
 def check_null (variable):
@@ -288,6 +306,11 @@ def check_table_exists (cursor, db_name, table_name):
 			return True
 	else:
 		return False
+
+############
+def check_and_drop_table(cursor, db_name, table):
+	search_db(cursor, "drop table if exists %s.%s"% (db_name, table))
+	return
 
 #########################################
 def table_create_time (cursor, db_name, table_name):

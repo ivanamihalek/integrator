@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 
 from integrator_utils.python.mysql import *
@@ -6,25 +6,35 @@ from integrator_utils.python.mysql import *
 ##########################################
 def main():
 
-	db     = connect_to_mysql()
+	mysql_conf_file = "/home/ivana/.tcga_conf"
+	db     = connect_to_mysql(conf_file=mysql_conf_file)
 	cursor = db.cursor()
 
-	switch_to_db(cursor,"gnomad")
+	dbname = "gnomad"
 
-	#qry = "create table gnomad_hotspots "
-	#qry += " (id int(11) NOT NULL AUTO_INCREMENT, "
-	#qry += " chrom varchar(255), start int(11), end int(11), "
-	#qry += " PRIMARY KEY (id) )"
-	#search_db(cursor, qry, verbose=True)
+	switch_to_db(cursor,dbname)
+
+	check_and_drop_table(cursor, dbname, "meta")
+	qry = "create table meta "
+	qry += " (id int(11) NOT NULL AUTO_INCREMENT, "
+	qry += " name varchar(255), value text, "
+	qry += " PRIMARY KEY (id) )"
+	search_db(cursor, qry, verbose=True)
+
+	check_and_drop_table(cursor, dbname, "hotspots")
+	qry = "create table hotspots "
+	qry += " (id int(11) NOT NULL AUTO_INCREMENT, "
+	qry += " chrom varchar(255), start int(11), end int(11), "
+	qry += " PRIMARY KEY (id) )"
+	search_db(cursor, qry, verbose=True)
 
 	for chrom in [str(i) for i in range(1,23)] + ['X','Y']:
-		table = "gnomad_freqs_chr_" + chrom
-		#qry = "DROP TABLE %s " % table
-		#search_db(cursor, qry, verbose=True)
-		print table
+		table = "freqs_chr_" + chrom
+		check_and_drop_table(cursor, dbname, table)
+		print(table)
 		#continue
 		qry  = "CREATE TABLE %s " % table
-		qry += " (id int(11) NOT NULL AUTO_INCREMENT, position int(11), reference varchar(400),  variant varchar(400), consequences text, "
+		qry += " (id int(11) NOT NULL AUTO_INCREMENT, position int(11), reference varchar(400),  variant varchar(400), "
 		qry += " variant_count int, total_count int, "
 		qry += " afr_count int, afr_tot_count int, "
 		qry += " amr_count int, amr_tot_count int, "
