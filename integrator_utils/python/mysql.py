@@ -285,8 +285,8 @@ def check_or_make_column (cursor, db_name, table_name, column_name, column_type)
 	if check_column_exists (cursor, db_name, table_name, column_name):
 		return # we're ok
 
-	print("making column", column_name, " in uniprot_seqs")
-	qry = "alter table monogenic_development.uniprot_seqs "
+	print("making column {} in {}.{}".format(column_name, db_name, table_name))
+	qry = "alter table {}.{} ".format(db_name, table_name)
 	qry += "add  %s %s" % (column_name, column_type)
 	search_db(cursor,qry, verbose=True)
 	return
