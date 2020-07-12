@@ -17,7 +17,8 @@ def main():
 
 	for chrom in [str(i) for i in range(1,23)] + ['X']:
 		table = "freqs_chr_" + chrom
-		qry = "create index variant_id on %s (position,reference,variant)" % table
+		#qry = "create index variant_id on %s (position,reference,variant)" % table
+		qry = "create index position_id on %s (position)" % table
 		search_db(cursor, qry, verbose=True)
 
 	cursor.close()
