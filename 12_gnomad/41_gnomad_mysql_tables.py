@@ -44,6 +44,7 @@ def main():
 		qry += " nfe_count int, nfe_tot_count int, "
 		qry += " oth_count int, oth_tot_count int, "
 		qry += " sas_count int, sas_tot_count int, "
+		qry += " homozygote_count int, "
 		qry += " hotspot_id int, "
 		qry += " PRIMARY KEY (id) )" # the default engine is InnoDB
 		search_db(cursor, qry, verbose=True)

@@ -7,15 +7,20 @@ from random import shuffle
 # output the tables rather than trying to store them from python - much faster
 # but do the sanity checking in the following script first
 '''
- for i in $(seq 1 22)
+i=1
+sudo mysqlimport  --local gnomad freqs_chr_$i.tab
+to get prompted for password
+then
+
+ for i in $(seq 2 22)
 > do
 > echo $i
-> mysqlimport --login-path=ivana  --local gnomad freqs_chr_$i.tab
+> sudo mysqlimport  --local gnomad freqs_chr_$i.tab
 > done
 repeat for X and Y
 for i in X Y; do echo $i; done
 
-"NOTE that the file name must match the tabale name:
+"NOTE that the file name must match the table name:
 For each text file named on the command line, mysqlimport strips any extension 
 from the file name and uses the result to determine the name of the table into 
 which to import the file's contents. For example, files named patient.txt,
@@ -38,18 +43,72 @@ gender = [field.lower() for field in ["Male","Female"]]
 
 all_keys = ['chrom', 'addr', 'ref', 'variants',   'ac', 'an', 'ac_afr', 'an_afr',
             'ac_amr', 'an_amr', 'ac_asj', 'an_asj', 'ac_eas', 'an_eas', 'ac_fin', 'an_fin',
-			'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas']
+			'ac_nfe', 'an_nfe', 'ac_oth', 'an_oth', 'ac_sas', 'an_sas', 'nhomalt']
 counts = [key for key in all_keys if key[:2]=='ac']
 totals = [key for key in all_keys if key[:2]=='an']
-
+specials = ['nhomalt']
 # the annotation is crap ...
 # 22:17669352 G>GGGACA is an SNV in somebody's book
 
 verbose = False
 
 
+##########################################
+def format_tsv_line(named_fields):
+
+	# not sure why this happens - filtered varaints (the ones that do not have 'PASS')
+	# still may have count > 0
+	# for the gnomad blogpost
+	# "All sites with no high quality genotype (AC = 0) are marked as filtered using the AC0 filter."
+	if named_fields['ac']== '0':
+		print(named_fields)
+		exit()
+		return
+
+	# in trying for a compact storage, gnomad packs several variants into a single line
+	# for example ref CT, variants C,AT to account for a deletion and an SNV
+	# we are going to turn that back int CT, C  and C, A
+
+	fixed_fields  = {'position':int(named_fields['addr']),  'reference': named_fields['ref'], 'variant':named_fields['variants']}
+	update_fields = {}
+
+	for count in counts:
+		if count == 'ac':
+			new_key = 'variant_count'
+		else:
+			population = count.split("_")[-1]
+			new_key = "_".join([population,'count'])
+		update_fields[new_key] = int(named_fields[count])
+
+	for count in totals:
+		if count == 'an':
+			new_key = 'total_count'
+		else:
+			population = count.split("_")[-1]
+			new_key = "_".join([population,'tot','count'])
+		update_fields[new_key] = int(named_fields[count])
+
+	for count in specials:
+		if count == 'nhomalt':
+			new_key = 'homozygote_count'
+		else:
+			new_key = count
+		update_fields[new_key] = int(named_fields[count])
+
+	all_fields = fixed_fields
+	all_fields.update(update_fields)
+	# getting things in the right order
+	db_field_names = ['position', 'reference', 'variant', 'variant_count', 'total_count',
+						'afr_count', 'afr_tot_count', 'amr_count', 'amr_tot_count', 'asj_count',
+						'asj_tot_count', 'eas_count', 'eas_tot_count', 'fin_count', 'fin_tot_count',
+						'nfe_count', 'nfe_tot_count', 'oth_count', 'oth_tot_count', 'sas_count',
+						'sas_tot_count', 'homozygote_count', 'hotspot_id']
+	all_fields['hotspot_id'] = "\\N"
+	tabbed_line = "\t".join([str(all_fields[field_name]) for field_name in db_field_names])
+	return tabbed_line
+
 #########################################
-def parse_counts(chrom, ref, vars, info):
+def parse_counts(chrom,  info):
 
 	# AC        Alternate allele count for samples
 	# AF        Alternate allele frequency in samples
@@ -64,7 +123,11 @@ def parse_counts(chrom, ref, vars, info):
 			for g in gender+['both']: data[cnt][p][g] = '0'
 
 	# parsing field names of the type 'AF_eas_male' (for example)
-	for  k,v  in named_fields.items():
+	homozygotes = 0
+	for k, v in named_fields.items():
+		if k=="nhomalt":
+			homozygotes = v
+			continue
 		field = k.split("_")
 		if not field[0] in count_fields: continue
 		count_type = field[0]
@@ -95,6 +158,8 @@ def parse_counts(chrom, ref, vars, info):
 			print("unrecognized key:", k)
 			exit()
 
+
+
 	# sanity check
 	if verbose:
 		if chrom in ['X','Y']:
@@ -121,54 +186,9 @@ def parse_counts(chrom, ref, vars, info):
 	for p in population_fields:
 		counts.append(data['AC'][p]['both'])
 		counts.append(data['AN'][p]['both'])
+	counts.append(homozygotes)
+
 	return counts
-
-#
-##########################################
-def format_tsv_line(named_fields):
-
-	# not sure why this happens - filtered varaints (the ones that do not have 'PASS')
-	# still may have count > 0
-	# for the gnomad blogpost
-	# "All sites with no high quality genotype (AC = 0) are marked as filtered using the AC0 filter."
-	if named_fields['ac']== '0':
-		print(named_fields)
-		exit()
-		return
-
-	# in trying for a compact storage, gnomad packs several variants into a single line
-	# for example ref CT, variants C,AT to account for a deletion and an SNV
-	# we are going to turn that back int CT, C  and C, A
-
-	fixed_fields  = {'position':int(named_fields['addr']), 'reference': named_fields['ref'], 'variant':named_fields['variants']}
-	update_fields = {}
-
-	for count in counts:
-		if count == 'ac':
-			new_key = 'variant_count'
-		else:
-			population = count.split("_")[-1]
-			new_key = "_".join([population,'count'])
-		update_fields[new_key] = int(named_fields[count])
-
-	for count in totals:
-		if count == 'an':
-			new_key = 'total_count'
-		else:
-			population = count.split("_")[-1]
-			new_key = "_".join([population,'tot','count'])
-		update_fields[new_key] = int(named_fields[count])
-
-	all_fields = fixed_fields
-	all_fields.update(update_fields)
-	db_field_names = ['position', 'reference', 'variant', 'variant_count', 'total_count',
-						'afr_count', 'afr_tot_count', 'amr_count', 'amr_tot_count', 'asj_count',
-						'asj_tot_count', 'eas_count', 'eas_tot_count', 'fin_count', 'fin_tot_count',
-						'nfe_count', 'nfe_tot_count', 'oth_count', 'oth_tot_count', 'sas_count',
-						'sas_tot_count', 'hotspot_id']
-	all_fields['hotspot_id'] = "\\N"
-	tabbed_line = "\t".join([str(all_fields[field_name]) for field_name in db_field_names])
-	return tabbed_line
 
 
 ########################################
@@ -177,7 +197,7 @@ def parse_data_line(line):
 	fields = line.rstrip().split("\t")
 	[chrom, addr, junk, ref, variant, quality_score,  filter, info_string] = fields[:8]
 	if filter!='PASS': return None
-	counts = parse_counts (chrom, ref, variant, info_string)
+	counts = parse_counts (chrom, info_string)
 
 	return [chrom, addr, ref, variant] + counts
 
@@ -247,9 +267,11 @@ def main():
 			print(dep, "not found")
 			exit()
 
-	number_of_chunks = 8
-	chromosomes = [str(i+1) for i in range(23)] + ['X', 'Y']
-	shuffle(chromosomes) # shuffles in place and returns None
+	number_of_chunks = 1
+	chromosomes = ['12']
+	# number_of_chunks = 8
+	# chromosomes = [str(i) for i in range(1, 23)] + ['X', 'Y']
+	# shuffle(chromosomes) # shuffles in place and returns None
 	parallelize(number_of_chunks, process_chromosome_data, chromosomes, [indir, outdir, mysql_conf_file])
 
 

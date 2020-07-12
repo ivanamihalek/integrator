@@ -7,7 +7,7 @@ CREATE TABLE meta (
 
 --
 CREATE TABLE kegg_human(
-  id int  NOT NULL  PRIMARY KEY,
+  kegg_id int  NOT NULL  PRIMARY KEY,
   uniprot varchar(50),
   uniprot_old varchar(150),
   kegg_pathways text
@@ -15,6 +15,6 @@ CREATE TABLE kegg_human(
 
 
 CREATE TABLE kegg_pathway_name(
-   id varchar(5)   NOT NULL  PRIMARY KEY,
+   kegg_pathway_id varchar(5)   NOT NULL  PRIMARY KEY,
    name varchar(150)
 ) ENGINE=InnoDB;

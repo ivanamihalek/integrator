@@ -10,8 +10,9 @@ for my $table (@tables) {
     my $last_pass_position_in_tsv = $fields_tsv[1];
 
     my $table_orig = $table;
-    $table_orig =~ s/gnomad_freqs_chr_/gnomad.exomes.r2.1.1.sites./;
+    $table_orig =~ s/freqs_chr_/gnomad.exomes.r2.1.1.sites./;
     $table_orig =~ s/.tab/.liftover_grch38.vcf/;
+
     my $tail = 500;
     my $cmd = "tail -n $tail /storage/databases/gnomad/$table_orig | cut -f 1-7 | awk '\$7==\"PASS\" {print \$2}' | tail -n1";
     my $ret = `$cmd`;
@@ -28,5 +29,4 @@ for my $table (@tables) {
     } else {
          print("$last_pass_position_in_tsv   no pass in the last $tail lines of the orig file\n");
     }
-
 }
