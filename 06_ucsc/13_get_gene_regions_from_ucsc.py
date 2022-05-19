@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # mysql --user=genome --host=genome-mysql.cse.ucsc.edu -A
 # -A skips auto rehash
-from   integrator_utils.mysql import *
+from integrator_utils.python.mysql import *
 
 #########################################
 def main():
@@ -12,21 +12,38 @@ def main():
     if not db: exit(1)
     cursor = db.cursor()
 
-    for database in ['hg17', 'hg18', 'hg19']:
-        print "downloading from", database
-        switch_to_db(cursor, database) # mouse build name
-        # no Y chromosome, we are looking at uterus tissue
-        outf = open("/databases/ucsc/%s_refgene.csv" % database, "w")
-        qry  = "select  * from refGene  " 
-        rows = search_db(cursor,qry)        
+    table = "refGene"
+    cols_to_extract = ["chrom", "name", "name2", "strand", "exonStarts", "exonEnds"]
+    qry  = f"select {','.join(cols_to_extract)} from {table} "
+    outdir = "/storage/databases/ucsc/gene_regions"
+
+    # for database in ['hg17', 'hg18', 'hg19']:
+    for database in ['hg38']:
+        print("downloading from", database)
+        if not os.path.exists(f"{outdir}/{database}"): os.mkdir(f"{outdir}/{database}")
+        colnames = get_column_names(cursor, database, "refGene")
+        switch_to_db(cursor, database)  # mouse build name
+        for col in cols_to_extract:
+            if col in colnames: continue
+            print(f"{col} not found among columns in {database}.{table}")
+            exit(1)
+        outhandle = {}
+        rows = search_db(cursor, qry)
         for row in rows:
-            print  >>outf,  "\t".join( [ str(r) for r in row] )
-        outf.close()
-        
+            data = dict(zip(cols_to_extract, [c.decode("utf-8") if type(c) == bytes else c for c in row]))
+            leftmost   = data["exonStarts"].split(',')[0]
+            rightmost = data["exonEnds"].split(',')[-2]  # ucsc exon starts/ends end with ','
+            output = [data["name"], data["name2"], data["strand"], leftmost, rightmost]
+            chrom = data["chrom"]
+            if chrom not in outhandle:
+                outhandle[data["chrom"]] = open(f"{outdir}/{database}/{chrom}.csv", "w")
+            print("\t".join([str(r) for r in output]), file=outhandle[chrom])
+
+        for outf in outhandle.values(): outf.close()
+
+
     cursor.close()
     db.close()
-
-    
     
     return True
 
