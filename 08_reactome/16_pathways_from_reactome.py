@@ -1,140 +1,119 @@
-#!/usr/bin/python
+#! /usr/bin/python3
+"""Fill the reactome tables: pathways, their hierarchy, and which gene takes part in which.
 
-from   integrator_utils.mysql import *
+usage:  16_pathways_from_reactome.py [NCBI2Reactome_All_Levels.txt [ReactomePathwaysRelation.txt]]
+
+Selection: human rows ('Homo sapiens', stable ids 'R-HSA-...') whose NCBI gene id is in 'genes'.
+Reactome gives the gene as an Entrez id, so no symbol is involved. Ids not in 'genes' are
+counted in the report.
+
+The downloads, both from https://reactome.org/download/current/ :
+  NCBI2Reactome_All_Levels.txt
+  ReactomePathwaysRelation.txt
+"""
+
 import os
+import sys
+from typing import Any, Dict, Iterator, List, Set, Tuple
 
-class Node:
-    def __init__ (self, id, node_type=None):
-        self.id        = id
-        self.parent    = None
-        self.children  = []
-        self.is_leaf   = False
-        self.is_root   = False
-        if node_type=="leaf":
-            self.is_leaf   = True
-        if node_type=="root":
-            self.is_root   = True
+from sqlmodel import Session, select
 
-    def build_tree (self, parent_of, children_of):
-        if self.is_root:
-            self.children = [Node(x) for x in children_of.keys() if not parent_of.has_key(x)]
-        elif children_of.has_key(self.id):
-            self.children = [Node(x) for x in children_of[self.id]]
-        for child in self.children:
-            child.parent = self
-            child.build_tree (parent_of, children_of)
+from integrator_utils.python.db import db_engine, require_genes, upsert_many
+from integrator_utils.python.models_core import Gene
 
-    def output(self, cursor=None, depth=0):
-        name = ""
-        if cursor:
-            qry = "select displayName from Pathway where id = %s" % self.id
-            rows = search_db(cursor, qry)
-            if rows and rows[0]: name = rows[0][0]
-        print "\t"*depth + str(self.id) + "  " + name
-        for child in self.children:
-            child.output(cursor, depth+1)
-        return
+from reactome_models import ReactomeGenePathway, ReactomePathway, ReactomePathwayRelation
+
+REACTOME = "/storage/databases/reactome"
+NCBI2REACTOME = os.path.join(REACTOME, "NCBI2Reactome_All_Levels.txt")
+RELATIONS = os.path.join(REACTOME, "ReactomePathwaysRelation.txt")
+HUMAN_PREFIX = "R-HSA-"
+SPECIES = "Homo sapiens"
+
 
 #########################################
-def reconstruct_pathway_tree(cursor):
-    root = Node(-1, "root")
-    qry =  "select PathwayHierarchy.pathwayId, PathwayHierarchy.childPathwayId "
-    qry += "from PathwayHierarchy, Pathway  where "
-    qry += "PathwayHierarchy.pathwayId=Pathway.id and Pathway.species = 'Homo sapiens'"
-    rows = search_db(cursor,qry)
-    parent_of = {}
-    children_of = {}
-    for row in rows:
-        [parent,child] = row
-        parent_of[child] = parent
-        if not children_of.has_key(parent): children_of[parent] = []
-        children_of[parent].append(child)
+def participations(path: str) -> Iterator[Tuple[int, str, str, str]]:
+    """(entrez gene id, pathway stable id, pathway name, evidence code) for the human rows."""
+    with open(path, encoding="utf-8", errors="replace") as inf:
+        for line in inf:
+            field = line.rstrip("\n").split("\t")
+            if len(field) < 6 or field[5] != SPECIES:
+                continue
+            if not field[0].isdigit() or not field[1].startswith(HUMAN_PREFIX):
+                continue
+            yield int(field[0]), field[1], field[3].strip(), field[4].strip()
 
-    root.build_tree (parent_of, children_of)
 
-    return root
+def relations(path: str) -> Iterator[Tuple[str, str]]:
+    with open(path) as inf:
+        for line in inf:
+            field = line.rstrip("\n").split("\t")
+            if len(field) == 2 and field[0].startswith(HUMAN_PREFIX) and field[1].startswith(HUMAN_PREFIX):
+                yield field[0], field[1]
+
 
 #########################################
-def store_blimps_pathways(cursor, node, parent_blimps_table_id):
+def load(engine, participation_path: str, relation_path: str) -> None:
+    pathway_name: Dict[str, str] = {}
+    parsed: List[Tuple[int, str, str]] = []
+    for entrez_id, stable_id, name, evidence in participations(participation_path):
+        pathway_name.setdefault(stable_id, name)
+        parsed.append((entrez_id, stable_id, evidence))
+    pairs = list(relations(relation_path))
+    # a pathway may appear in the hierarchy without taking part in the participation file
+    for parent, child in pairs:
+        pathway_name.setdefault(parent, "")
+        pathway_name.setdefault(child, "")
 
-    # store and get the assigned id
-    if node.id<0:
-        parent_blimps_table_id = None
-    else:
-        switch_to_db(cursor, 'reactome')
-        qry = "select displayName, stableId from Pathway where id = %s" % node.id
-        rows = search_db(cursor,qry)
-        for row in rows:
-           [name, stable_id] = row
+    with Session(engine) as session:
+        pathways = [{"stable_id": stable_id, "name": name} for stable_id, name in pathway_name.items()]
+        upsert_many(session, ReactomePathway, pathways, conflict_on=["stable_id"])
+        session.commit()
 
-        switch_to_db(cursor, 'blimps_development')
-        fixed_fields = {}
-        update_fields = {}
-        fixed_fields['source']    = 'reactome'
-        fixed_fields['source_id'] = stable_id
-        update_fields['name']     = name
+        pathway_id_of = {pathway.stable_id: pathway.id for pathway in session.exec(select(ReactomePathway))}
+        gene_id_of = {gene.ncbi_gene_id: gene.id for gene in session.exec(select(Gene)) if gene.ncbi_gene_id}
 
-        parent_blimps_table_id = store_or_update (cursor, "pathways", fixed_fields, update_fields)
+        edges = [{"parent_id": pathway_id_of[parent], "child_id": pathway_id_of[child]} for parent, child in pairs]
+        upsert_many(session, ReactomePathwayRelation, edges, conflict_on=["parent_id", "child_id"])
+        session.commit()
 
-    for child in node.children:
-        store_blimps_pathways(cursor, child, parent_blimps_table_id)
-    # name, stableId
-    if node.id>=0:
-        print name, stable_id, parent_blimps_table_id
-        #exit(1)
-    return
+        unknown_genes: Set[int] = set()
+        rows: Dict[str, Dict[str, Any]] = {}
+        for entrez_id, stable_id, evidence in parsed:
+            gene_id = gene_id_of.get(entrez_id)
+            if gene_id is None:
+                unknown_genes.add(entrez_id)
+                continue
+            pathway_id = pathway_id_of[stable_id]
+            # TAS - traceable author statement - is the curated one, and wins over an inference
+            key = f"{gene_id}|{pathway_id}"
+            if key not in rows or evidence == "TAS":
+                rows[key] = {"gene_id": gene_id, "pathway_id": pathway_id, "evidence_code": evidence}
+        upsert_many(session, ReactomeGenePathway, list(rows.values()), conflict_on=["gene_id", "pathway_id"])
+        session.commit()
 
+    report = f"{len(pathways)} reactome pathways, {len(edges)} hierarchy edges, {len(rows)} participations stored"
+    print(report)
+    skipped = f"{len(unknown_genes)} reactome gene id(s) are not in 'genes'"
+    print(skipped)
 
 
 #########################################
 def main():
-    # note the skip-auto-rehash option in .ucsc_myql_conf
-    # it is the equivalent to -A on the mysql command line
-    # means: no autocompletion, which makes mysql get up mych faster
-    db     = connect_to_mysql(user="cookiemonster", passwd=(os.environ['COOKIEMONSTER_PASSWORD']))
-    if not db: exit(1)
-    cursor = db.cursor()
-    qry = 'set autocommit=1' # not sure why this has to be done explicitly - it should be the default
-    search_db(cursor,qry,True)
+    if len(sys.argv) > 3:
+        usage = f"usage: {sys.argv[0]} [NCBI2Reactome_All_Levels.txt [ReactomePathwaysRelation.txt]]"
+        sys.exit(usage)
+    participation_path = sys.argv[1] if len(sys.argv) > 1 else NCBI2REACTOME
+    relation_path = sys.argv[2] if len(sys.argv) > 2 else RELATIONS
+    for path in (participation_path, relation_path):
+        if not os.path.exists(path):
+            errmsg = f"{path} not found - see the download urls in the docstring of this script"
+            sys.exit(errmsg)
 
-    switch_to_db(cursor, 'reactome')
-
-    pathway_tree_root = reconstruct_pathway_tree(cursor)
-    #pathway_tree_root.output(cursor)
-    store_blimps_pathways(cursor, pathway_tree_root, -1)
-
-
-    if False:
-        qry  = "select id, stableId, displayName from Pathway where species='Homo sapiens'"
-        rows = search_db(cursor,qry)
-        for row in rows:
-            print row
-            [pathway_id, stableId, displayName] = row
-            print displayName
-            qry  = "select  ReactionLikeEvent_To_PhysicalEntity.physicalEntityId "
-            qry += "from  Pathway_To_ReactionLikeEvent, ReactionLikeEvent_To_PhysicalEntity "
-            qry += "where Pathway_To_ReactionLikeEvent.pathwayId=%s " % pathway_id
-            qry += "and  Pathway_To_ReactionLikeEvent.reactionLikeEventId= ReactionLikeEvent_To_PhysicalEntity.reactionLikeEventId"
-            rows2 = search_db(cursor,qry)
-            physical_entity_ids = set([row2[0] for row2 in rows2])
-            for physical_entity_id in physical_entity_ids:
-                qry = "select displayName from PhysicalEntity where id=%s" % physical_entity_id
-                entity_name = search_db(cursor,qry)[0][0]
-                print "\t", physical_entity_id, entity_name
-
-        exit(1)
-
-
-    cursor.close()
-    db.close()
-
-    
-    
-    return True
+    engine = db_engine()
+    require_genes(engine)
+    load(engine, participation_path, relation_path)
 
 
 #########################################
 if __name__ == '__main__':
     main()
-
-

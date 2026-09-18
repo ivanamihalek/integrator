@@ -1,0 +1,22 @@
+services:
+  integrator-db:
+    image: postgres:latest
+    container_name: integrator-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: integrator
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWD}
+      # pin the data dir to a subdirectory of the mount: a bind mount root is never empty
+      # (lost+found), and postgres:18 moved its own default data dir
+      PGDATA: /var/lib/postgresql/data/integrator-pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - /media/ivana/portable/postgres:/var/lib/postgresql/data
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d integrator"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
